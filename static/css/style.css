@@ -2061,10 +2061,16 @@ body {
     margin-bottom: 16px;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1600px) {
     .services-page {
         width: 100%;
     }
+}
+
+@media (max-width: 768px) {
+    /* .services-page {
+        width: 100%;
+    } */
     
     .services-page .page-header {
         margin-bottom: 16px;
@@ -3075,14 +3081,14 @@ body {
 }
 
 
-/* ============================================================ */
-/* ========== СТРАНИЦА РАСПИСАНИЯ (МОБИЛЬНАЯ ВЕРСИЯ) ========== */
-/* ============================================================ */
-
-@media (max-width: 768px) {
-
+@media (max-width: 1600px) {
     .schedule-page {
         width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .schedule-page {
         margin: 0;
     }
 
@@ -4984,6 +4990,10 @@ body {
         justify-content: center !important;
     }
 
+    #blacklistModal .modal-header h5 {
+        font-size: 1rem;
+    }
+
     /* Сокращаем ширину кнопки Добавить в черный список */
     .statistics-page .card-header .btn-pink.btn-sm {
         flex: 0 0 auto !important;
@@ -5001,12 +5011,12 @@ body {
     
 
     #blacklistModal .form-control {
-        font-size: 12px !important;
-        padding: 0 10px !important;
-        border-radius: 10px !important;
-        height: 30px !important;
-        line-height: 36px !important;
-        border: 1px solid var(--gray-300) !important;
+        font-size: 12px;
+        padding: 0 10px;
+        border-radius: 10px;
+        height: 36px;
+        line-height: 20px;
+        border: 1px solid var(--gray-400);
     }
     
     #blacklistModal textarea.form-control {
@@ -5014,8 +5024,8 @@ body {
     }
 
     #blacklistModal .text-muted {
-        font-size: 0.7rem !important;
-        margin-top: 2px !important;
+        font-size: 0.6rem !important;
+        margin-top: 0px !important;
     }
     
     .blacklist-mobile-list {
@@ -5173,6 +5183,10 @@ body {
 /* ============================================================ */
 
 /* ---- Шапка страницы ---- */
+.profile-page {
+    width: 80%;
+}
+
 .profile-page .page-header {
     margin-bottom: 16px;
 }
@@ -5184,10 +5198,10 @@ body {
     margin: 0;
 }
 
-.profile-page .page-header h2 i {
+/* .profile-page .page-header h2 i {
     color: var(--primary);
     margin-right: 10px;
-}
+} */
 
 /* ---- Карточка ---- */
 .profile-page .card {
@@ -5325,7 +5339,7 @@ body {
     border-top: 1px solid var(--gray-200);
 }
 
-.profile-page .btn-pink {
+/* .profile-page .btn-pink {
     background: var(--primary-gradient);
     color: white;
     border: none;
@@ -5340,7 +5354,7 @@ body {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(124, 58, 237, 0.35);
     color: white;
-}
+} */
 
 /* ---- Предпросмотр ссылки ---- */
 #login-preview {
@@ -5349,8 +5363,12 @@ body {
     word-break: break-all;
 }
 
-/* ---- Мобильная версия ---- */
 @media (max-width: 768px) {
+
+    .profile-page {
+        width: 100%;
+    }
+    
     .profile-page .page-header h2 {
         font-size: 1.2rem;
         text-align: left;
