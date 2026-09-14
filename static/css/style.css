@@ -403,7 +403,7 @@ body {
     }
     
     /* Кнопки в ряд, обе одинаковой ширины */
-        #confirmModal .modal-footer,
+    #confirmModal .modal-footer,
     #alertModal .modal-footer {
         padding: 10px 16px !important;
         display: flex !important;
@@ -1540,270 +1540,70 @@ body {
 /* ========== СТРАНИЦА ДОБАВЛЕНИЯ ЗАПИСИ (add_manual_booking) ========== */
 /* ============================================================ */
 
-/* Десктопная версия - ширина как на других страницах */
+/* ============================================================ */
+/* ========== СТРАНИЦА ДОБАВЛЕНИЯ ЗАПИСИ ====================== */
+/* ============================================================ */
+
 .add-booking-page .col-lg-8 {
     flex: 0 0 80% !important;
     max-width: 80% !important;
 }
 
-/* Общие стили для карточек на странице */
-.add-booking-page .service-card,
-.add-booking-page .date-card,
-.add-booking-page .slot-card {
-    cursor: pointer;
-    transition: all 0.2s ease;
-    position: relative;
-}
-
-.add-booking-page .service-card:hover,
-.add-booking-page .date-card:hover,
-.add-booking-page .slot-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 12px rgba(124, 58, 237, 0.15);
-}
-
-.add-booking-page .border-pink {
-    border: 2px solid var(--primary) !important;
-    background-color: var(--primary-light) !important;
-}
-
-/* Крестик на выбранной услуге */
-.add-booking-page .service-close-btn {
-    position: absolute;
-    top: -8px;
-    right: -8px;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    background-color: var(--danger);
-    color: white;
-    border: none;
+/* Заголовок страницы */
+.add-booking-page .page-header {
+    margin-bottom: 16px;
     display: flex;
     align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    cursor: pointer;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.add-booking-page .page-header h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--gray-800);
+    margin: 0;
+}
+
+.add-booking-page .btn-back-link {
+    color: var(--gray-500);
+    text-decoration: none;
+    font-size: 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 20px;
     transition: all 0.2s ease;
-    z-index: 10;
 }
 
-.add-booking-page .service-close-btn:hover {
-    background-color: #c82333;
-    transform: scale(1.1);
+.add-booking-page .btn-back-link:hover {
+    background: var(--gray-100);
+    color: var(--gray-700);
 }
 
-/* Корзина */
-.add-booking-page .services-cart {
-    animation: fadeInUp 0.3s ease-out;
-}
-
-.add-booking-page .cart-item {
-    transition: all 0.2s ease;
-}
-
-.add-booking-page .cart-item:hover {
-    background-color: #e9ecef !important;
-}
-
-/* Анимации для шагов */
-.add-booking-page #step-dates,
-.add-booking-page #step-times,
-.add-booking-page #step-form {
-    animation: fadeInUp 0.4s ease-out;
-}
-
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* ============================================================ */
-/* ========== МОБИЛЬНАЯ ВЕРСИЯ ДЛЯ ADD_MANUAL_BOOKING ========== */
-/* ============================================================ */
-
+/* Мобильная версия */
 @media (max-width: 768px) {
-    /* Ширина на мобильных - 100% */
     .add-booking-page .col-lg-8 {
         flex: 0 0 100% !important;
         max-width: 100% !important;
         padding: 0 12px !important;
     }
-    
-    .add-booking-page .card {
-        margin-bottom: 12px !important;
-        border-radius: 12px !important;
-    }
-    
-    .add-booking-page .card-header {
-        padding: 10px 14px !important;
-        flex-direction: column !important;
-        align-items: flex-start !important;
-    }
-    
-    .add-booking-page .card-header h5 {
-        font-size: 0.85rem !important;
-        margin-bottom: 6px !important;
-    }
-    
-    .add-booking-page .card-header .float-end {
-        float: none !important;
-        display: inline-block !important;
-        margin-top: 4px !important;
-        font-size: 0.7rem !important;
-        padding: 2px 10px !important;
-    }
-    
-    .add-booking-page .card-body {
-        padding: 10px !important;
-    }
-    
-    
-    /* Услуги - компактные карточки */
-    .add-booking-page .service-card .card-body {
-        padding: 10px !important;
-    }
-    
-    .add-booking-page .service-card h6 {
-        font-size: 0.8rem !important;
-        margin-bottom: 2px !important;
-    }
-    
-    .add-booking-page .service-card .card-text {
-        font-size: 0.7rem !important;
-        margin-bottom: 4px !important;
-    }
-    
-    .add-booking-page .service-card .badge {
-        font-size: 0.6rem !important;
-        padding: 2px 6px !important;
-    }
-    
-    .add-booking-page .service-card .fw-bold {
-        font-size: 0.8rem !important;
-    }
-    
-    /* Даты - компактные */
-    .add-booking-page .date-card .card-body {
-        padding: 6px 4px !important;
-    }
-    
-    .add-booking-page .date-card .card-body .small {
-        font-size: 0.6rem !important;
-    }
-    
-    .add-booking-page .date-card .card-body .fw-bold {
-        font-size: 0.7rem !important;
-    }
-    
-    /* Время - компактные */
-    .add-booking-page .slot-card .card-body {
-        padding: 6px 4px !important;
-        font-size: 0.65rem !important;
-    }
-    
-    /* Корзина на мобильных */
-    .add-booking-page .services-cart .d-flex {
-        flex-wrap: wrap !important;
-    }
-    
-    .add-booking-page .services-cart .d-flex > div {
-        width: 100% !important;
-        margin-bottom: 4px !important;
-        font-size: 0.75rem !important;
-    }
-    
-    .add-booking-page .services-cart .btn-sm {
-        padding: 2px 6px !important;
-        font-size: 0.65rem !important;
-    }
-    
-    .add-booking-page .services-cart .cart-total {
-        font-size: 0.8rem !important;
-    }
-    
-    /* Отступы между элементами */
-    .add-booking-page .mb-3 {
-        margin-bottom: 8px !important;
-    }
-    
-    .add-booking-page .mb-4 {
-        margin-bottom: 10px !important;
-    }
-    
-    /* Форма */
-    .add-booking-page #manual-booking-form .form-control {
-        font-size: 15px !important;
-        padding: 8px 12px !important;
-        height: 40px !important;
-    }
-    
-    .add-booking-page #manual-booking-form textarea.form-control {
-        height: auto !important;
-        min-height: 60px !important;
-    }
-    
-    .add-booking-page #manual-booking-form .form-label {
-        font-size: 0.8rem !important;
-        margin-bottom: 2px !important;
-    }
-    
-    .add-booking-page #manual-booking-form .btn {
-        padding: 10px !important;
-        font-size: 0.9rem !important;
-    }
-    
-    .add-booking-page #manual-booking-form .form-check {
-        margin-bottom: 8px !important;
-    }
-    
-    .add-booking-page #manual-booking-form .form-check-label {
-        font-size: 0.8rem !important;
-    }
-    
 
-}
+    .add-booking-page .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
 
-/* Очень маленькие экраны */
-@media (max-width: 480px) {
-    .add-booking-page .col-4 {
-        flex: 0 0 33.333333% !important;
-        max-width: 33.333333% !important;
+    .add-booking-page .page-header h2 {
+        font-size: 1.2rem;
     }
-    
-    .add-booking-page .col-3 {
-        flex: 0 0 25% !important;
-        max-width: 25% !important;
-    }
-    
-    .add-booking-page .date-card .card-body .small {
-        font-size: 0.5rem !important;
-    }
-    
-    .add-booking-page .date-card .card-body .fw-bold {
-        font-size: 0.6rem !important;
-    }
-    
-    .add-booking-page .slot-card .card-body {
-        font-size: 0.55rem !important;
-        padding: 4px 2px !important;
-    }
-    
-    .add-booking-page .service-card h6 {
-        font-size: 0.7rem !important;
-    }
-    
-    .add-booking-page .service-card .card-text {
-        font-size: 0.6rem !important;
-    }
-    
-    .add-booking-page .card-header h5 {
-        font-size: 0.75rem !important;
+
+    .add-booking-page .btn-back-link {
+        font-size: 0.75rem;
+        padding: 4px 10px;
     }
 }
 
@@ -2668,10 +2468,6 @@ body {
     color: var(--gray-800);
 }
 
-
-/* ============================================================ */
-/* ========== МОДАЛЬНОЕ ОКНО УСЛУГИ (МОБИЛЬНАЯ ВЕРСИЯ) ========== */
-/* ============================================================ */
 
 @media (max-width: 768px) {
     #serviceModal .modal-dialog {
@@ -4729,6 +4525,10 @@ body {
     gap: 10px;
 }
 
+.statistics-page .card-footer-mobile {
+    display: none;
+}
+
 .statistics-page .card-footer .btn-outline-primary {
     border: 1px solid var(--primary);
     color: var(--primary);
@@ -4940,6 +4740,20 @@ body {
         background-color: transparent !important;
     }
 
+    .statistics-page .card-footer-mobile {
+        display: block;
+        padding: 12px 16px;
+    }
+    
+    .statistics-page .card-footer-mobile .btn {
+        width: auto !important;             /* ← не на всю ширину */
+        display: inline-flex !important;
+        justify-content: center !important;
+        padding: 10px 16px !important;
+        font-size: 0.8rem !important;
+        border-radius: 30px !important;
+    }
+
     /* Модальные окна на мобильных */
     #blacklistModal .modal-dialog,
     #clientDetailsModal .modal-dialog {
@@ -5007,6 +4821,7 @@ body {
     #blacklistModal .form-label {
         font-size: 0.8rem !important;
         font-weight: 600 !important;
+        margin-bottom: 5px;
     }
     
 
@@ -5184,7 +4999,7 @@ body {
 
 /* ---- Шапка страницы ---- */
 .profile-page {
-    width: 80%;
+    width: 60%;
 }
 
 .profile-page .page-header {
@@ -5295,7 +5110,7 @@ body {
 /* ---- Поля формы ---- */
 .profile-page .form-label {
     font-size: 0.85rem;
-    font-weight: 500;
+    font-weight: 700;
     color: var(--gray-700);
     margin-bottom: 4px;
 }
@@ -5361,6 +5176,12 @@ body {
     color: var(--primary);
     font-weight: 500;
     word-break: break-all;
+}
+
+@media (max-width: 1600px) {
+    .profile-page {
+        width: 80%;
+    }
 }
 
 @media (max-width: 768px) {
@@ -5437,14 +5258,19 @@ body {
         padding: 6px 10px !important;
         height: 36px !important;
     }
+
+    .profile-page .text-muted {
+        font-size: 0.6rem;
+        margin-top: 4px;
+        line-height: 1.25 !important;
+        display: block;
+    }
     
     .profile-page .btn-pink {
         width: 100%;
         justify-content: center;
     }
 }
-
-
 
 
 /* ============================================================ */
@@ -5465,12 +5291,10 @@ body {
 
 /* --- Выделение выбранной услуги --- */
 .border-pink {
-    border: 2px solid var(--primary) !important;
+    border: 1px solid var(--primary) !important;
     background-color: var(--primary-light) !important;
 }
 
-/* --- Крестик на выбранной услуге --- */
-/* --- Крестик на выбранной услуге — без трансформ --- */
 .service-close-btn {
     position: absolute;
     top: -6px;
@@ -5580,7 +5404,7 @@ body {
 
 /* Карточка услуги на публичной странице */
 .public-service-card {
-    border: 1px solid var(--gray-200);
+    border: 1px solid var(--gray-400);
     border-radius: 12px;
     padding: 12px 14px;
     transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
@@ -5702,10 +5526,6 @@ body {
     transform: scale(0.97);
 }
 
-
-/* ============================================================ */
-/* ========== ИТОГОВАЯ ИНФОРМАЦИЯ В ШАГЕ 4 ========== */
-/* ============================================================ */
 
 /* ============================================================ */
 /* ========== ИТОГОВАЯ ИНФОРМАЦИЯ В ШАГЕ 4 ========== */
