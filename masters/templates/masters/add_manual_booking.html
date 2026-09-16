@@ -21,8 +21,8 @@
                 <div class="card mb-4" id="services-card">
                     <div class="card-header bg-white">
                         <h5 class="mb-0">
-                            <i class="fas fa-cut me-2" style="color: var(--primary);"></i>
-                            Шаг 1: Выберите услуги (можно несколько)
+                            <!-- <i class="fas fa-cut me-2" style="color: var(--primary);"></i> -->
+                            Шаг 1: Выбери услуги <br> <span>(можно несколько)</span>
                         </h5>
                     </div>
                     <div class="card-body">
@@ -42,8 +42,8 @@
                 <div class="card mb-4" id="date-card" style="display: none;">
                     <div class="card-header bg-white">
                         <h5 class="mb-0">
-                            <i class="far fa-calendar-alt me-2" style="color: var(--primary);"></i>
-                            Шаг 2: Выберите дату
+                            <!-- <i class="far fa-calendar-alt me-2" style="color: var(--primary);"></i> -->
+                            Шаг 2: Выбери дату
                         </h5>
                     </div>
                     <div class="card-body">
@@ -59,7 +59,7 @@
                 <div class="card mb-4" id="time-card" style="display: none;">
                     <div class="card-header bg-white">
                         <h5 class="mb-0">
-                            <i class="far fa-clock me-2" style="color: var(--primary);"></i>
+                            <!-- <i class="far fa-clock me-2" style="color: var(--primary);"></i> -->
                             Шаг 3: Выберите время
                         </h5>
                     </div>
@@ -75,7 +75,7 @@
                 <div class="card mb-4" id="booking-card" style="display: none;">
                     <div class="card-header bg-white">
                         <h5 class="mb-0">
-                            <i class="fas fa-pencil-alt me-2" style="color: var(--primary);"></i>
+                            <!-- <i class="fas fa-pencil-alt me-2" style="color: var(--primary);"></i> -->
                             Шаг 4: Данные клиента
                         </h5>
                     </div>
@@ -134,7 +134,7 @@
                             </div>
 
                             <button type="submit" class="btn btn-pink w-100">
-                                <i class="fas fa-save me-2"></i>Добавить запись
+                               Добавить запись
                             </button>
                         </form>
                     </div>
@@ -300,6 +300,17 @@ function scrollToCategory(categoryId) {
         const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
         window.scrollTo({ top: elementPosition - offset, behavior: 'smooth' });
     }
+}
+
+function smoothScrollTo(elementId, offset = 80) {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+
+    const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+    window.scrollTo({
+        top: elementPosition - offset,
+        behavior: 'smooth'
+    });
 }
 
 // ============================================================
@@ -510,7 +521,7 @@ function masterSelectDate(date, element) {
     masterLoadSlotsForDate();
 
     setTimeout(() => {
-        document.getElementById('time-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        smoothScrollTo('time-card', 80);
     }, 300);
 }
 
@@ -569,7 +580,7 @@ function masterSelectTime(time, element) {
     document.getElementById('booking-card').style.display = 'block';
 
     setTimeout(() => {
-        document.getElementById('booking-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        smoothScrollTo('booking-card', 80);
     }, 100);
 }
 
@@ -641,15 +652,15 @@ document.getElementById('manual-booking-form').addEventListener('submit', functi
     const phoneForValidation = clientPhone.replace(/\D/g, '');
 
     if (!clientName || !phoneForValidation || phoneForValidation.length !== 11) {
-        showStyledAlert('Заполните имя и телефон клиента (11 цифр)', 'error');
+        showStyledAlert('Заполни имя и телефон клиента (11 цифр)', 'error');
         return;
     }
     if (masterSelectedServices.length === 0) {
-        showStyledAlert('Выберите хотя бы одну услугу', 'error');
+        showStyledAlert('Выбери хотя бы одну услугу', 'error');
         return;
     }
     if (!masterSelectedDate || !masterSelectedTime) {
-        showStyledAlert('Выберите дату и время', 'error');
+        showStyledAlert('Выбери дату и время', 'error');
         return;
     }
 
@@ -708,7 +719,8 @@ function resetBooking() {
     document.getElementById('booking-card').style.display = 'none';
     document.getElementById('manual-booking-form').reset();
 
-    document.getElementById('services-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // document.getElementById('services-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    smoothScrollTo('services-card', 80);
 }
 
 // ============================================================

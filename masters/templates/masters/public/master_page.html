@@ -4,7 +4,7 @@
 {% block title %}{{ master.first_name }} {{ master.last_name }} - запись{% endblock %}
 
 {% block content %}
-<div class="row">
+<div class="row public-page">
     <div class="col-lg-8 mx-auto">
         <!-- Шапка мастера -->
         <div class="card mb-4 text-center">
@@ -30,7 +30,6 @@
         <!-- Контейнер для динамических блоков -->
         <div id="booking-container">
 
-            <!-- Блок выбора услуги всегда виден -->
             <!-- Блок выбора услуги всегда виден -->
             <div class="card mb-4" id="services-card">
                 <div class="card-header bg-white">
@@ -59,7 +58,7 @@
                 </div>
                 <div class="card-body">
                     <div id="dates-loading" style="display: none;" class="text-center py-3">
-                        <div class="spinner-border" style="color: #ff85b3;"></div>
+                        <div class="spinner-border" style="color: var(--primary)"></div>
                     </div>
                     <div class="row" id="dates-container"></div>
                 </div>
@@ -72,14 +71,12 @@
                 </div>
                 <div class="card-body">
                     <div id="slots-loading" style="display: none;" class="text-center py-3">
-                        <div class="spinner-border" style="color: #ff85b3;"></div>
+                        <div class="spinner-border" style="color: var(--primary);"></div>
                     </div>
                     <div class="row" id="slots-container"></div>
                 </div>
             </div>
             
-            <!-- Блок формы записи (появляется после выбора времени) -->
-            <!-- Блок формы записи (появляется после выбора времени) -->
             <!-- Блок формы записи (появляется после выбора времени) -->
             <div class="card mb-4" id="booking-card" style="display: none;">
                 <div class="card-header bg-white">
@@ -525,49 +522,6 @@ MultiService.onServicesChange = function(services, totalDuration) {
         loadAvailableDatesForCart(totalDuration);
     }
 };
-
-// function loadAvailableDatesForCart(totalDuration) {
-//     const datesContainer = document.getElementById('dates-container');
-//     const datesLoading = document.getElementById('dates-loading');
-    
-//     datesLoading.style.display = 'block';
-//     datesContainer.innerHTML = '';
-//     document.getElementById('date-card').style.display = 'block';
-//     document.getElementById('time-card').style.display = 'none';
-//     document.getElementById('booking-card').style.display = 'none';
-    
-//     fetch(`/api/${currentSlug}/dates/?total_duration=${totalDuration}`)
-//         .then(response => response.json())
-//         .then(data => {
-//             datesLoading.style.display = 'none';
-            
-//             if (data.dates && data.dates.length > 0) {
-//                 let html = '';
-//                 data.dates.forEach(item => {
-//                     html += `
-//                         <div class="col-md-3 col-4 mb-3">
-//                             <div class="card date-card text-center" 
-//                                  data-date="${item.date}"
-//                                  onclick="selectDateForCart('${item.date}', this)">
-//                                 <div class="card-body py-2">
-//                                     <div class="small text-muted">${item.day_of_week}</div>
-//                                     <div class="fw-bold">${item.display}</div>
-//                                 </div>
-//                             </div>
-//                         </div>
-//                     `;
-//                 });
-//                 datesContainer.innerHTML = html;
-//             } else {
-//                 datesContainer.innerHTML = '<div class="col-12"><p class="text-muted text-center">Нет свободных дат для выбранных услуг</p></div>';
-//             }
-//         })
-//         .catch(error => {
-//             datesLoading.style.display = 'none';
-//             console.error('Ошибка:', error);
-//             datesContainer.innerHTML = '<div class="col-12"><p class="text-danger text-center">Ошибка загрузки дат</p></div>';
-//         });
-// }
 
 
 let datesPage = 1;
