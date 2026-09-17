@@ -291,39 +291,34 @@
                         <i class="fas fa-arrow-left me-2"></i>Назад к дню
                     </button>
                     <h6 class="mb-3">Добавление записи</h6>
-
-                    <!-- УСЛУГИ -->
+                    
                     <div class="mb-3">
                         <label class="form-label">Услуги (можно выбрать несколько)</label>
-                        <div id="services-list" class="row">
+                        <div id="add_services_list" class="row">
                             <div class="col-12 text-center">
-                                <div class="spinner-border spinner-border-sm" style="color: var(--primary);"></div>
+                                <div class="spinner-border spinner-border-sm" style="color: #7c3aed;"></div>
                             </div>
                         </div>
                     </div>
-
-                    <!-- КОРЗИНА ВЫБРАННЫХ УСЛУГ -->
+                    
                     <div class="services-cart" id="add_services_cart" style="display: none;">
                         <div class="alert alert-light p-2 mb-2">
                             <strong><i class="fas fa-shopping-cart me-1"></i>Выбранные услуги:</strong>
-                            <div id="selected-services-cart" class="mt-2"></div>
+                            <div id="add_selected_services_list" class="mt-2"></div>
                         </div>
                     </div>
-
-                    <!-- ДАТА -->
-                    <div id="dates-container" style="display: none;" class="mb-3">
+                    
+                    <div id="add_dates_container" style="display: none;" class="mb-3">
                         <label class="form-label">Дата</label>
                         <div id="add_dates_list" class="row"></div>
                     </div>
-
-                    <!-- ВРЕМЯ -->
-                    <div id="times-container" style="display: none;" class="mb-3">
+                    
+                    <div id="add_times_container" style="display: none;" class="mb-3">
                         <label class="form-label">Время</label>
                         <div id="add_times_list" class="row"></div>
                     </div>
-
-                    <!-- ФОРМА -->
-                    <form id="BookingForm">
+                    
+                    <form id="addBookingForm">
                         <div class="mb-3">
                             <label class="form-label">Имя клиента</label>
                             <input type="text" class="form-control" id="add_client_name" required>
@@ -336,13 +331,12 @@
                             <label class="form-label">Комментарий</label>
                             <textarea class="form-control" id="add_comment" rows="2"></textarea>
                         </div>
+                        
                     </form>
-
                     <button class="btn btn-pink w-100 mt-3" onclick="saveMultipleBooking()">
                         <i class="fas fa-save me-2"></i>Добавить запись
                     </button>
                 </div>
-
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
@@ -869,8 +863,8 @@ function masterRemoveService(index) {
     masterUpdateServiceCards();  // ← ДОБАВИТЬ ЭТУ СТРОКУ
     
     if (masterSelectedServices.length === 0) {
-        document.getElementById('dates-container').style.display = 'none';
-        document.getElementById('times-container').style.display = 'none';
+        document.getElementById('add_dates_container').style.display = 'none';
+        document.getElementById('add_times_container').style.display = 'none';
         masterSelectedDate = null;
         masterSelectedTime = null;
     } else {
@@ -882,8 +876,8 @@ function masterClearServices() {
     masterSelectedServices = [];
     masterUpdateServicesUI();
     masterUpdateServiceCards();  // ← ДОБАВИТЬ ЭТУ СТРОКУ
-    document.getElementById('dates-container').style.display = 'none';
-    document.getElementById('times-container').style.display = 'none';
+    document.getElementById('add_dates_container').style.display = 'none';
+    document.getElementById('add_times_container').style.display = 'none';
     masterSelectedDate = null;
     masterSelectedTime = null;
 }
@@ -891,7 +885,7 @@ function masterClearServices() {
 // Добавьте эту функцию:
 function masterUpdateServiceCards() {
     // Снимаем выделение со всех карточек
-    document.querySelectorAll('#services-list .public-service-card').forEach(card => {
+    document.querySelectorAll('#add_services_list .service-card').forEach(card => {
         card.classList.remove('border-pink', 'border-2', 'selected');
         const existingClose = card.querySelector('.service-close-btn');
         if (existingClose) existingClose.remove();
@@ -899,7 +893,7 @@ function masterUpdateServiceCards() {
     
     // Добавляем выделение и крестики для выбранных услуг
     masterSelectedServices.forEach(service => {
-        const cards = document.querySelectorAll(`#services-list .public-service-card[data-service-id="${service.id}"]`);
+        const cards = document.querySelectorAll(`#add_services_list .service-card[data-service-id="${service.id}"]`);
         cards.forEach(card => {
             card.classList.add('border-pink', 'border-2', 'selected');
             card.style.position = 'relative';
@@ -921,7 +915,7 @@ function masterUpdateServiceCards() {
 
 
 function masterUpdateServicesUI() {
-    const cartContainer = document.getElementById('selected-services-cart');
+    const cartContainer = document.getElementById('add_selected_services_list');
     const cartBlock = document.getElementById('add_services_cart');
     
     if (masterSelectedServices.length === 0) {
@@ -959,11 +953,11 @@ function masterLoadDatesForServices() {
     
     const totalDuration = masterSelectedServices.reduce((sum, s) => sum + s.duration, 0);
     const container = document.getElementById('add_dates_list');
-    const datesContainer = document.getElementById('dates-container');
+    const datesContainer = document.getElementById('add_dates_container');
     
     container.innerHTML = '<div class="col-12 text-center"><div class="spinner-border spinner-border-sm"></div></div>';
     datesContainer.style.display = 'block';
-    document.getElementById('times-container').style.display = 'none';
+    document.getElementById('add_times_container').style.display = 'none';
     
     fetch(`/api/${editCurrentSlug}/dates/?total_duration=${totalDuration}`)
         .then(response => response.json())
@@ -1020,7 +1014,7 @@ function masterSelectDate(date, element) {
 function masterLoadSlotsForDate() {
     const totalDuration = masterSelectedServices.reduce((sum, s) => sum + s.duration, 0);
     const container = document.getElementById('add_times_list');
-    const timesContainer = document.getElementById('times-container');
+    const timesContainer = document.getElementById('add_times_container');
     
     container.innerHTML = '<div class="col-12 text-center"><div class="spinner-border spinner-border-sm"></div></div>';
     timesContainer.style.display = 'block';
@@ -1231,7 +1225,7 @@ function loadAddServices() {
                 cat.services.forEach(service => {
                     html += `
                         <div class="col-md-4 mb-2">
-                            <div class="card public-service-card" 
+                            <div class="card service-card" 
                                  data-service-id="${service.id}"
                                  data-service-duration="${service.duration}"
                                  data-service-price="${service.price}"
@@ -1251,7 +1245,7 @@ function loadAddServices() {
                 data.uncategorized.forEach(service => {
                     html += `
                         <div class="col-md-4 mb-2">
-                            <div class="card public-service-card" 
+                            <div class="card service-card" 
                                  data-service-id="${service.id}"
                                  data-service-duration="${service.duration}"
                                  data-service-price="${service.price}"
@@ -1267,12 +1261,12 @@ function loadAddServices() {
                 html += `</div>`;
             }
             html += '</div>';
-            document.getElementById('services-list').innerHTML = html;
+            document.getElementById('add_services_list').innerHTML = html;
         });
 }
 
 function selectAddService(element, serviceId) {
-    document.querySelectorAll('#services-list .public-service-card').forEach(card => {
+    document.querySelectorAll('#add_services_list .service-card').forEach(card => {
         card.classList.remove('border-pink');
     });
     element.classList.add('border-pink');
@@ -1287,8 +1281,8 @@ function loadAddDatesForService(serviceId) {
             const container = document.getElementById('add_dates_list');
             if (data.dates.length === 0) {
                 container.innerHTML = '<p class="text-muted">Нет доступных дат</p>';
-                document.getElementById('dates-container').style.display = 'block';
-                return
+                document.getElementById('add_dates_container').style.display = 'block';
+                return;
             }
             let html = '<div class="row">';
             data.dates.forEach(date => {
@@ -1306,7 +1300,7 @@ function loadAddDatesForService(serviceId) {
             });
             html += '</div>';
             container.innerHTML = html;
-            document.getElementById('dates-container').style.display = 'block';
+            document.getElementById('add_dates_container').style.display = 'block';
             if (addSelectedDate) {
                 loadAddSlotsForDate(serviceId, addSelectedDate);
             }
@@ -1329,7 +1323,7 @@ function loadAddSlotsForDate(serviceId, date) {
             const container = document.getElementById('add_times_list');
             if (data.slots.length === 0) {
                 container.innerHTML = '<p class="text-muted">Нет свободного времени</p>';
-                document.getElementById('times-container').style.display = 'block';
+                document.getElementById('add_times_container').style.display = 'block';
                 return;
             }
             let html = '<div class="row">';
@@ -1345,7 +1339,7 @@ function loadAddSlotsForDate(serviceId, date) {
             });
             html += '</div>';
             container.innerHTML = html;
-            document.getElementById('times-container').style.display = 'block';
+            document.getElementById('add_times_container').style.display = 'block';
         });
 }
 
@@ -1512,7 +1506,18 @@ function loadEditServicesForModal(selectedServiceId, selectedDate, selectedTime)
             }
             html += '</div>';
             document.getElementById('edit_services_list_modal').innerHTML = html;
-      
+            
+            // ===== УБРАЛИ АВТОМАТИЧЕСКИЙ СКРОЛЛ =====
+            // setTimeout(() => {
+            //     const selectedService = document.querySelector('#edit_services_list_modal .service-card.border-pink');
+            //     if (selectedService) {
+            //         selectedService.scrollIntoView({
+            //             behavior: 'smooth',
+            //             block: 'center',
+            //             inline: 'nearest'
+            //         });
+            //     }
+            // }, 300);
             
             if (selectedServiceId) {
                 loadEditDatesForServiceModal(selectedServiceId, selectedDate);
