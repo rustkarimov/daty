@@ -272,7 +272,7 @@
                             </button>
                         </div>
                         <button class="btn btn-pink" onclick="showAddBookingPanel()">
-                            <i class="fas fa-pen me-2"></i>Добавить запись
+                            Добавить запись
                         </button>
                     </div>
 
@@ -290,35 +290,65 @@
                     <button class="btn btn-sm btn-outline-secondary mb-3" onclick="backToDayView()">
                         <i class="fas fa-arrow-left me-2"></i>Назад к дню
                     </button>
-                    <h6 class="mb-3">Добавление записи</h6>
-                    
+                                        
                     <div class="mb-3">
-                        <label class="form-label">Услуги (можно выбрать несколько)</label>
+                        <label class="form-label section-step-title">
+                            Шаг 1: Выбери услуги (можно несколько)
+                        </label>
+                        <div id="category-anchors" class="category-anchors" style="display: none;"></div>
                         <div id="add_services_list" class="row">
                             <div class="col-12 text-center">
-                                <div class="spinner-border spinner-border-sm" style="color: #7c3aed;"></div>
+                                <div class="spinner-border spinner-border-sm" style="color: var(--primary);"></div>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="services-cart" id="add_services_cart" style="display: none;">
-                        <div class="alert alert-light p-2 mb-2">
-                            <strong><i class="fas fa-shopping-cart me-1"></i>Выбранные услуги:</strong>
-                            <div id="add_selected_services_list" class="mt-2"></div>
-                        </div>
-                    </div>
-                    
+                                       
                     <div id="add_dates_container" style="display: none;" class="mb-3">
-                        <label class="form-label">Дата</label>
+                        <label class="form-label section-step-title">Шаг 2: Выбери дату</label>
                         <div id="add_dates_list" class="row"></div>
                     </div>
                     
                     <div id="add_times_container" style="display: none;" class="mb-3">
-                        <label class="form-label">Время</label>
+                        <label class="form-label section-step-title">Шаг 3: Выбери время</label>
                         <div id="add_times_list" class="row"></div>
                     </div>
-                    
-                    <form id="addBookingForm">
+
+                    <!-- СВОДКА -->
+                    <div id="add-booking-summary" style="display: none;">
+                        <div class="mb-3">
+                            <div class="fw-bold mb-2" style="font-size: 0.85rem; color: var(--gray-500); text-transform: uppercase; letter-spacing: 0.4px;">
+                                <i class="fas fa-list me-1"></i>Выбранные услуги
+                            </div>
+                            <div id="add-booking-summary-services" class="booking-summary-services"></div>
+                        </div>
+
+                        <div class="booking-summary-total">
+                            <span>Итого</span>
+                            <span id="add-booking-summary-total">0 мин / 0 ₽</span>
+                        </div>
+
+                        <div class="row g-2 mt-3">
+                            <div class="col-12 col-sm-6">
+                                <div class="booking-summary-item">
+                                    <span class="booking-summary-label"><i class="far fa-calendar-alt me-1"></i>Дата</span>
+                                    <span class="booking-summary-value" id="add-booking-summary-date">—</span>
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-6">
+                                <div class="booking-summary-item">
+                                    <span class="booking-summary-label"><i class="far fa-clock me-1"></i>Время</span>
+                                    <span class="booking-summary-value" id="add-booking-summary-time">—</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr>
+                    </div>
+
+                    <label class="form-label section-step-title">Шаг 4: Данные клиента</label>
+
+                    <form id="addBookingForm" style="display: none;">
                         <div class="mb-3">
                             <label class="form-label">Имя клиента</label>
                             <input type="text" class="form-control" id="add_client_name" required>
@@ -334,7 +364,7 @@
                         
                     </form>
                     <button class="btn btn-pink w-100 mt-3" onclick="saveMultipleBooking()">
-                        <i class="fas fa-save me-2"></i>Добавить запись
+                        Добавить запись
                     </button>
                 </div>
             </div>
@@ -852,32 +882,63 @@ function masterAddService(serviceId, serviceName, serviceDuration, servicePrice)
         price: servicePrice
     });
     
-    masterUpdateServicesUI();
     masterUpdateServiceCards();  // ← ДОБАВИТЬ ЭТУ СТРОКУ
     masterLoadDatesForServices();
+
+    updateAddBookingSummary();
 }
+
+// function masterRemoveService(index) {
+//     masterSelectedServices.splice(index, 1);
+//     masterUpdateServiceCards();  // ← ДОБАВИТЬ ЭТУ СТРОКУ
+    
+//     if (masterSelectedServices.length === 0) {
+//         document.getElementById('add_dates_container').style.display = 'none';
+//         document.getElementById('add_times_container').style.display = 'none';
+//         masterSelectedDate = null;
+//         masterSelectedTime = null;
+//     } else {
+//         masterLoadDatesForServices();
+//     }
+// }
 
 function masterRemoveService(index) {
     masterSelectedServices.splice(index, 1);
-    masterUpdateServicesUI();
-    masterUpdateServiceCards();  // ← ДОБАВИТЬ ЭТУ СТРОКУ
-    
+    masterUpdateServiceCards();
+
     if (masterSelectedServices.length === 0) {
         document.getElementById('add_dates_container').style.display = 'none';
         document.getElementById('add_times_container').style.display = 'none';
         masterSelectedDate = null;
         masterSelectedTime = null;
+
+        // Скрываем форму и сводку
+        document.getElementById('addBookingForm').style.display = 'none';
+        updateAddBookingSummary();
     } else {
         masterLoadDatesForServices();
+        updateAddBookingSummary();
     }
 }
 
 function masterClearServices() {
     masterSelectedServices = [];
-    masterUpdateServicesUI();
-    masterUpdateServiceCards();  // ← ДОБАВИТЬ ЭТУ СТРОКУ
-    document.getElementById('add_dates_container').style.display = 'none';
-    document.getElementById('add_times_container').style.display = 'none';
+    masterUpdateServiceCards();
+
+    const datesContainer = document.getElementById('add_dates_container');
+    if (datesContainer) datesContainer.style.display = 'none';
+
+    const timesContainer = document.getElementById('add_times_container');
+    if (timesContainer) timesContainer.style.display = 'none';
+
+    const form = document.getElementById('addBookingForm');
+    if (form) form.style.display = 'none';
+
+    const saveBtn = document.getElementById('add-booking-save-btn');
+    if (saveBtn) saveBtn.style.display = 'none';
+
+    updateAddBookingSummary();
+
     masterSelectedDate = null;
     masterSelectedTime = null;
 }
@@ -913,41 +974,6 @@ function masterUpdateServiceCards() {
     });
 }
 
-
-function masterUpdateServicesUI() {
-    const cartContainer = document.getElementById('add_selected_services_list');
-    const cartBlock = document.getElementById('add_services_cart');
-    
-    if (masterSelectedServices.length === 0) {
-        cartBlock.style.display = 'none';
-        return;
-    }
-    
-    cartBlock.style.display = 'block';
-    
-    let html = '';
-    let totalDuration = 0;
-    let totalPrice = 0;
-    
-    masterSelectedServices.forEach((service, index) => {
-        totalDuration += service.duration;
-        totalPrice += service.price;
-        html += `
-            <div class="d-flex justify-content-between align-items-center mb-1 p-1 bg-light rounded">
-                <span>${escapeHtml(service.name)} (${service.duration} мин / ${service.price} ₽)</span>
-                <button class="btn btn-sm btn-outline-danger" onclick="masterRemoveService(${index})">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-        `;
-    });
-    
-    html += `<div class="mt-2 pt-1 border-top"><strong>Итого: ${totalDuration} мин / ${totalPrice} ₽</strong></div>`;
-    html += `<button class="btn btn-sm btn-outline-secondary mt-2 w-100" onclick="masterClearServices()">Очистить все</button>`;
-    
-    cartContainer.innerHTML = html;
-}
-
 function masterLoadDatesForServices() {
     if (masterSelectedServices.length === 0) return;
     
@@ -963,13 +989,13 @@ function masterLoadDatesForServices() {
         .then(response => response.json())
         .then(data => {
             if (data.dates && data.dates.length > 0) {
-                let html = '<div class="row">';
+                let html = '';
                 data.dates.forEach(item => {
                     const isSelected = masterSelectedDate === item.date;
                     html += `
-                        <div class="col-md-3 col-4 mb-2">
+                        <div class="col-4">
                             <div class="card date-card text-center ${isSelected ? 'border-pink' : ''}" 
-                                 data-date="${item.date}" onclick="masterSelectDate('${item.date}', this)">
+                                data-date="${item.date}" onclick="masterSelectDate('${item.date}', this)">
                                 <div class="card-body py-1">
                                     <div class="small">${item.day_of_week}</div>
                                     <div class="fw-bold small">${item.display}</div>
@@ -978,7 +1004,6 @@ function masterLoadDatesForServices() {
                         </div>
                     `;
                 });
-                html += '</div>';
                 container.innerHTML = html;
                 
                 // ✅ АВТОМАТИЧЕСКИ ВЫБИРАЕМ ДАТУ И ЗАГРУЖАЕМ СЛОТЫ
@@ -1023,19 +1048,18 @@ function masterLoadSlotsForDate() {
         .then(response => response.json())
         .then(data => {
             if (data.slots && data.slots.length > 0) {
-                let html = '<div class="row">';
+                let html = '';
                 data.slots.forEach(slot => {
                     const isSelected = masterSelectedTime === slot.start;
                     html += `
-                        <div class="col-md-2 col-3 mb-2">
+                        <div class="col-md-2 col-3">
                             <div class="card slot-card text-center ${isSelected ? 'border-pink' : ''}" 
-                                 data-time="${slot.start}" onclick="masterSelectTime('${slot.start}', this)">
+                                data-time="${slot.start}" onclick="masterSelectTime('${slot.start}', this)">
                                 <div class="card-body py-1">${slot.start}</div>
                             </div>
                         </div>
                     `;
                 });
-                html += '</div>';
                 container.innerHTML = html;
             } else {
                 container.innerHTML = '<div class="col-12 text-center text-muted">Нет свободного времени</div>';
@@ -1047,12 +1071,73 @@ function masterLoadSlotsForDate() {
         });
 }
 
+// function masterSelectTime(time, element) {
+//     document.querySelectorAll('#add_times_list .slot-card').forEach(card => {
+//         card.classList.remove('border-pink', 'bg-light');
+//     });
+//     element.classList.add('border-pink', 'bg-light');
+//     masterSelectedTime = time;
+// }
+
 function masterSelectTime(time, element) {
     document.querySelectorAll('#add_times_list .slot-card').forEach(card => {
         card.classList.remove('border-pink', 'bg-light');
     });
     element.classList.add('border-pink', 'bg-light');
     masterSelectedTime = time;
+
+    // Показываем форму и сводку
+    document.getElementById('addBookingForm').style.display = 'block';
+    updateAddBookingSummary();
+}
+
+function updateAddBookingSummary() {
+    const summaryContainer = document.getElementById('add-booking-summary');
+    const servicesContainer = document.getElementById('add-booking-summary-services');
+    const dateElement = document.getElementById('add-booking-summary-date');
+    const timeElement = document.getElementById('add-booking-summary-time');
+    const totalElement = document.getElementById('add-booking-summary-total');
+
+    if (!summaryContainer) return;
+
+    const services = masterSelectedServices;
+
+    if (services.length === 0 || !masterSelectedDate || !masterSelectedTime) {
+        summaryContainer.style.display = 'none';
+        return;
+    }
+
+    summaryContainer.style.display = 'block';
+
+    // Услуги
+    let servicesHtml = '';
+    services.forEach((service, index) => {
+        servicesHtml += `
+            <div class="booking-summary-service">
+                <span class="service-name">${escapeHtml(service.name)}</span>
+                <div class="service-meta">
+                    <span>${service.duration} мин</span>
+                    <span>${service.price} ₽</span>
+                    <button class="remove-service-btn" onclick="masterRemoveService(${index})" title="Удалить">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+    servicesContainer.innerHTML = servicesHtml;
+
+    // Дата
+    const dateObj = new Date(masterSelectedDate);
+    const monthNames = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+                        'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+    dateElement.textContent = `${dateObj.getDate()} ${monthNames[dateObj.getMonth()]} ${dateObj.getFullYear()}`;
+    timeElement.textContent = masterSelectedTime;
+
+    // Итого
+    const totalDuration = services.reduce((sum, s) => sum + s.duration, 0);
+    const totalPrice = services.reduce((sum, s) => sum + s.price, 0);
+    totalElement.textContent = `${totalDuration} мин / ${totalPrice} ₽`;
 }
 
 function saveMultipleBooking() {
@@ -1214,55 +1299,161 @@ function backToDayView() {
     }
 }
 
+
 function loadAddServices() {
     fetch('/api/categories/')
         .then(response => response.json())
         .then(data => {
-            let html = '<div class="row">';
+            const anchorsContainer = document.getElementById('category-anchors');
+            let anchorsHtml = '';
+            let hasCategories = false;
+
+            // Собираем якоря
             for (const cat of data.categories) {
                 if (cat.services.length === 0) continue;
-                html += `<div class="col-12 mb-2"><strong>${escapeHtml(cat.name)}</strong></div><div class="row mb-3">`;
-                cat.services.forEach(service => {
-                    html += `
-                        <div class="col-md-4 mb-2">
-                            <div class="card service-card" 
-                                 data-service-id="${service.id}"
-                                 data-service-duration="${service.duration}"
-                                 data-service-price="${service.price}"
-                                 onclick="masterAddService(${service.id}, '${escapeHtml(service.name)}', ${service.duration}, ${service.price})">
-                                <div class="card-body p-2">
-                                    <div class="fw-bold small">${escapeHtml(service.name)}</div>
-                                    <div class="small text-muted">${service.duration} мин / ${service.price} ₽</div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                });
-                html += `</div>`;
+                const catId = 'add-cat-' + cat.id;
+                anchorsHtml += `
+                    <a class="category-anchor" onclick="scrollToAddCategory('${catId}')">
+                        ${escapeHtml(cat.name)}
+                    </a>
+                `;
+                hasCategories = true;
             }
+
+            if (hasCategories) {
+                anchorsContainer.style.display = 'flex';
+                anchorsContainer.innerHTML = anchorsHtml;
+            } else {
+                anchorsContainer.style.display = 'none';
+            }
+
+            // Рендерим услуги с раскрывающимися категориями
+            let html = '';
+            for (const cat of data.categories) {
+                if (cat.services.length === 0) continue;
+                const catId = 'add-cat-' + cat.id;
+
+                html += `
+                    <div class="public-category-group" id="${catId}" data-category-id="${cat.id}">
+                        <div class="public-category-title" onclick="toggleAddCategory(${cat.id})" style="cursor: pointer;">
+                            <i class="fas fa-chevron-down me-1 add-cat-icon" id="add-cat-${cat.id}-icon" style="font-size: 10px; transition: transform 0.2s;"></i>
+                            <i class="fas fa-folder-open me-1" style="color: var(--primary); font-size: 0.7rem;"></i>
+                            ${escapeHtml(cat.name)}
+                            <span class="badge">${cat.services.length}</span>
+                        </div>
+                        <div class="row" id="add-cat-${cat.id}-body">
+                `;
+                for (const service of cat.services) {
+                    html += renderAddServiceCard(service);
+                }
+                html += `</div></div>`;
+            }
+
+            // Услуги без категории
             if (data.uncategorized.length > 0) {
-                html += `<div class="col-12 mb-2"><strong>Без категории</strong></div><div class="row mb-3">`;
-                data.uncategorized.forEach(service => {
-                    html += `
-                        <div class="col-md-4 mb-2">
-                            <div class="card service-card" 
-                                 data-service-id="${service.id}"
-                                 data-service-duration="${service.duration}"
-                                 data-service-price="${service.price}"
-                                 onclick="masterAddService(${service.id}, '${escapeHtml(service.name)}', ${service.duration}, ${service.price})">
-                                <div class="card-body p-2">
-                                    <div class="fw-bold small">${escapeHtml(service.name)}</div>
-                                    <div class="small text-muted">${service.duration} мин / ${service.price} ₽</div>
-                                </div>
-                            </div>
+                html += `
+                    <div class="public-category-group">
+                        <div class="public-category-title" style="cursor: default;">
+                            <i class="fas fa-tag me-1" style="color: var(--gray-400); font-size: 0.7rem;"></i>
+                            Без категории
+                            <span class="badge">${data.uncategorized.length}</span>
                         </div>
-                    `;
-                });
-                html += `</div>`;
+                        <div class="row">
+                `;
+                for (const service of data.uncategorized) {
+                    html += renderAddServiceCard(service);
+                }
+                html += `</div></div>`;
             }
-            html += '</div>';
+
             document.getElementById('add_services_list').innerHTML = html;
         });
+}
+
+// Карточка услуги (для модалки дня)
+function renderAddServiceCard(service) {
+    return `
+        <div class="col-md-4 mb-2">
+            <div class="card service-card" 
+                 data-service-id="${service.id}"
+                 data-service-duration="${service.duration}"
+                 data-service-price="${service.price}"
+                 onclick="masterAddService(${service.id}, '${escapeHtml(service.name)}', ${service.duration}, ${service.price})">
+                <div class="card-body p-2">
+                    <div class="fw-bold small">${escapeHtml(service.name)}</div>
+                    <div class="small text-muted">${service.duration} мин / ${service.price} ₽</div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Сворачивание/разворачивание категории в модалке дня
+function toggleAddCategory(catId) {
+    const body = document.getElementById(`add-cat-${catId}-body`);
+    const icon = document.getElementById(`add-cat-${catId}-icon`);
+
+    if (!body) return;
+
+    if (body.style.display === 'none') {
+        body.style.display = 'flex';
+        if (icon) icon.style.transform = 'rotate(0deg)';
+    } else {
+        body.style.display = 'none';
+        if (icon) icon.style.transform = 'rotate(-90deg)';
+    }
+}
+
+// Скролл к категории (модалка дня)
+function scrollToAddCategory(categoryId) {
+    const element = document.getElementById(categoryId);
+    if (!element) return;
+
+    // Если категория свёрнута — раскрываем её
+    const catId = categoryId.replace('add-cat-', '');
+    const body = document.getElementById(`add-cat-${catId}-body`);
+    const icon = document.getElementById(`add-cat-${catId}-icon`);
+
+    if (body && body.style.display === 'none') {
+        body.style.display = 'flex';
+        if (icon) icon.style.transform = 'rotate(0deg)';
+    }
+
+    // Ищем ближайший скроллируемый родитель
+    let parent = element.parentElement;
+    let scrollableParent = null;
+
+    while (parent) {
+        const style = window.getComputedStyle(parent);
+        const overflowY = style.overflowY;
+
+        if (
+            (overflowY === 'auto' || overflowY === 'scroll') &&
+            parent.scrollHeight > parent.clientHeight
+        ) {
+            scrollableParent = parent;
+            break;
+        }
+        parent = parent.parentElement;
+    }
+
+    if (scrollableParent) {
+        const elementTop = element.offsetTop;
+        const parentTop = scrollableParent.offsetTop;
+        const scrollTop = elementTop - parentTop - 20;
+
+        scrollableParent.scrollTo({
+            top: scrollTop,
+            behavior: 'smooth'
+        });
+    } else {
+        const offset = 80;
+        const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+        window.scrollTo({
+            top: elementPosition - offset,
+            behavior: 'smooth'
+        });
+    }
 }
 
 function selectAddService(element, serviceId) {

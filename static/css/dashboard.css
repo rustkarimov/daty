@@ -2489,3 +2489,233 @@ body:has(#workingDayActions[style*="display: block"]) #addBookingButtonContainer
         font-size: 0.5rem;
     }
 }
+
+
+
+/* ============================================================ */
+/* ========== МОДАЛКА ДНЯ — ДОБАВЛЕНИЕ ЗАПИСИ ================= */
+/* ========== (стили для #addBookingPanel) ==================== */
+/* ============================================================ */
+
+/* Заголовки шагов */
+#addBookingPanel .form-label.section-step-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--gray-800);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Якоря категорий */
+#category-anchors {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--gray-200);
+}
+
+#addBookingPanel .service-card {
+    border: 1px solid var(--gray-400) !important;
+}
+
+#addBookingPanel > .btn-pink {
+    width: 40%;
+    padding: 10px 15px;
+    font-size: 1rem;
+    border-radius: 30px !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin-top: 12px !important;
+    background: var(--primary) !important;
+    color: white !important;
+    border: none !important;
+    transition: all 0.2s ease;
+}
+
+#addBookingPanel > .btn-pink:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(64, 83, 211, 0.35) !important;
+    color: white !important;
+}
+
+/* Мобильная версия */
+@media (max-width: 768px) {
+    #addBookingPanel .form-label.section-step-title {
+        font-size: 0.85rem;
+        margin-bottom: 8px;
+    }
+
+    #category-anchors {
+        gap: 6px;
+        margin-bottom: 12px;
+        padding-bottom: 10px;
+    }
+
+    #addBookingPanel .public-category-group {
+        margin-bottom: 10px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    #addBookingPanel .public-category-group:last-child {
+        border-bottom: none;
+    }
+
+    #addBookingPanel .public-category-title {
+        font-size: 0.75rem;
+        letter-spacing: 0.3px;
+        margin-bottom: 8px;
+        padding: 6px 4px;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    #addBookingPanel .public-category-title:hover {
+        background: var(--gray-50);
+        border-radius: 6px;
+    }
+
+    #addBookingPanel .public-category-title .badge {
+        font-size: 0.55rem;
+        padding: 1px 6px;
+    }
+
+    #addBookingPanel .public-category-group .service-card,
+    #addBookingPanel .public-category-group .service-card.card {
+        margin-bottom: 0 !important;
+    }
+
+    /* И у колонок */
+    #addBookingPanel .public-category-group [class*="col-"] {
+        margin-bottom: 10px !important;
+    }
+
+        #add_dates_list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin: 0;
+    }
+
+    #add_dates_list > [class*="col-"] {
+        flex: 0 0 calc(33.333% - 4px) !important;
+        max-width: calc(33.333% - 4px) !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    #add_dates_list .date-card {
+        border-radius: 8px !important;
+        margin: 0 !important;
+    }
+
+    #add_dates_list .date-card .card-body {
+        padding: 5px 0px !important;
+        min-height: 44px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #add_dates_list .date-card .small {
+        font-size: 0.5rem !important;
+        line-height: 1;
+        margin-bottom: 2px;
+    }
+
+    #add_dates_list .date-card .fw-bold {
+        font-size: 0.7rem !important;
+        line-height: 1.1;
+        font-weight: 600 !important;
+    }
+
+    #add_times_list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin: 0;
+    }
+
+    #add_times_list > [class*="col-"] {
+        flex: 0 0 calc(33.333% - 4px) !important;
+        max-width: calc(33.333% - 4px) !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    #add_times_list .slot-card {
+        border-radius: 8px !important;
+        margin: 0 !important;
+    }
+
+    #add_times_list .slot-card .card-body {
+        padding: 6px 4px !important;
+        font-size: 0.75rem !important;
+        font-weight: 500;
+        min-height: 34px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    #add-booking-summary {
+        margin-bottom: 14px;
+    }
+
+    #add-booking-summary .fw-bold {
+        font-size: 0.7rem !important;
+        color: var(--gray-500) !important;
+        margin-bottom: 6px !important;
+    }
+
+    #add-booking-summary .booking-summary-service {
+        padding: 6px 10px !important;
+        font-size: 0.8rem !important;
+        border-radius: 8px !important;
+        margin-bottom: 4px !important;
+    }
+
+    #add-booking-summary .booking-summary-service .service-name {
+        font-size: 0.8rem !important;
+    }
+
+    #add-booking-summary .booking-summary-service .service-meta {
+        font-size: 0.7rem !important;
+        gap: 8px !important;
+    }
+
+    #add-booking-summary .booking-summary-total {
+        font-size: 0.95rem !important;
+        padding: 8px 0 !important;
+    }
+
+    #add-booking-summary .booking-summary-item {
+        padding: 6px 10px !important;
+    }
+
+    #add-booking-summary .booking-summary-label {
+        font-size: 0.6rem !important;
+    }
+
+    #add-booking-summary .booking-summary-value {
+        font-size: 0.85rem !important;
+    }
+
+    #add-booking-summary hr {
+        margin: 12px 0 !important;
+        opacity: 0.5 !important;
+    }
+
+    #addBookingPanel > .btn-pink {
+        padding: 12px 20px;
+        font-size: 0.9rem;
+        width: 100%;
+    }
+}
