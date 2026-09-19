@@ -28,7 +28,7 @@ def create_booking_notification(sender, instance, created, **kwargs):
     
     # Если это часть составной записи (есть пометка "услуга X из Y") — пропускаем
     if "услуга" in instance.client_comment and "из" in instance.client_comment:
-        print(f"❌ Часть составной записи, уведомление создаст основная функция")
+        # print(f"❌ Часть составной записи, уведомление создаст основная функция")
         return
     
     # Уведомления только если запись создана клиентом

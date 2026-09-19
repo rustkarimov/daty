@@ -1,0 +1,3113 @@
+// ============================================================
+// ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ (кастомные модалки)
+// ============================================================
+
+function showConfirm(message, onConfirm) {
+    const modal = new bootstrap.Modal(document.getElementById('confirmModal'), {
+        backdrop: true
+    });
+    document.getElementById('confirmModalMessage').innerText = message;
+    const okBtn = document.getElementById('confirmModalOk');
+    const cancelBtn = document.getElementById('confirmModalCancel');
+    
+    const handleOk = () => {
+        modal.hide();
+        okBtn.removeEventListener('click', handleOk);
+        cancelBtn.removeEventListener('click', handleCancel);
+        onConfirm(true);
+    };
+    
+    const handleCancel = () => {
+        modal.hide();
+        okBtn.removeEventListener('click', handleOk);
+        cancelBtn.removeEventListener('click', handleCancel);
+        onConfirm(false);
+    };
+    
+    okBtn.addEventListener('click', handleOk);
+    cancelBtn.addEventListener('click', handleCancel);
+    modal.show();
+}
+
+function showAlert(message, title = 'Уведомление') {
+    const modal = new bootstrap.Modal(document.getElementById('alertModal'), {
+        backdrop: true
+    });
+    document.getElementById('alertModalTitle').innerText = title;
+    document.getElementById('alertModalMessage').innerHTML = message;
+    modal.show();
+}
+
+// Быстрое уведомление (тост), которое исчезает через 2 секунды
+function showToast(message, type = 'success') {
+    // Проверяем, есть ли уже контейнер для тостов
+    let toastContainer = document.getElementById('toast-container');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toast-container';
+        toastContainer.style.position = 'fixed';
+        toastContainer.style.bottom = '20px';
+        toastContainer.style.right = '20px';
+        toastContainer.style.zIndex = '9999';
+        document.body.appendChild(toastContainer);
+    }
+    
+    const toastId = 'toast-' + Date.now();
+    const bgColor = type === 'success' ? '#28a745' : (type === 'error' ? '#dc3545' : '#ff85b3');
+    
+    const toastHtml = `
+        <div id="${toastId}" class="toast show" role="alert" style="background: ${bgColor}; color: white; border-radius: 12px; margin-top: 10px; min-width: 200px;">
+            <div class="toast-body d-flex align-items-center justify-content-between">
+                <span>${message}</span>
+                <button type="button" class="btn-close btn-close-white ms-3" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    `;
+    
+    toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+    
+    const toastElement = document.getElementById(toastId);
+    setTimeout(() => {
+        if (toastElement) {
+            toastElement.classList.remove('show');
+            setTimeout(() => toastElement.remove(), 300);
+        }
+    }, 2000);
+}
+
+// ============================================================
+// МАСКА ТЕЛЕФОНА
+// ============================================================
+function phoneMask(input) {
+    let value = input.value.replace(/\D/g, '');
+    if (value.length === 0) {
+        input.value = '';
+        return;
+    }
+    if (value[0] !== '7' && value[0] !== '8') {
+        value = '7' + value;
+    }
+    if (value[0] === '8') {
+        value = '7' + value.slice(1);
+    }
+    if (value.length > 11) {
+        value = value.slice(0, 11);
+    }
+    let formatted = '';
+    if (value.length > 0) {
+        formatted = value[0];
+        if (value.length > 1) formatted += ' ' + value.slice(1, 4);
+        if (value.length > 4) formatted += ' ' + value.slice(4, 7);
+        if (value.length > 7) formatted += '-' + value.slice(7, 9);
+        if (value.length > 9) formatted += '-' + value.slice(9, 11);
+    }
+    input.value = formatted;
+}
+
+function initPhoneMasks() {
+    document.querySelectorAll('input[type="tel"]').forEach(input => {
+        input.removeEventListener('input', function() { phoneMask(this); });
+        input.addEventListener('input', function() { phoneMask(this); });
+    });
+}
+
+// ============================================================
+// КОПИРОВАНИЕ ССЫЛКИ
+// ============================================================
+function copyPublicLink() {
+    const t = document.getElementById("publicLink");
+    t.select();
+    t.setSelectionRange(0, 99999);
+    navigator.clipboard.writeText(t.value);
+    showAlert('Ссылка скопирована!', 'Готово');
+}
+
+function copyPublicLinkMobile() {
+    const t = document.getElementById("publicLinkMobile");
+    t.select();
+    t.setSelectionRange(0, 99999);
+    navigator.clipboard.writeText(t.value);
+    showAlert('Ссылка скопирована!', 'Готово');
+}
+
+// ============================================================
+// КАЛЕНДАРЬ
+// ============================================================
+let currentCalendarDate = new Date();
+let currentSelectedDate = null;
+let currentDayData = null;
+
+function loadCalendar() {
+    const year = currentCalendarDate.getFullYear();
+    const month = currentCalendarDate.getMonth();
+    const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+    document.getElementById('current-month').innerHTML = `${monthNames[month]} ${year}`;
+
+    const grid = document.getElementById('calendar-grid');
+    grid.innerHTML = '<div class="text-center py-3"><div class="spinner-border" style="color: #7c3aed;"></div></div>';
+
+    Promise.all([
+        fetch('/api/schedule/calendar/').then(r => r.json()),
+        fetch('/api/bookings/counts/').then(r => r.json())
+    ]).then(([calendarData, countsData]) => {
+        renderCalendar(calendarData, countsData, year, month);
+    }).catch(error => {
+        console.error(error);
+        grid.innerHTML = '<div class="text-center text-danger">Ошибка загрузки</div>';
+    });
+}
+
+function renderCalendar(data, countsData, year, month) {
+    const firstDay = new Date(year, month, 1);
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const startWeekday = firstDay.getDay();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    let html = '<div class="calendar-weekdays">';
+    ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].forEach(d => html += `<div class="calendar-weekday">${d}</div>`);
+    html += '</div><div class="calendar-dates">';
+
+    let adjustedStartWeekday = startWeekday === 0 ? 6 : startWeekday - 1;
+    for (let i = 0; i < adjustedStartWeekday; i++) html += '<div class="calendar-date empty"></div>';
+
+    for (let d = 1; d <= daysInMonth; d++) {
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        const currentDate = new Date(year, month, d);
+        const isPast = currentDate < today;
+        const dayOfWeek = currentDate.getDay();
+        const dayIdx = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+
+        const extraDay = data.extra_days && data.extra_days[dateStr];
+        const schedule = data.schedules && data.schedules[dayIdx];
+        const isDayOff = data.days_off && data.days_off.includes(dateStr);
+        const bookingCount = (countsData.counts && countsData.counts[dateStr]) ? countsData.counts[dateStr] : 0;
+
+        let workingClass = '', statusText = '';
+        let hasBreaks = false;
+
+        if (isDayOff) {
+            workingClass = 'non-working';
+            statusText = '';
+        } else if (extraDay) {
+            workingClass = 'working';
+            statusText = `${extraDay.start} - ${extraDay.end}`;
+            if (extraDay.breaks && extraDay.breaks.length > 0) {
+                hasBreaks = true;
+            }
+        } else if (schedule) {
+            workingClass = 'working';
+            statusText = `${schedule.start} - ${schedule.end}`;
+            if (schedule.breaks && schedule.breaks.length > 0) {
+                hasBreaks = true;
+            }
+        } else {
+            workingClass = 'non-working';
+            statusText = '';
+        }
+
+        if (isPast) workingClass += ' past';
+        const isToday = currentDate.toDateString() === today.toDateString();
+        const todayClass = isToday ? 'today' : '';
+
+        const showIcons = !isPast;
+
+        html += `<div class="calendar-date ${workingClass} ${todayClass}" onclick="openDayModal('${dateStr}')">
+                    <span class="date-number">${d}</span>
+                    <div class="calendar-time">${statusText}</div>
+                    <div class="calendar-icons">
+                        ${showIcons && bookingCount > 0 ? `<span class="booking-badge">${bookingCount}</span>` : ''}
+                        ${showIcons && hasBreaks ? `<span class="break-badge" title="В этот день есть перерывы">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"/>
+                                <polyline points="12 6 12 12 16 14"/>
+                            </svg>
+                        </span>` : ''}
+                    </div>
+                </div>`;
+    }
+    html += '</div>';
+    document.getElementById('calendar-grid').innerHTML = html;
+}
+
+function changeMonth(delta) {
+    currentCalendarDate.setMonth(currentCalendarDate.getMonth() + delta);
+    loadCalendar();
+}
+
+
+function openDayModal(dateStr) {
+    currentSelectedDate = dateStr;
+    const dateObj = new Date(dateStr);
+    const monthNames = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+    const weekdays = ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'];
+    document.getElementById('dayModalDate').innerHTML = `${dateObj.getDate()} ${monthNames[dateObj.getMonth()]} (${weekdays[dateObj.getDay()]})`;
+
+    document.getElementById('viewDayPanel').style.display = 'block';
+    document.getElementById('addBookingPanel').style.display = 'none';
+    document.getElementById('dayModalTitle').innerHTML = '<i class="far fa-calendar-alt me-2" style="color: var(--primary);"></i> Редактирование дня';
+    
+    // Сбрасываем режим редактирования
+    const viewMode = document.querySelector('.work-view-mode');
+    const editMode = document.querySelector('.work-edit-mode');
+    const editBtn = document.getElementById('editWorkTimeBtn');
+    
+    viewMode.style.display = 'inline';
+    editMode.style.display = 'none';
+    editBtn.style.display = 'inline-flex';
+    
+    document.getElementById('dayBookingsContainer').innerHTML = '<div class="text-center py-2"><div class="spinner-border spinner-border-sm" style="color: #7c3aed;"></div></div>';
+
+    fetch(`/api/bookings/by-date/?date=${dateStr}`)
+        .then(r => r.json())
+        .then(data => renderDayBookings(data.bookings));
+
+    fetch(`/api/day-status/?date=${dateStr}`)
+        .then(r => r.json())
+        .then(data => {
+            currentDayData = data;
+            
+            const isDayOff = data.is_day_off || !(data.has_schedule || data.is_extra);
+            
+            const workTimeRow = document.getElementById('workTimeRow');
+            const workDisplay = document.getElementById('workTimeDisplay');
+            const workLabelText = document.getElementById('workTimeLabelText');
+            const breaksContainer = document.getElementById('breaksContainer');
+            const editBtn = document.getElementById('editWorkTimeBtn');
+            const makeDayOffBtn = document.getElementById('makeDayOffBtn');
+            const dayOffActions = document.getElementById('dayOffActions');
+            const addBookingBtn = document.querySelector('#dayActionsContainer .btn-pink');
+            const viewMode = document.querySelector('.work-view-mode');
+            const editMode = document.querySelector('.work-edit-mode');
+            
+            // Сброс
+            workTimeRow.style.display = 'flex';
+            breaksContainer.style.display = 'block';
+            makeDayOffBtn.style.display = 'none';
+            dayOffActions.style.display = 'none';
+            editBtn.style.display = 'inline-flex';
+            viewMode.style.display = 'inline';
+            editMode.style.display = 'none';
+            if (addBookingBtn) addBookingBtn.style.display = 'inline-block';
+            
+            if (isDayOff) {
+                // Выходной день
+                workLabelText.textContent = 'Выходной день';
+                workDisplay.textContent = '';
+                viewMode.style.display = 'none';
+                breaksContainer.style.display = 'none';
+                if (addBookingBtn) addBookingBtn.style.display = 'none';
+                dayOffActions.style.display = 'block';
+                editBtn.style.display = 'none';
+                renderBreaks([]);
+            } else {
+                // Рабочий день
+                workLabelText.textContent = 'Работаю:';
+                let workStart = data.extra_start || data.schedule_start || '--:--';
+                let workEnd = data.extra_end || data.schedule_end || '--:--';
+                workDisplay.textContent = workStart + ' - ' + workEnd;
+                viewMode.style.display = 'inline';
+                makeDayOffBtn.style.display = 'inline-block';
+                editBtn.style.display = 'inline-flex';
+                renderBreaks(data.breaks || []);
+            }
+        });
+
+    const modalElement = document.getElementById('dayModal');
+    const modal = new bootstrap.Modal(modalElement);
+    modal.show();
+    
+    setTimeout(() => {
+        const dialog = modalElement.querySelector('.modal-dialog');
+        const body = modalElement.querySelector('.modal-body');
+        if (dialog && window.innerWidth > 768) {
+            const currentHeight = dialog.offsetHeight;
+            if (currentHeight > 0) {
+                dialog.style.height = currentHeight + 'px';
+                dialog.style.maxHeight = currentHeight + 'px';
+            }
+            if (body) {
+                body.style.overflowY = 'auto';
+                body.style.maxHeight = (currentHeight - 140) + 'px';
+            }
+        }
+    }, 150);
+}
+
+
+
+function renderDayBookings(bookings) {
+    const container = document.getElementById('dayBookingsContainer');
+    if (!bookings || bookings.length === 0) {
+        container.innerHTML = '<p class="text-muted text-center mb-0">Нет записей</p>';
+        return;
+    }
+    let html = '<div class="table-responsive"><table class="table table-sm">';
+    html += '<thead><tr><th>Время</th><th>Клиент</th><th>Услуга</th><th>Телефон</th><th>Действия</th></tr></thead><tbody>';
+    bookings.forEach(b => {
+        html += `<tr>
+                    <td data-label="Время">${b.time}</td>
+                    <td data-label="Клиент">${escapeHtml(b.client_name)}</td>
+                    <td data-label="Услуга">${b.category_name ? escapeHtml(b.category_name + '. ') : ''}${escapeHtml(b.service_name)}</td>
+                    <td data-label="Телефон">${b.phone || '—'}</td>
+                    <td data-label="Действия">
+                        <div class="action-icons">
+                            <button class="btn btn-sm" onclick="editBookingInModal(${b.id})" title="Редактировать">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm" onclick="deleteBooking(${b.id}, '${escapeHtml(b.client_name)}', '${b.time}')" title="Удалить">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>`;
+    });
+    html += '</tbody></table></div>';
+    container.innerHTML = html;
+}
+
+// ============================================================
+// ДОПОЛНИТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ КАЛЕНДАРЯ
+// ============================================================
+function addExtraBreakField(s = '', e = '') {
+    const c = document.getElementById('extraBreaksContainer');
+    const d = document.createElement('div');
+    d.className = 'break-item row g-2 mb-2';
+    d.innerHTML = `
+        <div class="col-5"><input type="time" class="form-control form-control-sm break-start" value="${s}" placeholder="Начало"></div>
+        <div class="col-5"><input type="time" class="form-control form-control-sm break-end" value="${e}" placeholder="Конец"></div>
+        <div class="col-2"><button type="button" class="btn btn-sm btn-outline-danger w-100 remove-break" onclick="this.closest('.break-item').remove()"><i class="fas fa-trash"></i></button></div>
+    `;
+    c.appendChild(d);
+}
+
+
+
+function makeDayOff() {
+    showConfirm('Сделать этот день выходным?', (confirmed) => {
+        if (confirmed) {
+            fetch('/api/days-off/add/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value },
+                body: JSON.stringify({ date: currentSelectedDate, reason: 'Выходной' })
+            }).then(r => r.json()).then(d => { if (d.success) { bootstrap.Modal.getInstance(document.getElementById('dayModal')).hide(); loadCalendar(); } });
+        }
+    });
+}
+
+
+
+// ============================================================
+// МНОЖЕСТВЕННЫЙ ВЫБОР УСЛУГ ДЛЯ МАСТЕРА (календарь)
+// ============================================================
+let masterSelectedServices = [];
+let masterSelectedDate = null;
+let masterSelectedTime = null;
+
+function masterAddService(serviceId, serviceName, serviceDuration, servicePrice) {
+    if (masterSelectedServices.some(s => s.id === serviceId)) {
+        showAlert('Эта услуга уже добавлена', 'Ошибка');
+        return;
+    }
+    
+    masterSelectedServices.push({
+        id: serviceId,
+        name: serviceName,
+        duration: serviceDuration,
+        price: servicePrice
+    });
+    
+    masterUpdateServiceCards();  // ← ДОБАВИТЬ ЭТУ СТРОКУ
+    masterLoadDatesForServices();
+
+    updateAddBookingSummary();
+}
+
+// function masterRemoveService(index) {
+//     masterSelectedServices.splice(index, 1);
+//     masterUpdateServiceCards();  // ← ДОБАВИТЬ ЭТУ СТРОКУ
+    
+//     if (masterSelectedServices.length === 0) {
+//         document.getElementById('add_dates_container').style.display = 'none';
+//         document.getElementById('add_times_container').style.display = 'none';
+//         masterSelectedDate = null;
+//         masterSelectedTime = null;
+//     } else {
+//         masterLoadDatesForServices();
+//     }
+// }
+
+function masterRemoveService(index) {
+    masterSelectedServices.splice(index, 1);
+    masterUpdateServiceCards();
+
+    if (masterSelectedServices.length === 0) {
+        document.getElementById('add_dates_container').style.display = 'none';
+        document.getElementById('add_times_container').style.display = 'none';
+        masterSelectedDate = null;
+        masterSelectedTime = null;
+
+        // Скрываем форму и сводку
+        document.getElementById('addBookingForm').style.display = 'none';
+        updateAddBookingSummary();
+    } else {
+        masterLoadDatesForServices();
+        updateAddBookingSummary();
+    }
+}
+
+function masterClearServices() {
+    masterSelectedServices = [];
+    masterUpdateServiceCards();
+
+    const datesContainer = document.getElementById('add_dates_container');
+    if (datesContainer) datesContainer.style.display = 'none';
+
+    const timesContainer = document.getElementById('add_times_container');
+    if (timesContainer) timesContainer.style.display = 'none';
+
+    const form = document.getElementById('addBookingForm');
+    if (form) form.style.display = 'none';
+
+    const saveBtn = document.getElementById('add-booking-save-btn');
+    if (saveBtn) saveBtn.style.display = 'none';
+
+    updateAddBookingSummary();
+
+    masterSelectedDate = null;
+    masterSelectedTime = null;
+}
+
+// Добавьте эту функцию:
+function masterUpdateServiceCards() {
+    // Снимаем выделение со всех карточек
+    document.querySelectorAll('#add_services_list .service-card').forEach(card => {
+        card.classList.remove('border-pink', 'border-2', 'selected');
+        const existingClose = card.querySelector('.service-close-btn');
+        if (existingClose) existingClose.remove();
+    });
+    
+    // Добавляем выделение и крестики для выбранных услуг
+    masterSelectedServices.forEach(service => {
+        const cards = document.querySelectorAll(`#add_services_list .service-card[data-service-id="${service.id}"]`);
+        cards.forEach(card => {
+            card.classList.add('border-pink', 'border-2', 'selected');
+            card.style.position = 'relative';
+            
+            if (!card.querySelector('.service-close-btn')) {
+                const closeBtn = document.createElement('button');
+                closeBtn.className = 'service-close-btn';
+                closeBtn.innerHTML = '<i class="fas fa-times"></i>';
+                closeBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    const index = masterSelectedServices.findIndex(s => s.id === service.id);
+                    if (index !== -1) masterRemoveService(index);
+                };
+                card.appendChild(closeBtn);
+            }
+        });
+    });
+}
+
+function masterLoadDatesForServices() {
+    if (masterSelectedServices.length === 0) return;
+    
+    const totalDuration = masterSelectedServices.reduce((sum, s) => sum + s.duration, 0);
+    const container = document.getElementById('add_dates_list');
+    const datesContainer = document.getElementById('add_dates_container');
+    
+    container.innerHTML = '<div class="col-12 text-center"><div class="spinner-border spinner-border-sm"></div></div>';
+    datesContainer.style.display = 'block';
+    document.getElementById('add_times_container').style.display = 'none';
+    
+    fetch(`/api/${editCurrentSlug}/dates/?total_duration=${totalDuration}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.dates && data.dates.length > 0) {
+                let html = '';
+                data.dates.forEach(item => {
+                    const isSelected = masterSelectedDate === item.date;
+                    html += `
+                        <div class="col-4">
+                            <div class="card date-card text-center ${isSelected ? 'border-pink' : ''}" 
+                                data-date="${item.date}" onclick="masterSelectDate('${item.date}', this)">
+                                <div class="card-body py-1">
+                                    <div class="small">${item.day_of_week}</div>
+                                    <div class="fw-bold small">${item.display}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+                
+                // ✅ АВТОМАТИЧЕСКИ ВЫБИРАЕМ ДАТУ И ЗАГРУЖАЕМ СЛОТЫ
+                if (masterSelectedDate) {
+                    const dateCard = document.querySelector(`#add_dates_list .date-card[data-date="${masterSelectedDate}"]`);
+                    if (dateCard) {
+                        // Небольшая задержка, чтобы DOM обновился
+                        setTimeout(() => {
+                            masterSelectDate(masterSelectedDate, dateCard);
+                        }, 100);
+                    }
+                }
+                
+            } else {
+                container.innerHTML = '<div class="col-12 text-center text-muted">Нет доступных дат</div>';
+            }
+        })
+        .catch(error => {
+            console.error('Ошибка:', error);
+            container.innerHTML = '<div class="col-12 text-center text-danger">Ошибка загрузки дат</div>';
+        });
+}
+
+function masterSelectDate(date, element) {
+    document.querySelectorAll('#add_dates_list .date-card').forEach(card => {
+        card.classList.remove('border-pink');
+    });
+    element.classList.add('border-pink');
+    masterSelectedDate = date;
+    masterLoadSlotsForDate();  // ← ЭТА СТРОЧКА ДОЛЖНА БЫТЬ
+}
+
+function masterLoadSlotsForDate() {
+    const totalDuration = masterSelectedServices.reduce((sum, s) => sum + s.duration, 0);
+    const container = document.getElementById('add_times_list');
+    const timesContainer = document.getElementById('add_times_container');
+    
+    container.innerHTML = '<div class="col-12 text-center"><div class="spinner-border spinner-border-sm"></div></div>';
+    timesContainer.style.display = 'block';
+    
+    fetch(`/api/${editCurrentSlug}/slots/?total_duration=${totalDuration}&date=${masterSelectedDate}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.slots && data.slots.length > 0) {
+                let html = '';
+                data.slots.forEach(slot => {
+                    const isSelected = masterSelectedTime === slot.start;
+                    html += `
+                        <div class="col-md-2 col-3">
+                            <div class="card slot-card text-center ${isSelected ? 'border-pink' : ''}" 
+                                data-time="${slot.start}" onclick="masterSelectTime('${slot.start}', this)">
+                                <div class="card-body py-1">${slot.start}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            } else {
+                container.innerHTML = '<div class="col-12 text-center text-muted">Нет свободного времени</div>';
+            }
+        })
+        .catch(error => {
+            console.error('Ошибка:', error);
+            container.innerHTML = '<div class="col-12 text-center text-danger">Ошибка загрузки времени</div>';
+        });
+}
+
+// function masterSelectTime(time, element) {
+//     document.querySelectorAll('#add_times_list .slot-card').forEach(card => {
+//         card.classList.remove('border-pink', 'bg-light');
+//     });
+//     element.classList.add('border-pink', 'bg-light');
+//     masterSelectedTime = time;
+// }
+
+function masterSelectTime(time, element) {
+    document.querySelectorAll('#add_times_list .slot-card').forEach(card => {
+        card.classList.remove('border-pink', 'bg-light');
+    });
+    element.classList.add('border-pink', 'bg-light');
+    masterSelectedTime = time;
+
+    // Показываем форму и сводку
+    document.getElementById('addBookingForm').style.display = 'block';
+    updateAddBookingSummary();
+}
+
+function updateAddBookingSummary() {
+    const summaryContainer = document.getElementById('add-booking-summary');
+    const servicesContainer = document.getElementById('add-booking-summary-services');
+    const dateElement = document.getElementById('add-booking-summary-date');
+    const timeElement = document.getElementById('add-booking-summary-time');
+    const totalElement = document.getElementById('add-booking-summary-total');
+
+    if (!summaryContainer) return;
+
+    const services = masterSelectedServices;
+
+    if (services.length === 0 || !masterSelectedDate || !masterSelectedTime) {
+        summaryContainer.style.display = 'none';
+        return;
+    }
+
+    summaryContainer.style.display = 'block';
+
+    // Услуги
+    let servicesHtml = '';
+    services.forEach((service, index) => {
+        servicesHtml += `
+            <div class="booking-summary-service">
+                <span class="service-name">${escapeHtml(service.name)}</span>
+                <div class="service-meta">
+                    <span>${service.duration} мин</span>
+                    <span>${service.price} ₽</span>
+                    <button class="remove-service-btn" onclick="masterRemoveService(${index})" title="Удалить">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+    servicesContainer.innerHTML = servicesHtml;
+
+    // Дата
+    const dateObj = new Date(masterSelectedDate);
+    const monthNames = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+                        'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+    dateElement.textContent = `${dateObj.getDate()} ${monthNames[dateObj.getMonth()]} ${dateObj.getFullYear()}`;
+    timeElement.textContent = masterSelectedTime;
+
+    // Итого
+    const totalDuration = services.reduce((sum, s) => sum + s.duration, 0);
+    const totalPrice = services.reduce((sum, s) => sum + s.price, 0);
+    totalElement.textContent = `${totalDuration} мин / ${totalPrice} ₽`;
+}
+
+function saveMultipleBooking() {
+    const clientName = document.getElementById('add_client_name').value.trim();
+    let clientPhone = document.getElementById('add_client_phone').value.trim();
+    clientPhone = clientPhone.replace(/\D/g, '');
+    if (clientPhone.length === 10) clientPhone = '7' + clientPhone;
+    const comment = document.getElementById('add_comment').value;
+    // const force = document.getElementById('add_force_booking').checked;
+    const force = false;
+    
+    if (!clientName || !clientPhone || clientPhone.length !== 11) {
+        showAlert('Заполните имя и телефон (11 цифр)', 'Ошибка');
+        return;
+    }
+    
+    if (masterSelectedServices.length === 0) {
+        showAlert('Выберите хотя бы одну услугу', 'Ошибка');
+        return;
+    }
+    
+    if (!masterSelectedDate || !masterSelectedTime) {
+        showAlert('Выберите дату и время', 'Ошибка');
+        return;
+    }
+    
+    const serviceIds = masterSelectedServices.map(s => s.id);
+    
+    const saveBtn = event.target;
+    const originalText = saveBtn.innerHTML;
+    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Добавление...';
+    saveBtn.disabled = true;
+    
+    fetch(`/api/${editCurrentSlug}/book-multiple/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify({
+            services: serviceIds,
+            client_name: clientName,
+            client_phone: clientPhone,
+            date: masterSelectedDate,
+            start_time: masterSelectedTime,
+            comment: comment,
+            // force: force,
+            created_by: 'master'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('add_client_name').value = '';
+            document.getElementById('add_client_phone').value = '';
+            document.getElementById('add_comment').value = '';
+            // document.getElementById('add_force_booking').checked = false;
+            
+            masterClearServices();
+            masterSelectedDate = null;
+            masterSelectedTime = null;
+            
+            backToDayView();
+            loadCalendar();
+            loadBookings(1, false);
+            if (currentSelectedDate) {
+                fetch(`/api/bookings/by-date/?date=${currentSelectedDate}`)
+                    .then(r => r.json())
+                    .then(data => renderDayBookings(data.bookings));
+            }
+            showAlert('✅ Запись добавлена!', 'Готово');
+        } else {
+            showAlert('Ошибка: ' + data.error, 'Ошибка');
+        }
+    })
+    .catch(error => {
+        console.error('Ошибка:', error);
+        showAlert('Произошла ошибка', 'Ошибка');
+    })
+    .finally(() => {
+        saveBtn.innerHTML = originalText;
+        saveBtn.disabled = false;
+    });
+}
+
+
+
+// ============================================================
+// ПАНЕЛЬ ДОБАВЛЕНИЯ ЗАПИСИ
+// ============================================================
+let addSelectedServiceId = null;
+let addSelectedDate = null;
+let addSelectedTime = null;
+let editCurrentSlug = "{{ master.public_slug }}";
+
+function showAddBookingPanel() {
+    document.getElementById('viewDayPanel').style.display = 'none';
+    document.getElementById('addBookingPanel').style.display = 'block';
+    // document.getElementById('dayModalTitle').innerText = 'Добавление записи';
+    document.getElementById('dayModalTitle').innerHTML = '<i class="fas fa-plus me-2" style="color: var(--primary);"></i> Добавление записи';
+    
+    // Очищаем предыдущие выборы
+    masterSelectedDate = null;
+    masterSelectedTime = null;
+    masterClearServices();
+    
+    // Устанавливаем текущую дату (дата из календаря, на которую кликнули)
+    if (currentSelectedDate) {
+        masterSelectedDate = currentSelectedDate;
+    }
+    
+    loadAddServices();
+    initPhoneMasks();
+    
+    // Если дата уже выбрана, сразу загружаем услуги
+    if (masterSelectedDate) {
+        // Немного ждём, пока загрузятся услуги
+        setTimeout(() => {
+            if (masterSelectedServices.length > 0) {
+                masterLoadDatesForServices();
+                // После загрузки дат выделяем текущую
+                setTimeout(() => {
+                    highlightCurrentDate();
+                }, 500);
+            }
+        }, 500);
+    }
+}
+
+
+function highlightCurrentDate() {
+    if (!masterSelectedDate) return;
+    
+    const dateCards = document.querySelectorAll('#add_dates_list .date-card');
+    dateCards.forEach(card => {
+        if (card.getAttribute('data-date') === masterSelectedDate) {
+            card.classList.add('border-pink');
+            // ✅ Автоматически загружаем слоты для этой даты
+            masterSelectDate(masterSelectedDate, card);
+        }
+    });
+}
+
+
+function backToDayView() {
+    document.getElementById('viewDayPanel').style.display = 'block';
+    document.getElementById('addBookingPanel').style.display = 'none';
+    // document.getElementById('dayModalTitle').innerText = 'Редактирование дня';
+    document.getElementById('dayModalTitle').innerHTML = '<i class="far fa-calendar-alt me-2" style="color: var(--primary);"></i> Редактирование дня';
+    
+    addSelectedServiceId = null;
+    addSelectedDate = currentSelectedDate;
+    addSelectedTime = null;
+    
+    if (currentSelectedDate) {
+        fetch(`/api/bookings/by-date/?date=${currentSelectedDate}`)
+            .then(r => r.json())
+            .then(data => renderDayBookings(data.bookings));
+    }
+}
+
+
+function loadAddServices() {
+    fetch('/api/categories/')
+        .then(response => response.json())
+        .then(data => {
+            const anchorsContainer = document.getElementById('category-anchors');
+            let anchorsHtml = '';
+            let hasCategories = false;
+
+            // Собираем якоря
+            for (const cat of data.categories) {
+                if (cat.services.length === 0) continue;
+                const catId = 'add-cat-' + cat.id;
+                anchorsHtml += `
+                    <a class="category-anchor" onclick="scrollToAddCategory('${catId}')">
+                        ${escapeHtml(cat.name)}
+                    </a>
+                `;
+                hasCategories = true;
+            }
+
+            if (hasCategories) {
+                anchorsContainer.style.display = 'flex';
+                anchorsContainer.innerHTML = anchorsHtml;
+            } else {
+                anchorsContainer.style.display = 'none';
+            }
+
+            // Рендерим услуги с раскрывающимися категориями
+            let html = '';
+            for (const cat of data.categories) {
+                if (cat.services.length === 0) continue;
+                const catId = 'add-cat-' + cat.id;
+
+                html += `
+                    <div class="public-category-group" id="${catId}" data-category-id="${cat.id}">
+                        <div class="public-category-title" onclick="toggleAddCategory(${cat.id})" style="cursor: pointer;">
+                            <i class="fas fa-chevron-down me-1 add-cat-icon" id="add-cat-${cat.id}-icon" style="font-size: 10px; transition: transform 0.2s;"></i>
+                            <i class="fas fa-folder-open me-1" style="color: var(--primary); font-size: 0.7rem;"></i>
+                            ${escapeHtml(cat.name)}
+                            <span class="badge">${cat.services.length}</span>
+                        </div>
+                        <div class="row" id="add-cat-${cat.id}-body">
+                `;
+                for (const service of cat.services) {
+                    html += renderAddServiceCard(service);
+                }
+                html += `</div></div>`;
+            }
+
+            // Услуги без категории
+            if (data.uncategorized.length > 0) {
+                html += `
+                    <div class="public-category-group">
+                        <div class="public-category-title" style="cursor: default;">
+                            <i class="fas fa-tag me-1" style="color: var(--gray-400); font-size: 0.7rem;"></i>
+                            Без категории
+                            <span class="badge">${data.uncategorized.length}</span>
+                        </div>
+                        <div class="row">
+                `;
+                for (const service of data.uncategorized) {
+                    html += renderAddServiceCard(service);
+                }
+                html += `</div></div>`;
+            }
+
+            document.getElementById('add_services_list').innerHTML = html;
+        });
+}
+
+// Карточка услуги (для модалки дня)
+function renderAddServiceCard(service) {
+    return `
+        <div class="col-md-4 mb-2">
+            <div class="card service-card" 
+                 data-service-id="${service.id}"
+                 data-service-duration="${service.duration}"
+                 data-service-price="${service.price}"
+                 onclick="masterAddService(${service.id}, '${escapeHtml(service.name)}', ${service.duration}, ${service.price})">
+                <div class="card-body p-2">
+                    <div class="fw-bold small">${escapeHtml(service.name)}</div>
+                    <div class="small text-muted">${service.duration} мин / ${service.price} ₽</div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Сворачивание/разворачивание категории в модалке дня
+function toggleAddCategory(catId) {
+    const body = document.getElementById(`add-cat-${catId}-body`);
+    const icon = document.getElementById(`add-cat-${catId}-icon`);
+
+    if (!body) return;
+
+    if (body.style.display === 'none') {
+        body.style.display = 'flex';
+        if (icon) icon.style.transform = 'rotate(0deg)';
+    } else {
+        body.style.display = 'none';
+        if (icon) icon.style.transform = 'rotate(-90deg)';
+    }
+}
+
+// Скролл к категории (модалка дня)
+function scrollToAddCategory(categoryId) {
+    const element = document.getElementById(categoryId);
+    if (!element) return;
+
+    // Если категория свёрнута — раскрываем её
+    const catId = categoryId.replace('add-cat-', '');
+    const body = document.getElementById(`add-cat-${catId}-body`);
+    const icon = document.getElementById(`add-cat-${catId}-icon`);
+
+    if (body && body.style.display === 'none') {
+        body.style.display = 'flex';
+        if (icon) icon.style.transform = 'rotate(0deg)';
+    }
+
+    // Ищем ближайший скроллируемый родитель
+    let parent = element.parentElement;
+    let scrollableParent = null;
+
+    while (parent) {
+        const style = window.getComputedStyle(parent);
+        const overflowY = style.overflowY;
+
+        if (
+            (overflowY === 'auto' || overflowY === 'scroll') &&
+            parent.scrollHeight > parent.clientHeight
+        ) {
+            scrollableParent = parent;
+            break;
+        }
+        parent = parent.parentElement;
+    }
+
+    if (scrollableParent) {
+        const elementTop = element.offsetTop;
+        const parentTop = scrollableParent.offsetTop;
+        const scrollTop = elementTop - parentTop - 20;
+
+        scrollableParent.scrollTo({
+            top: scrollTop,
+            behavior: 'smooth'
+        });
+    } else {
+        const offset = 80;
+        const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+        window.scrollTo({
+            top: elementPosition - offset,
+            behavior: 'smooth'
+        });
+    }
+}
+
+function selectAddService(element, serviceId) {
+    document.querySelectorAll('#add_services_list .service-card').forEach(card => {
+        card.classList.remove('border-pink');
+    });
+    element.classList.add('border-pink');
+    addSelectedServiceId = serviceId;
+    loadAddDatesForService(serviceId);
+}
+
+function loadAddDatesForService(serviceId) {
+    fetch(`/api/${editCurrentSlug}/dates/?service_id=${serviceId}`)
+        .then(response => response.json())
+        .then(data => {
+            const container = document.getElementById('add_dates_list');
+            if (data.dates.length === 0) {
+                container.innerHTML = '<p class="text-muted">Нет доступных дат</p>';
+                document.getElementById('add_dates_container').style.display = 'block';
+                return;
+            }
+            let html = '<div class="row">';
+            data.dates.forEach(date => {
+                const isSelected = addSelectedDate === date.date;
+                html += `
+                    <div class="col-md-3 col-4 mb-2">
+                        <div class="card date-card text-center ${isSelected ? 'border-pink' : ''}" data-date="${date.date}" onclick="selectAddDate(this, '${date.date}')">
+                            <div class="card-body py-1">
+                                <div class="small">${date.day_of_week}</div>
+                                <div class="fw-bold small">${date.display}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+            document.getElementById('add_dates_container').style.display = 'block';
+            if (addSelectedDate) {
+                loadAddSlotsForDate(serviceId, addSelectedDate);
+            }
+        });
+}
+
+function selectAddDate(element, date) {
+    document.querySelectorAll('#add_dates_list .date-card').forEach(card => {
+        card.classList.remove('border-pink');
+    });
+    element.classList.add('border-pink');
+    addSelectedDate = date;
+    loadAddSlotsForDate(addSelectedServiceId, date);
+}
+
+function loadAddSlotsForDate(serviceId, date) {
+    fetch(`/api/${editCurrentSlug}/slots/?service_id=${serviceId}&date=${date}`)
+        .then(response => response.json())
+        .then(data => {
+            const container = document.getElementById('add_times_list');
+            if (data.slots.length === 0) {
+                container.innerHTML = '<p class="text-muted">Нет свободного времени</p>';
+                document.getElementById('add_times_container').style.display = 'block';
+                return;
+            }
+            let html = '<div class="row">';
+            data.slots.forEach(slot => {
+                const isSelected = addSelectedTime === slot.start;
+                html += `
+                    <div class="col-md-2 col-3 mb-2">
+                        <div class="card slot-card text-center ${isSelected ? 'border-pink' : ''}" data-time="${slot.start}" onclick="selectAddTime(this, '${slot.start}')">
+                            <div class="card-body py-1">${slot.start}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+            document.getElementById('add_times_container').style.display = 'block';
+        });
+}
+
+function selectAddTime(element, time) {
+    document.querySelectorAll('#add_times_list .slot-card').forEach(card => {
+        card.classList.remove('border-pink');
+    });
+    element.classList.add('border-pink');
+    addSelectedTime = time;
+}
+
+function saveNewBooking() {
+    const clientName = document.getElementById('add_client_name').value.trim();
+    let clientPhone = document.getElementById('add_client_phone').value.trim();
+    clientPhone = clientPhone.replace(/\D/g, '');
+    if (clientPhone.length === 11 && clientPhone[0] === '7') {
+        clientPhone = clientPhone;
+    } else if (clientPhone.length === 10) {
+        clientPhone = '7' + clientPhone;
+    }
+    const comment = document.getElementById('add_comment').value;
+    // const force = document.getElementById('add_force_booking').checked;
+    const force = false;
+    
+    if (!clientName || !clientPhone || clientPhone.length !== 11 || !addSelectedServiceId || !addSelectedDate || !addSelectedTime) {
+        showAlert('Заполните все поля правильно. Телефон должен содержать 11 цифр.', 'Ошибка');
+        return;
+    }
+    
+    const saveBtn = event.target;
+    const originalText = saveBtn.innerHTML;
+    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Добавление...';
+    saveBtn.disabled = true;
+
+
+    fetch(`/api/${editCurrentSlug}/book/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify({
+            service_id: addSelectedServiceId,
+            client_name: clientName,
+            client_phone: clientPhone,
+            date: addSelectedDate,
+            time: addSelectedTime,
+            comment: comment,
+            force: force,
+            created_by: 'master'  // ← ДОБАВИТЬ ЭТУ СТРОКУ
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('add_client_name').value = '';
+            document.getElementById('add_client_phone').value = '';
+            document.getElementById('add_comment').value = '';
+            // document.getElementById('add_force_booking').checked = false;
+            addSelectedServiceId = null;
+            addSelectedTime = null;
+            
+            backToDayView();
+            loadCalendar();
+            loadBookings(1, false);
+            if (currentSelectedDate) {
+                fetch(`/api/bookings/by-date/?date=${currentSelectedDate}`)
+                    .then(r => r.json())
+                    .then(data => renderDayBookings(data.bookings));
+            }
+            showAlert('✅ Запись добавлена!', 'Готово');
+        } else {
+            showAlert('Ошибка: ' + data.error, 'Ошибка');
+        }
+    })
+    .catch(error => {
+        showAlert('Произошла ошибка', 'Ошибка');
+    })
+    .finally(() => {
+        saveBtn.innerHTML = originalText;
+        saveBtn.disabled = false;
+    });
+}
+
+// ============================================================
+// РЕДАКТИРОВАНИЕ ЗАПИСЕЙ (отдельное модальное окно)
+// ============================================================
+let editSelectedServiceId = null;
+let editSelectedDate = null;
+let editSelectedTime = null;
+let editOriginalBookingId = null;
+
+function editBookingInModal(bookingId) {
+    editOriginalBookingId = bookingId;
+    fetch(`/api/booking/${bookingId}/get/`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('edit_booking_id').value = data.id;
+            document.getElementById('edit_client_name').value = data.client_name;
+            document.getElementById('edit_client_phone').value = data.client_phone;
+            // Убрали комментарий
+            editSelectedDate = data.date;
+            editSelectedTime = data.time;
+            editSelectedServiceId = data.service_id;
+            
+            loadEditServicesForModal(data.service_id, data.date, data.time);
+            initPhoneMasks();
+        });
+    
+    new bootstrap.Modal(document.getElementById('editBookingModal')).show();
+}
+
+function loadEditServicesForModal(selectedServiceId, selectedDate, selectedTime) {
+    fetch('/api/categories/')
+        .then(response => response.json())
+        .then(data => {
+            editSelectedServiceId = selectedServiceId;
+            editSelectedDate = selectedDate;
+            editSelectedTime = selectedTime;
+            
+            let html = '<div class="row">';
+            
+            for (const cat of data.categories) {
+                if (cat.services.length === 0) continue;
+                html += `<div class="col-12 mb-2"><strong>${escapeHtml(cat.name)}</strong></div><div class="row mb-3">`;
+                cat.services.forEach(service => {
+                    const isSelected = Number(service.id) === Number(selectedServiceId);
+                    
+                    html += `
+                        <div class="col-md-4 mb-2">
+                            <div class="card service-card ${isSelected ? 'border-pink' : ''}" 
+                                 data-service-id="${service.id}" 
+                                 data-service-duration="${service.duration}" 
+                                 onclick="selectEditServiceModal(this, ${service.id})">
+                                <div class="card-body p-2">
+                                    <div class="fw-bold small">${escapeHtml(service.name)}</div>
+                                    <div class="small text-muted">${service.duration} мин / ${service.price} ₽</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            }
+            if (data.uncategorized.length > 0) {
+                html += `<div class="col-12 mb-2"><strong>Без категории</strong></div><div class="row mb-3">`;
+                data.uncategorized.forEach(service => {
+                    const isSelected = Number(service.id) === Number(selectedServiceId);
+                    html += `
+                        <div class="col-md-4 mb-2">
+                            <div class="card service-card ${isSelected ? 'border-pink' : ''}" 
+                                 data-service-id="${service.id}" 
+                                 data-service-duration="${service.duration}" 
+                                 onclick="selectEditServiceModal(this, ${service.id})">
+                                <div class="card-body p-2">
+                                    <div class="fw-bold small">${escapeHtml(service.name)}</div>
+                                    <div class="small text-muted">${service.duration} мин / ${service.price} ₽</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            }
+            html += '</div>';
+            document.getElementById('edit_services_list_modal').innerHTML = html;
+            
+            // ===== УБРАЛИ АВТОМАТИЧЕСКИЙ СКРОЛЛ =====
+            // setTimeout(() => {
+            //     const selectedService = document.querySelector('#edit_services_list_modal .service-card.border-pink');
+            //     if (selectedService) {
+            //         selectedService.scrollIntoView({
+            //             behavior: 'smooth',
+            //             block: 'center',
+            //             inline: 'nearest'
+            //         });
+            //     }
+            // }, 300);
+            
+            if (selectedServiceId) {
+                loadEditDatesForServiceModal(selectedServiceId, selectedDate);
+            }
+        })
+        .catch(error => {
+            console.error('❌ Ошибка загрузки услуг:', error);
+        });
+}
+
+function selectEditServiceModal(element, serviceId) {
+    document.querySelectorAll('#edit_services_list_modal .service-card').forEach(card => {
+        card.classList.remove('border-pink');
+    });
+    element.classList.add('border-pink');
+    editSelectedServiceId = serviceId;
+    
+    // Обновляем список дат
+    loadEditDatesForServiceModal(serviceId, editSelectedDate);
+}
+
+function loadEditDatesForServiceModal(serviceId, selectedDate) {
+    fetch(`/api/${editCurrentSlug}/dates/?service_id=${serviceId}`)
+        .then(response => response.json())
+        .then(data => {
+            const container = document.getElementById('edit_dates_list_modal');
+            if (data.dates.length === 0) {
+                container.innerHTML = '<p class="text-muted">Нет доступных дат</p>';
+                document.getElementById('edit_dates_container_modal').style.display = 'block';
+                return;
+            }
+            let html = '<div class="row">';
+            data.dates.forEach(date => {
+                const isSelected = date.date === selectedDate;
+                html += `
+                    <div class="col-md-3 col-4 mb-2">
+                        <div class="card date-card text-center ${isSelected ? 'border-pink' : ''}" data-date="${date.date}" onclick="selectEditDateModal(this, '${date.date}')">
+                            <div class="card-body py-1">
+                                <div class="small">${date.day_of_week}</div>
+                                <div class="fw-bold small">${date.display}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+            document.getElementById('edit_dates_container_modal').style.display = 'block';
+            if (selectedDate) {
+                loadEditSlotsForDateModal(serviceId, selectedDate, editSelectedTime);
+            }
+        });
+}
+
+function selectEditDateModal(element, date) {
+    document.querySelectorAll('#edit_dates_list_modal .date-card').forEach(card => {
+        card.classList.remove('border-pink');
+    });
+    element.classList.add('border-pink');
+    editSelectedDate = date;
+    loadEditSlotsForDateModal(editSelectedServiceId, date, null);
+}
+
+function loadEditSlotsForDateModal(serviceId, date, selectedTime) {
+    const container = document.getElementById('edit_times_list_modal');
+    container.innerHTML = '<div class="col-12 text-center"><div class="spinner-border spinner-border-sm"></div></div>';
+    document.getElementById('edit_times_container_modal').style.display = 'block';
+    
+    let url = `/api/${editCurrentSlug}/slots/?service_id=${serviceId}&date=${date}`;
+    if (editOriginalBookingId) {
+        url += `&exclude_booking_id=${editOriginalBookingId}&original_booking_id=${editOriginalBookingId}`;
+    }
+    
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            if (data.slots && data.slots.length > 0) {
+                let html = '<div class="row">';
+                data.slots.forEach(slot => {
+                    const slotTime = slot.start.length > 5 ? slot.start.slice(0, 5) : slot.start;
+                    const selectedTimeShort = selectedTime && selectedTime.length > 5 ? selectedTime.slice(0, 5) : selectedTime;
+                    const isSelected = slotTime === selectedTimeShort;
+                    
+                    html += `
+                        <div class="col-md-2 col-3 mb-2">
+                            <div class="card slot-card text-center ${isSelected ? 'border-pink bg-light' : ''}" 
+                                 data-time="${slotTime}" 
+                                 onclick="selectEditTimeModal(this, '${slotTime}')">
+                                <div class="card-body py-1">${slotTime}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                container.innerHTML = html;
+            } else {
+                container.innerHTML = '<p class="text-muted text-center">Нет свободного времени в этот день</p>';
+            }
+        })
+        .catch(error => {
+            console.error('❌ Ошибка загрузки слотов:', error);
+            container.innerHTML = '<p class="text-danger text-center">Ошибка загрузки времени</p>';
+        });
+}
+
+function selectEditTimeModal(element, time) {
+    document.querySelectorAll('#edit_times_list_modal .slot-card').forEach(card => {
+        card.classList.remove('border-pink');
+    });
+    element.classList.add('border-pink');
+    editSelectedTime = time;
+}
+
+function saveEditedBooking() {
+    const bookingId = document.getElementById('edit_booking_id').value;
+    const clientName = document.getElementById('edit_client_name').value.trim();
+    let clientPhone = document.getElementById('edit_client_phone').value.trim();
+    clientPhone = clientPhone.replace(/\D/g, '');
+    if (clientPhone.length === 10) clientPhone = '7' + clientPhone;
+    
+    if (!clientName || !clientPhone || clientPhone.length !== 11 || !editSelectedServiceId || !editSelectedDate || !editSelectedTime) {
+        showAlert('Заполните все поля правильно. Телефон должен содержать 11 цифр.', 'Ошибка');
+        return;
+    }
+    
+    const saveBtn = event.target;
+    const originalText = saveBtn.innerHTML;
+    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Сохранение...';
+    saveBtn.disabled = true;
+    
+    fetch(`/api/booking/${bookingId}/update/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify({
+            service_id: editSelectedServiceId,
+            client_name: clientName,
+            client_phone: clientPhone,
+            date: editSelectedDate,
+            time: editSelectedTime
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            bootstrap.Modal.getInstance(document.getElementById('editBookingModal')).hide();
+            loadCalendar();
+            loadBookings(1, false);
+            if (currentSelectedDate) {
+                fetch(`/api/bookings/by-date/?date=${currentSelectedDate}`)
+                    .then(r => r.json())
+                    .then(data => renderDayBookings(data.bookings));
+            }
+            showAlert('✅ Запись обновлена!', 'Готово');
+        } else {
+            showAlert(data.error || 'Ошибка при сохранении', 'Ошибка');
+        }
+    })
+    .catch(error => {
+        showAlert('Произошла ошибка', 'Ошибка');
+    })
+    .finally(() => {
+        saveBtn.innerHTML = originalText;
+        saveBtn.disabled = false;
+    });
+}
+
+function deleteBooking(bookingId, clientName, time) {
+    showConfirm(`Удалить запись клиента "${clientName}" на ${time}?`, (confirmed) => {
+        if (confirmed) {
+            fetch(`/api/booking/${bookingId}/delete/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    loadCalendar();
+                    loadBookings(1, false);
+                    if (currentSelectedDate) {
+                        fetch(`/api/bookings/by-date/?date=${currentSelectedDate}`)
+                            .then(r => r.json())
+                            .then(data => renderDayBookings(data.bookings));
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                showAlert('Произошла ошибка при удалении', 'Ошибка');
+            });
+        }
+    });
+}
+
+
+// ============================================================
+// ЛЕГЕНДА КАЛЕНДАРЯ
+// ============================================================
+
+function toggleLegend() {
+    const content = document.getElementById('legendContent');
+    const toggle = document.getElementById('legendToggle');
+    const icon = document.getElementById('legendIcon');
+    
+    if (content.style.display === 'none') {
+        content.style.display = 'block';
+        toggle.classList.add('active');
+        icon.className = 'fas fa-times';
+        // Сбрасываем анимацию, чтобы она воспроизводилась заново
+        content.style.animation = 'none';
+        setTimeout(() => {
+            content.style.animation = 'fadeIn 0.2s ease';
+        }, 10);
+    } else {
+        content.style.display = 'none';
+        toggle.classList.remove('active');
+        icon.className = 'fas fa-info-circle';
+    }
+}
+
+// ============================================================
+// БЛИЖАЙШИЕ ЗАПИСИ (с выбором лимита 5/10/15)
+// ============================================================
+let bookingsPage = 1;
+let bookingsHasMore = true;
+let bookingsCurrentLimit = 3;
+
+function getBookingsLimit() {
+    return parseInt(document.getElementById('bookings-limit-select').value);
+}
+
+// function deleteGroupedBooking(bookingIds, clientName, time) {
+//     const ids = Array.isArray(bookingIds) ? bookingIds : JSON.parse(bookingIds);
+//     const count = ids.length;
+//     const message = count > 1 
+//         ? `Удалить ${count} записи клиента "${clientName}" на ${time}?`
+//         : `Удалить запись клиента "${clientName}" на ${time}?`;
+    
+//     showConfirm(message, (confirmed) => {
+//         if (confirmed) {
+//             let deleted = 0;
+//             let errors = 0;
+            
+//             ids.forEach(id => {
+//                 fetch(`/api/booking/${id}/delete/`, {
+//                     method: 'POST',
+//                     headers: {
+//                         'Content-Type': 'application/json',
+//                         'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+//                     }
+//                 })
+//                 .then(response => response.json())
+//                 .then(data => {
+//                     if (data.success) {
+//                         deleted++;
+//                     } else {
+//                         errors++;
+//                     }
+                    
+//                     // Если все обработаны
+//                     if (deleted + errors === ids.length) {
+//                         if (errors === 0) {
+//                             showToast(`✅ ${deleted} запись(ей) удалена`, 'success');
+//                         } else {
+//                             showToast(`⚠️ Удалено ${deleted}, ошибок ${errors}`, 'error');
+//                         }
+//                         loadCalendar();
+//                         loadBookings(1, false);
+//                         if (currentSelectedDate) {
+//                             fetch(`/api/bookings/by-date/?date=${currentSelectedDate}`)
+//                                 .then(r => r.json())
+//                                 .then(data => renderDayBookings(data.bookings));
+//                         }
+//                     }
+//                 })
+//                 .catch(error => {
+//                     console.error('Ошибка:', error);
+//                     errors++;
+//                 });
+//             });
+//         }
+//     });
+// }
+
+
+function loadBookings(p = 1, append = false) {
+    const limit = getBookingsLimit();
+    
+    fetch(`/api/bookings/?page=${p}&limit=${limit}`)
+        .then(r => r.json())
+        .then(d => {
+            if (append) {
+                const table = document.querySelector('#upcoming-bookings-table');
+                if (table) {
+                    const tbody = table.querySelector('tbody');
+                    if (tbody) {
+                        d.bookings.forEach(b => {
+                            const row = createBookingRow(b);
+                            tbody.insertAdjacentHTML('beforeend', row);
+                        });
+                    }
+                }
+            } else {
+                renderBookings(d.bookings);
+                document.getElementById('total-bookings-count').textContent = d.total;
+            }
+            
+            const total = d.total;
+            const currentLimit = getBookingsLimit();
+            const currentPageCount = d.bookings.length;
+            
+            const hasMore = total > currentLimit && currentPageCount === currentLimit;
+            
+            bookingsHasMore = hasMore;
+            bookingsPage = p;
+            bookingsCurrentLimit = currentLimit;
+            
+            const btn = document.getElementById('load-more-bookings');
+            if (btn) {
+                btn.style.display = hasMore ? 'inline-block' : 'none';
+            }
+        })
+        .catch(error => {
+            console.error('Ошибка загрузки записей:', error);
+            const container = document.getElementById('upcoming-bookings-container');
+            if (container) {
+                container.innerHTML = '<p class="text-danger text-center">Ошибка загрузки записей</p>';
+            }
+        });
+}
+
+function renderBookings(b) {
+    const c = document.getElementById('upcoming-bookings-container');
+    if (!b || b.length === 0) {
+        c.innerHTML = '<p class="text-muted mb-0">Нет предстоящих записей</p>';
+        return;
+    }
+    
+    let h = '<div class="table-responsive">';
+    h += '<table class="table" id="upcoming-bookings-table">';
+    h += '<thead>';
+    h += '<tr>';
+    h += '<th>Дата</th>';
+    h += '<th>Время</th>';
+    h += '<th>Клиент</th>';
+    h += '<th>Услуги</th>';
+    h += '<th></th>';  // ← Пустой заголовок для всех кнопок
+    h += '</tr>';
+    h += '</thead>';
+    h += '<tbody>';
+       
+    b.forEach(booking => { 
+        h += createBookingRow(booking);
+    });
+    
+    h += '</tbody>';
+    h += '</table>';
+    h += '</div>';
+    
+    c.innerHTML = h;
+}
+
+
+function createBookingRow(b) {
+    const isConfirmed = b.confirmed_by_master === true;
+    const phone = b.phone || '';
+    const cleanPhone = phone.replace(/\D/g, '');
+    const masterMaxLink = "{{ master.max_link|default:'' }}";
+    
+    // Кнопка "Связаться" с выпадающим меню
+    const contactDropdown = `
+        <div class="contact-dropdown-wrapper">
+            <button class="contact-dropdown-btn" onclick="toggleContactDropdown(this)">
+                <i class="fas fa-phone-alt"></i>
+                <span>Связаться</span>
+                <i class="fas fa-chevron-down"></i>
+            </button>
+            <div class="contact-dropdown-menu" style="display: none;">
+                <button onclick="callClient('${cleanPhone}')">
+                    <i class="fas fa-phone"></i> Позвонить
+                </button>
+                <button onclick="sendSms('${cleanPhone}')">
+                    <i class="fas fa-sms"></i> SMS
+                </button>
+                <button onclick="openTelegram('${cleanPhone}')">
+                    <i class="fab fa-telegram-plane"></i> Telegram
+                </button>
+                <button onclick="openWhatsApp('${cleanPhone}')">
+                    <i class="fab fa-whatsapp"></i> WhatsApp
+                </button>
+                <button onclick="openMax('${masterMaxLink}')" ${!masterMaxLink ? 'disabled' : ''}>
+                    <span class="max-icon">M</span> MAX
+                </button>
+            </div>
+        </div>
+    `;
+    
+    // Кнопка подтверждения
+    const confirmButton = `
+        <button class="confirm-btn ${isConfirmed ? 'confirmed' : ''}" 
+                onclick="toggleBookingConfirm(this, ${b.id})" 
+                title="${isConfirmed ? 'Запись подтверждена' : 'Подтвердить запись'}">
+            <i class="fas ${isConfirmed ? 'fa-check-circle' : 'fa-circle'}"></i>
+        </button>
+    `;
+    
+    // Все кнопки в одной строке (десктоп + мобильные)
+    const allButtons = `
+        <div class="all-buttons-row">
+            <button class="btn btn-sm" onclick="showBookingDetails(${b.id})" title="Подробности">
+                <i class="fas fa-info-circle"></i>
+            </button>
+            <button class="btn btn-sm" onclick="editBookingInModal(${b.id})" title="Редактировать">
+                <i class="fas fa-edit"></i>
+            </button>
+            <button class="btn btn-sm" onclick="deleteBooking(${b.id}, '${escapeHtml(b.client_name)}', '${b.time}')" title="Удалить">
+                <i class="fas fa-trash"></i>
+            </button>
+            ${contactDropdown}
+            ${confirmButton}
+        </div>
+    `;
+    
+    return '<tr data-booking-id="' + b.id + '">' +
+        '<td data-label="Дата">' + escapeHtml(b.date) + '</td>' +
+        '<td data-label="Время">' + escapeHtml(b.time) + '</td>' +
+        '<td data-label="Клиент">' + escapeHtml(b.client_name) + '</td>' +
+        '<td data-label="Услуги">' + escapeHtml(b.service_name) + '</td>' +
+        '<td data-label="" class="actions-cell">' + allButtons + '</td>' +
+        '</tr>';
+}
+
+// ============================================================
+// ВЫПАДАЮЩЕЕ МЕНЮ "СВЯЗАТЬСЯ"
+// ============================================================
+
+function toggleContactDropdown(btn) {
+    // Находим ближайший wrapper
+    const wrapper = btn.closest('.contact-dropdown-wrapper');
+    if (!wrapper) return;
+    
+    const menu = wrapper.querySelector('.contact-dropdown-menu');
+    if (!menu) return;
+    
+    const isOpen = menu.style.display === 'block';
+    
+    // Закрываем все другие меню
+    document.querySelectorAll('.contact-dropdown-menu').forEach(el => {
+        el.style.display = 'none';
+    });
+    
+    if (!isOpen) {
+        menu.style.display = 'block';
+    }
+}
+
+// Закрытие меню при клике вне его
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.contact-dropdown-wrapper')) {
+        document.querySelectorAll('.contact-dropdown-menu').forEach(el => {
+            el.style.display = 'none';
+        });
+    }
+});
+
+// ============================================================
+// СВЯЗЬ С КЛИЕНТОМ
+// ============================================================
+
+function callClient(phone) {
+    if (!phone) return;
+    window.location.href = `tel:+${phone}`;
+}
+
+function sendSms(phone) {
+    if (!phone) return;
+    window.location.href = `sms:+${phone}`;
+}
+
+function openWhatsApp(phone) {
+    if (!phone) return;
+    const cleanPhone = phone.replace(/\D/g, '');
+    window.open(`https://wa.me/${cleanPhone}`, '_blank');
+}
+
+function openTelegram(phone) {
+    if (!phone) return;
+    const cleanPhone = phone.replace(/\D/g, '');
+    const tgLink = `tg://resolve?phone=${cleanPhone}`;
+    window.location.href = tgLink;
+    setTimeout(() => {
+        if (document.hasFocus()) {
+            showAlert('💬 Telegram не установлен или не открылся.\nСвяжитесь с клиентом по телефону.', 'Подсказка');
+        }
+    }, 2000);
+}
+
+function openMax(maxLink) {
+    if (!maxLink) {
+        showAlert('⚠️ Ссылка на MAX не настроена.\nДобавьте её в настройках профиля.', 'Подсказка');
+        return;
+    }
+    window.open(maxLink, '_blank');
+}
+
+// ============================================================
+// ПОДТВЕРЖДЕНИЕ ЗАПИСИ
+// ============================================================
+
+function confirmBooking(bookingId) {
+    showConfirm('Подтвердить запись клиента?', (confirmed) => {
+        if (confirmed) {
+            fetch(`/api/booking/${bookingId}/confirm/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('✅ Запись подтверждена!', 'Готово');
+                    loadBookings(1, false);
+                    if (currentSelectedDate) {
+                        fetch(`/api/bookings/by-date/?date=${currentSelectedDate}`)
+                            .then(r => r.json())
+                            .then(data => renderDayBookings(data.bookings));
+                    }
+                } else {
+                    showAlert(data.error || 'Ошибка подтверждения', 'Ошибка');
+                }
+            })
+            .catch(() => {
+                showAlert('Произошла ошибка', 'Ошибка');
+            });
+        }
+    });
+}
+
+// ============================================================
+// ПОДТВЕРЖДЕНИЕ ЗАПИСИ (переключение)
+// ============================================================
+
+// ============================================================
+// ПОДТВЕРЖДЕНИЕ ЗАПИСИ (БЕЗ МОДАЛОК)
+// ============================================================
+
+// ============================================================
+// ПОДТВЕРЖДЕНИЕ ЗАПИСИ (ПЕРЕКЛЮЧЕНИЕ)
+// ============================================================
+
+function toggleBookingConfirm(btn, bookingId) {
+    // Определяем текущее состояние по классу кнопки
+    const isCurrentlyConfirmed = btn.classList.contains('confirmed');
+    const newStatus = !isCurrentlyConfirmed; // true = confirmed, false = pending
+    
+    // Меняем иконку сразу (оптимистичное обновление)
+    const icon = btn.querySelector('i');
+    if (newStatus) {
+        // Становимся подтвержденным (зеленая галочка)
+        btn.classList.add('confirmed');
+        icon.className = 'fas fa-check-circle';
+        btn.title = 'Запись подтверждена';
+    } else {
+        // Становимся неподтвержденным (серый круг)
+        btn.classList.remove('confirmed');
+        icon.className = 'fas fa-circle';
+        btn.title = 'Подтвердить запись';
+    }
+    
+    // Отправляем запрос на сервер
+    const action = newStatus ? 'confirm' : 'unconfirm';
+    fetch(`/api/booking/${bookingId}/${action}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (!data.success) {
+            // Если ошибка — возвращаем старый статус
+            showAlert(data.error || 'Ошибка', 'Ошибка');
+            // Возвращаем старый статус
+            if (newStatus) {
+                btn.classList.remove('confirmed');
+                icon.className = 'fas fa-circle';
+                btn.title = 'Подтвердить запись';
+            } else {
+                btn.classList.add('confirmed');
+                icon.className = 'fas fa-check-circle';
+                btn.title = 'Запись подтверждена';
+            }
+        }
+    })
+    .catch(() => {
+        // Если ошибка — возвращаем старый статус
+        showAlert('Произошла ошибка', 'Ошибка');
+        if (newStatus) {
+            btn.classList.remove('confirmed');
+            icon.className = 'fas fa-circle';
+            btn.title = 'Подтвердить запись';
+        } else {
+            btn.classList.add('confirmed');
+            icon.className = 'fas fa-check-circle';
+            btn.title = 'Запись подтверждена';
+        }
+    });
+}
+
+// ============================================================
+// МЕНЮ ВЫБОРА УСЛУГИ ДЛЯ РЕДАКТИРОВАНИЯ
+// ============================================================
+
+function showEditServicesMenu(button) {
+    // Получаем данные из кнопки
+    const bookingIds = JSON.parse(button.dataset.bookingIds);
+    const clientName = button.dataset.clientName;
+    
+    // Если только одна услуга - сразу открываем редактирование
+    if (bookingIds.length === 1) {
+        editBookingInModal(bookingIds[0]);
+        return;
+    }
+    
+    // Создаем меню выбора
+    const menu = document.createElement('div');
+    menu.className = 'edit-services-menu';
+    menu.style.cssText = `
+        position: fixed;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        padding: 8px;
+        z-index: 10000;
+        min-width: 250px;
+        max-width: 350px;
+    `;
+    
+    // Добавляем заголовок
+    const header = document.createElement('div');
+    header.className = 'menu-header';
+    header.style.cssText = `
+        padding: 8px 12px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: #374151;
+        border-bottom: 1px solid #f3f4f6;
+        margin-bottom: 4px;
+    `;
+    header.textContent = `Выберите услугу (${clientName})`;
+    menu.appendChild(header);
+    
+    // Получаем детали всех услуг в группе
+    fetch(`/api/booking/${bookingIds[0]}/services/`)
+        .then(response => response.json())
+        .then(data => {
+            if (!data.success) {
+                showAlert('Ошибка загрузки услуг', 'Ошибка');
+                return;
+            }
+            
+            // Добавляем пункты меню для каждой услуги
+            data.services.forEach((service, index) => {
+                const item = document.createElement('div');
+                item.className = 'menu-item';
+                item.style.cssText = `
+                    padding: 10px 12px;
+                    cursor: pointer;
+                    border-radius: 8px;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    transition: background 0.15s;
+                    font-size: 0.9rem;
+                `;
+                
+                // При наведении
+                item.onmouseover = () => {
+                    item.style.background = '#f3f4f6';
+                };
+                item.onmouseout = () => {
+                    item.style.background = 'transparent';
+                };
+                
+                // При клике - открываем редактирование конкретной услуги
+                item.onclick = () => {
+                    menu.remove();
+                    editBookingInModal(bookingIds[index]);
+                };
+                
+                item.innerHTML = `
+                    <span>
+                        <i class="fas fa-cut me-2" style="color: #ff85b3; font-size: 0.8rem;"></i>
+                        ${escapeHtml(service.name)}
+                    </span>
+                    <span class="badge bg-light text-dark" style="font-size: 0.7rem;">
+                        ${service.time || '—'}
+                    </span>
+                `;
+                
+                menu.appendChild(item);
+            });
+        })
+        .catch(error => {
+            console.error('Ошибка:', error);
+            showAlert('Ошибка загрузки данных', 'Ошибка');
+        });
+    
+    // Позиционируем меню рядом с кнопкой
+    const rect = button.getBoundingClientRect();
+    menu.style.left = `${Math.min(rect.left, window.innerWidth - 280)}px`;
+    menu.style.top = `${rect.bottom + 8}px`;
+    
+    // Добавляем обработчик для закрытия при клике вне меню
+    const closeMenu = (e) => {
+        if (!menu.contains(e.target) && e.target !== button) {
+            menu.remove();
+            document.removeEventListener('click', closeMenu);
+        }
+    };
+    
+    // Добавляем меню на страницу
+    document.body.appendChild(menu);
+    
+    // Закрываем при клике вне меню (с небольшой задержкой, чтобы не сработало сразу)
+    setTimeout(() => {
+        document.addEventListener('click', closeMenu);
+    }, 100);
+}
+
+function parseDateFromDisplay(dateDisplay) {
+    const cleanDate = dateDisplay.replace(' (сегодня)', '');
+    const months = {
+        'января': '01', 'февраля': '02', 'марта': '03', 'апреля': '04',
+        'мая': '05', 'июня': '06', 'июля': '07', 'августа': '08',
+        'сентября': '09', 'октября': '10', 'ноября': '11', 'декабря': '12'
+    };
+    
+    const parts = cleanDate.split(' ');
+    if (parts.length !== 2) return null;
+    
+    const day = parts[0].padStart(2, '0');
+    const month = months[parts[1]];
+    if (!month) return null;
+    
+    const year = new Date().getFullYear();
+    return `${year}-${month}-${day}`;
+}
+
+function loadMoreBookings() { 
+    if (bookingsHasMore) {
+        loadBookings(bookingsPage + 1, true);
+    }
+}
+
+// Обновляем записи при изменении лимита
+document.getElementById('bookings-limit-select')?.addEventListener('change', function() {
+    localStorage.setItem('bookingsLimit', this.value);
+    bookingsPage = 1;
+    loadBookings(1, false);
+});
+
+let refreshInterval = null;
+
+function startAutoRefresh() {
+    if (refreshInterval) clearInterval(refreshInterval);
+    refreshInterval = setInterval(() => {
+        bookingsPage = 1;
+        loadBookings(1, false);
+    }, 300000);
+}
+
+function stopAutoRefresh() {
+    if (refreshInterval) {
+        clearInterval(refreshInterval);
+        refreshInterval = null;
+    }
+}
+
+function renderNotifications(notifications, append) {
+    const container = document.getElementById('notifications-list');
+    if (!append) container.innerHTML = '';
+    
+    notifications.forEach(n => {
+        // Разбиваем сообщение на строки и фильтруем пустые
+        const lines = n.message.split('\n').filter(line => line.trim() !== '');
+        let messageHtml = '';
+        
+        lines.forEach(line => {
+            let displayLine = line;
+            if (line.startsWith('📅')) {
+                displayLine = line.replace('📅', '<i class="far fa-calendar-alt me-2"></i>');
+            } else if (line.startsWith('⏰')) {
+                displayLine = line.replace('⏰', '<i class="far fa-clock me-2"></i>');
+            } else if (line.startsWith('🕐')) {
+                displayLine = line.replace('🕐', '<i class="fas fa-info-circle me-2"></i>');
+            }
+            messageHtml += `<div class="notification-line">${displayLine}</div>`;
+        });
+        
+        const div = document.createElement('div');
+        div.className = `notification-item p-3 border-bottom ${n.is_read ? 'read' : 'unread'}`;
+        div.setAttribute('data-id', n.id);
+        div.setAttribute('data-is-read', n.is_read);
+        div.innerHTML = `
+            <div class="d-flex justify-content-between align-items-start">
+                <div class="flex-grow-1" style="cursor: pointer;" onclick="openNotification(this, ${n.id}, ${!n.is_read})">
+                    <div class="notification-title">
+                        <span class="badge ${getTypeBadgeClass(n.type)} me-2">${getTypeName(n.type)}</span>
+                        <strong>${escapeHtml(n.title)}</strong>
+                    </div>
+                    <div class="notification-message text-muted small mt-2" style="display: none;">
+                        ${messageHtml}
+                    </div>
+                </div>
+                <div class="notification-actions">
+                    <button class="btn btn-sm ${n.is_read ? 'btn-outline-secondary' : 'btn-outline-primary'}" 
+                            onclick="event.stopPropagation(); toggleReadStatus(${n.id}, ${!n.is_read})" 
+                            title="${n.is_read ? 'Отметить непрочитанным' : 'Отметить прочитанным'}">
+                        <i class="fas ${n.is_read ? 'fa-envelope-open' : 'fa-envelope'}"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+        container.appendChild(div);
+    });
+}
+
+
+
+// ============================================================
+// БЛИЖАЙШИЕ ЗАПИСИ - ДЕТАЛИ
+// ============================================================
+
+// ============================================================
+// БЛИЖАЙШИЕ ЗАПИСИ - ДЕТАЛИ (ТОЛЬКО ПРОСМОТР)
+// ============================================================
+
+function showBookingDetails(bookingId) {
+    const modal = new bootstrap.Modal(document.getElementById('bookingDetailsModal'));
+    const content = document.getElementById('bookingDetailsContent');
+    
+    content.innerHTML = '<div class="text-center py-3"><div class="spinner-border" style="color: #ff85b3;"></div></div>';
+    modal.show();
+    
+    fetch(`/api/booking/${bookingId}/details/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                let servicesHtml = '';
+                data.services.forEach((service, idx) => {
+                    let serviceDisplay = escapeHtml(service.name);
+                    if (service.category_name) {
+                        serviceDisplay = `<span class="text-muted small">${escapeHtml(service.category_name)}:</span> ${serviceDisplay}`;
+                    }
+                    
+                    servicesHtml += `
+                        <div class="d-flex justify-content-between align-items-center mb-2 p-2">
+                            <div>
+                                <div>${serviceDisplay}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                let visitsHtml = '';
+                data.client_stats.visits.forEach(visit => {
+                    visitsHtml += `
+                        <div class="d-flex justify-content-between align-items-center mb-1 p-1">
+                            <span>${visit.date}</span>
+                            <span class="text-muted small">${visit.time}</span>
+                            <span class="text-muted small">${escapeHtml(visit.service)}</span>
+                        </div>
+                    `;
+                });
+                
+                if (visitsHtml === '') {
+                    visitsHtml = '<p class="text-muted text-center">Нет других записей</p>';
+                }
+                
+                content.innerHTML = `
+                    <div class="mb-3">
+                        <strong><i class="fas fa-user me-2"></i>Клиент:</strong>
+                        <p class="mt-1">${escapeHtml(data.client_name)}</p>
+                    </div>
+                    <div class="mb-3">
+                        <strong><i class="fas fa-phone me-2"></i>Телефон:</strong>
+                        <p class="mt-1">${escapeHtml(data.client_phone_formatted || data.client_phone)}</p>
+                    </div>
+                    <div class="mb-3">
+                        <strong><i class="fas fa-calendar-day me-2"></i>Дата:</strong>
+                        <p class="mt-1">${data.date}</p>
+                    </div>
+                    <div class="mb-3">
+                        <strong><i class="fas fa-clock me-2"></i>Время:</strong>
+                        <p class="mt-1">${data.time || '—'}</p>
+                    </div>
+                    <div class="mb-3">
+                        <strong><i class="fas fa-cut me-2"></i>Услуги (${data.total_services}):</strong>
+                        <div class="mt-2">${servicesHtml}</div>
+                    </div>
+                    <div class="mb-3">
+                        <strong><i class="fas fa-comment me-2"></i>Комментарий:</strong>
+                        <p class="mt-1">${escapeHtml(data.comment) || '—'}</p>
+                    </div>
+                    <hr>
+                    <div class="mb-3">
+                        <strong><i class="fas fa-chart-line me-2"></i>Статистика клиента:</strong>
+                        <div class="mt-2 p-2 bg-light rounded">
+                            <div class="row text-center">
+                                <div class="col-4">
+                                    <div class="fs-4 fw-bold" style="color: var(--primary);">${data.client_stats.total_visits}</div>
+                                    <div class="small text-muted">Всего визитов</div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="small text-muted">Первый визит</div>
+                                    <div><strong>${data.client_stats.first_visit}</strong></div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="small text-muted">Последний визит</div>
+                                    <div><strong>${data.client_stats.last_visit}</strong></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <strong><i class="fas fa-history me-2"></i>История визитов:</strong>
+                        <div class="mt-1" style="max-height: 200px; overflow-y: auto;">
+                            ${visitsHtml}
+                        </div>
+                    </div>
+                    <div class="text-muted small mt-2">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Запись создана: ${data.created_by}
+                    </div>
+                    <!-- 👇 УБРАЛИ КНОПКУ "Удалить все записи клиента на эту дату" -->
+                `;
+            } else {
+                content.innerHTML = '<div class="text-center text-danger">Ошибка загрузки данных</div>';
+            }
+        })
+        .catch(error => {
+            console.error('Ошибка:', error);
+            content.innerHTML = '<div class="text-center text-danger">Ошибка загрузки данных</div>';
+        });
+}
+
+
+
+// ============================================================
+// ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+// ============================================================
+function escapeHtml(str) {
+    return str ? str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : m === '>' ? '&gt;' : m) : '';
+}
+
+// ИНИЦИАЛИЗАЦИЯ
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Устанавливаем значение по умолчанию = 3
+    const select = document.getElementById('bookings-limit-select');
+    
+    // Проверяем, есть ли сохранённое значение в localStorage
+    const savedLimit = localStorage.getItem('bookingsLimit');
+    
+    if (savedLimit) {
+        // Если есть сохранённое значение — используем его
+        if (select) {
+            select.value = savedLimit;
+        }
+    } else {
+        // Если нет сохранённого значения — устанавливаем 3 и сохраняем
+        if (select) {
+            select.value = '3';
+            localStorage.setItem('bookingsLimit', '3');
+        }
+    }
+    
+    // Устанавливаем текущий лимит для загрузки
+    bookingsCurrentLimit = parseInt(select ? select.value : '3');
+    
+    loadCalendar();
+    loadBookings(1, false);
+    initPhoneMasks();
+    startAutoRefresh();
+});
+
+// Останавливаем обновление при уходе со страницы (опционально)
+window.addEventListener('beforeunload', () => {
+    stopAutoRefresh();
+});
+
+
+
+// ============================================================
+// УПРАВЛЕНИЕ РАБОЧИМ ВРЕМЕНЕМ (INLINE EDIT)
+// ============================================================
+
+function editWorkTime() {
+    const viewMode = document.getElementById('workViewMode');
+    const editMode = document.getElementById('workEditMode');
+    const editBtn = document.getElementById('editWorkTimeBtn');
+    const display = document.getElementById('workTimeDisplay');
+    
+    // Получаем текущее время
+    const currentText = display.textContent;
+    const parts = currentText.split(' - ');
+    
+    if (parts.length === 2) {
+        document.getElementById('editWorkStart').value = parts[0].trim();
+        document.getElementById('editWorkEnd').value = parts[1].trim();
+    }
+    
+    // Скрываем режим просмотра, показываем режим редактирования
+    viewMode.style.display = 'none';
+    editMode.classList.add('active');
+    editMode.style.display = 'inline-flex';
+    editBtn.style.display = 'none';
+}
+
+function cancelEditWorkTime() {
+    const viewMode = document.getElementById('workViewMode');
+    const editMode = document.getElementById('workEditMode');
+    const editBtn = document.getElementById('editWorkTimeBtn');
+    const labelText = document.getElementById('workTimeLabelText');
+    const display = document.getElementById('workTimeDisplay');
+    
+    const isDayOff = currentDayData && (currentDayData.is_day_off || !(currentDayData.has_schedule || currentDayData.is_extra));
+    
+    if (isDayOff) {
+        labelText.textContent = 'Выходной день';  // ← возвращаем "Выходной день"
+        display.textContent = '';
+        viewMode.style.display = 'none';
+        editBtn.style.display = 'none';
+        document.getElementById('dayOffActions').style.display = 'block';
+        document.getElementById('makeDayOffBtn').style.display = 'none';
+        const addBookingBtn = document.querySelector('#dayActionsContainer .btn-pink');
+        if (addBookingBtn) addBookingBtn.style.display = 'none';
+        document.getElementById('breaksContainer').style.display = 'none';
+    } else {
+        // 👇 ВОЗВРАЩАЕМ "Работаю:" ЕСЛИ ЭТО БЫЛ РАБОЧИЙ ДЕНЬ
+        labelText.textContent = 'Работаю:';
+        viewMode.style.display = 'inline';
+        editBtn.style.display = 'inline-flex';
+        document.getElementById('makeDayOffBtn').style.display = 'inline-block';
+        document.getElementById('dayOffActions').style.display = 'none';
+    }
+    
+    editMode.style.display = 'none';
+}
+
+function saveWorkTime() {
+    const start = document.getElementById('editWorkStart').value;
+    const end = document.getElementById('editWorkEnd').value;
+    
+    if (!start || !end) {
+        showAlert('Заполните время начала и окончания', 'Ошибка');
+        return;
+    }
+    
+    if (start >= end) {
+        showAlert('Время начала не может быть позже или равно времени окончания', 'Ошибка');
+        return;
+    }
+    
+    const btn = event.target.closest('button');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    btn.disabled = true;
+    
+    fetch('/api/extra-days/delete-by-date/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify({ date: currentSelectedDate })
+    })
+    .then(() => fetch('/api/days-off/delete-by-date/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify({ date: currentSelectedDate })
+    }))
+    .then(() => fetch('/api/extra-days/add/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify({
+            date: currentSelectedDate,
+            start_time: start,
+            end_time: end,
+            breaks: getCurrentBreaksData()
+        })
+    }))
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            // Обновляем отображение
+            const viewMode = document.getElementById('workViewMode');
+            const editMode = document.getElementById('workEditMode');
+            const editBtn = document.getElementById('editWorkTimeBtn');
+            const display = document.getElementById('workTimeDisplay');
+            const labelText = document.getElementById('workTimeLabelText');
+            
+            labelText.textContent = 'Работаю:';
+            display.textContent = start + ' - ' + end;
+            viewMode.style.display = 'inline';
+            editMode.style.display = 'none';
+            editBtn.style.display = 'inline-flex';  // ← ПОКАЗЫВАЕМ КНОПКУ
+            
+            // Скрываем кнопку "Сделать рабочим"
+            document.getElementById('dayOffActions').style.display = 'none';
+            
+            // Показываем кнопку "Сделать выходным"
+            document.getElementById('makeDayOffBtn').style.display = 'inline-block';
+            
+            // Показываем кнопку "Добавить запись"
+            const addBookingBtn = document.querySelector('#dayActionsContainer .btn-pink');
+            if (addBookingBtn) addBookingBtn.style.display = 'inline-block';
+            
+            // Обновляем currentDayData
+            if (currentDayData) {
+                currentDayData.extra_start = start;
+                currentDayData.extra_end = end;
+                currentDayData.is_extra = true;
+                currentDayData.is_day_off = false;
+            }
+            
+            // showToast('✅ День сохранён как рабочий', 'success');
+            loadCalendar();
+        } else {
+            showAlert(data.error || 'Ошибка при сохранении', 'Ошибка');
+        }
+    })
+    .catch(err => {
+        console.error('Ошибка:', err);
+        showAlert('Произошла ошибка', 'Ошибка');
+    })
+    .finally(() => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    });
+}
+
+// ============================================================
+// УПРАВЛЕНИЕ ПЕРЕРЫВАМИ
+// ============================================================
+
+// ============================================================
+// УПРАВЛЕНИЕ ПЕРЕРЫВАМИ (ПОЛНОСТЬЮ)
+// ============================================================
+
+// ============================================================
+// УПРАВЛЕНИЕ ПЕРЕРЫВАМИ (ПОЛНОСТЬЮ)
+// ============================================================
+
+// ============================================================
+// УПРАВЛЕНИЕ ПЕРЕРЫВАМИ (ПОЛНОСТЬЮ)
+// ============================================================
+
+function getCurrentBreaksData() {
+    const breaks = [];
+    document.querySelectorAll('#breaksContainer .break-item').forEach(item => {
+        const display = item.querySelector('.break-display');
+        if (display && display.textContent !== '—') {
+            const parts = display.textContent.split(' - ');
+            if (parts.length === 2 && parts[0].trim() && parts[1].trim()) {
+                breaks.push({ start: parts[0].trim(), end: parts[1].trim() });
+            }
+        }
+    });
+    return breaks;
+}
+
+function renderBreaks(breaks) {
+    const container = document.getElementById('breaksContainer');
+    container.innerHTML = '';
+    
+    if (!breaks || breaks.length === 0) {
+        // Нет перерывов — только "Перерыв: —" и ✏️ (без ➕)
+        const item = createBreakItem(null, 0, false);
+        container.appendChild(item);
+        return;
+    }
+    
+    // Показываем каждый перерыв
+    breaks.forEach((b, index) => {
+        const isLast = (index === breaks.length - 1);
+        const item = createBreakItem(b, index, isLast);
+        container.appendChild(item);
+    });
+}
+
+
+function createBreakItem(breakData, index, showAddButton) {
+    const hasBreak = breakData !== null;
+    const displayText = hasBreak ? `${breakData.start} - ${breakData.end}` : '';
+    const startVal = hasBreak ? breakData.start : '';
+    const endVal = hasBreak ? breakData.end : '';
+    const label = hasBreak ? (index === 0 ? 'Перерыв:' : `Перерыв ${index + 1}:`) : 'Перерыв:';
+    
+    const item = document.createElement('div');
+    item.className = 'break-item';
+    item.dataset.index = index;
+    item.id = `break-item-${index}`;
+    
+    let html = `
+        <div class="break-label-wrapper">
+            <span class="break-label">
+                <i class="fas fa-coffee me-1" style="color: #f59e0b;"></i>
+                <span class="fw-bold me-1">${label}</span>
+            </span>
+        </div>
+        <div class="break-view-mode">
+            <span class="break-display">${displayText}</span>
+    `;
+    
+    // ✏️ всегда показываем
+    html += `
+        <button class="btn btn-sm edit-break-btn" onclick="toggleBreakEdit(${index})" title="${hasBreak ? 'Изменить перерыв' : 'Добавить перерыв'}" style="color: var(--gray-600); padding: 0 4px;">
+            <i class="fas fa-edit"></i>
+        </button>
+    `;
+    
+    // 🗑️ только если есть перерыв
+    if (hasBreak) {
+        html += `
+            <button class="btn btn-sm delete-break-btn" onclick="deleteBreak(${index})" title="Удалить перерыв" style="color: var(--gray-600); padding: 0 4px;">
+                <i class="fas fa-trash"></i>
+            </button>
+        `;
+    }
+    
+    // ➕ только если есть перерыв И это последний
+    if (hasBreak && showAddButton) {
+        html += `
+            <button class="btn btn-sm add-break-btn" onclick="addNewBreak()" title="Добавить перерыв" style="color: var(--gray-600); padding: 0 4px;">
+                <i class="fas fa-plus"></i>
+            </button>
+        `;
+    }
+    
+    html += `</div>`;
+    
+    item.innerHTML = html;
+    
+    item._breakStart = startVal;
+    item._breakEnd = endVal;
+    item._breakEditMode = false;
+    
+    return item;
+}
+
+
+function toggleBreakEdit(index) {
+    const item = document.getElementById(`break-item-${index}`);
+    if (!item) return;
+    
+    const viewMode = item.querySelector('.break-view-mode');
+    const editBtn = item.querySelector('.edit-break-btn');
+    const deleteBtn = item.querySelector('.delete-break-btn');
+    const addBtn = item.querySelector('.add-break-btn');
+    let editMode = item.querySelector('.break-edit-mode');
+    
+    if (item._breakEditMode) {
+        // Выход из режима редактирования
+        if (editMode) editMode.remove();
+        viewMode.style.setProperty('display', 'inline-flex', 'important');
+        editBtn.style.setProperty('display', 'inline-flex', 'important');
+        if (deleteBtn) deleteBtn.style.setProperty('display', 'inline-flex', 'important');
+        if (addBtn) addBtn.style.setProperty('display', 'inline-flex', 'important');
+        item._breakEditMode = false;
+    } else {
+        // Вход в режим редактирования
+        viewMode.style.setProperty('display', 'none', 'important');
+        editBtn.style.setProperty('display', 'none', 'important');
+        if (deleteBtn) deleteBtn.style.setProperty('display', 'none', 'important');
+        if (addBtn) addBtn.style.setProperty('display', 'none', 'important');
+        
+        editMode = document.createElement('span');
+        editMode.className = 'break-edit-mode d-flex align-items-center gap-1';
+        editMode.innerHTML = `
+            <input type="time" class="form-control form-control-sm break-start" value="${item._breakStart}">
+            <span>-</span>
+            <input type="time" class="form-control form-control-sm break-end" value="${item._breakEnd}">
+            <button class="btn btn-sm save-break-btn" onclick="saveBreakFromModal(${index})">
+                <i class="fas fa-check"></i>
+            </button>
+            <button class="btn btn-sm cancel-break-btn" onclick="cancelEditBreakFromModal(${index})">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        
+        const label = item.querySelector('.break-label');
+        label.parentNode.insertBefore(editMode, label.nextSibling);
+        item._breakEditMode = true;
+    }
+}
+
+function cancelEditBreakFromModal(index) {
+    const item = document.getElementById(`break-item-${index}`);
+    if (!item) return;
+    
+    const editMode = item.querySelector('.break-edit-mode');
+    if (editMode) editMode.remove();
+    
+    const viewMode = item.querySelector('.break-view-mode');
+    if (!viewMode) return;
+    
+    const display = viewMode.querySelector('.break-display');
+    const displayText = display ? display.textContent.trim() : '';
+    const hasExistingBreak = displayText && displayText !== '—' && displayText !== '-';
+    
+    // Если это новый перерыв (пустые поля) - удаляем всю строку и перерисовываем
+    if (!hasExistingBreak) {
+        const allBreaks = getCurrentBreaksData();
+        allBreaks.splice(index, 1);
+        renderBreaks(allBreaks);
+        return;
+    }
+    
+    // Если это существующий перерыв - просто скрываем поля
+    viewMode.style.display = 'inline-flex';
+    
+    const editBtn = item.querySelector('.edit-break-btn');
+    if (editBtn) editBtn.style.display = 'inline-flex';
+    
+    const deleteBtn = item.querySelector('.delete-break-btn');
+    if (deleteBtn) deleteBtn.style.display = 'inline-flex';
+    
+    // Кнопка + показывается только у последнего перерыва
+    const allItems = document.querySelectorAll('#breaksContainer .break-item');
+    const lastIndex = allItems.length - 1;
+    allItems.forEach((el, i) => {
+        const addBtn = el.querySelector('.add-break-btn');
+        if (addBtn) {
+            addBtn.style.display = i === lastIndex ? 'inline-flex' : 'none';
+            if (i === lastIndex) {
+                addBtn.setAttribute('onclick', `addNewBreak()`);
+            }
+        }
+    });
+    
+    item._breakEditMode = false;
+}
+// function cancelEditBreakFromModal(index) {
+//     const item = document.getElementById(`break-item-${index}`);
+//     if (!item) return;
+    
+//     const editMode = item.querySelector('.break-edit-mode');
+//     if (editMode) editMode.remove();
+    
+//     const viewMode = item.querySelector('.break-view-mode');
+//     const editBtn = item.querySelector('.edit-break-btn');
+//     const deleteBtn = item.querySelector('.delete-break-btn');
+//     const addBtn = item.querySelector('.add-break-btn');
+    
+//     const display = viewMode.querySelector('.break-display');
+//     const hasExistingBreak = display && display.textContent !== '—';
+    
+//     viewMode.style.display = 'inline-flex';
+//     editBtn.style.display = 'inline-flex';
+//     if (deleteBtn) deleteBtn.style.display = 'inline-flex';
+//     if (addBtn) addBtn.style.display = 'inline-flex';
+//     item._breakEditMode = false;
+    
+// }
+
+// function saveBreakFromModal(index) {
+//     const item = document.getElementById(`break-item-${index}`);
+//     if (!item) return;
+    
+//     const start = item.querySelector('.break-start').value;
+//     const end = item.querySelector('.break-end').value;
+    
+//     // Если оба поля пустые — удаляем перерыв
+//     if (!start && !end) {
+//         // Просто отменяем редактирование, что вызовет удаление
+//         cancelEditBreakFromModal(index);
+//         return;
+//     }
+    
+//     // Если одно поле заполнено, а другое нет — ошибка
+//     if (!start || !end) {
+//         showAlert('Заполните оба поля времени', 'Ошибка');
+//         return;
+//     }
+    
+//     if (start >= end) {
+//         showAlert('Время начала не может быть позже времени окончания', 'Ошибка');
+//         return;
+//     }
+    
+//     const workDisplay = document.getElementById('workTimeDisplay').textContent;
+//     const parts = workDisplay.split(' - ');
+//     const workStart = parts[0].trim();
+//     const workEnd = parts[1].trim();
+    
+//     if (start < workStart || end > workEnd) {
+//         showAlert('Перерыв должен быть в рамках рабочего дня (' + workStart + ' - ' + workEnd + ')', 'Ошибка');
+//         return;
+//     }
+    
+//     // Получаем все текущие перерывы
+//     const allBreaks = getCurrentBreaksData();
+    
+//     // Обновляем или добавляем
+//     if (index < allBreaks.length) {
+//         allBreaks[index] = { start: start, end: end };
+//     } else {
+//         allBreaks.push({ start: start, end: end });
+//     }
+    
+//     // Проверяем пересечения
+//     for (let i = 0; i < allBreaks.length; i++) {
+//         for (let j = i + 1; j < allBreaks.length; j++) {
+//             if (allBreaks[i].start < allBreaks[j].end && allBreaks[j].start < allBreaks[i].end) {
+//                 showAlert('Перерывы пересекаются между собой', 'Ошибка');
+//                 return;
+//             }
+//         }
+//     }
+    
+//     // Выходим из режима редактирования и сохраняем
+//     const itemEl = document.getElementById(`break-item-${index}`);
+//     if (itemEl) {
+//         const editMode = itemEl.querySelector('.break-edit-mode');
+//         if (editMode) editMode.remove();
+        
+//         const viewMode = itemEl.querySelector('.break-view-mode');
+//         const editBtn = itemEl.querySelector('.edit-break-btn');
+//         const deleteBtn = itemEl.querySelector('.delete-break-btn');
+//         const addBtn = itemEl.querySelector('.add-break-btn');
+//         const display = viewMode.querySelector('.break-display');
+        
+//         // Обновляем отображение
+//         if (display) display.textContent = `${start} - ${end}`;
+        
+//         viewMode.style.setProperty('display', 'inline-flex', 'important');
+//         editBtn.style.setProperty('display', 'inline-flex', 'important');
+//         if (deleteBtn) deleteBtn.style.setProperty('display', 'inline-flex', 'important');
+//         if (addBtn) addBtn.style.setProperty('display', 'inline-flex', 'important');
+//         itemEl._breakEditMode = false;
+//     }
+    
+//     // Сохраняем на сервер
+//     saveAllBreaks(allBreaks);
+// }
+
+
+function saveBreakFromModal(index) {
+    const item = document.getElementById(`break-item-${index}`);
+    if (!item) return;
+    
+    const start = item.querySelector('.break-start').value;
+    const end = item.querySelector('.break-end').value;
+    
+    if (!start && !end) {
+        cancelEditBreakFromModal(index);
+        return;
+    }
+    
+    if (!start || !end) {
+        showAlert('Заполните оба поля времени', 'Ошибка');
+        return;
+    }
+    
+    if (start >= end) {
+        showAlert('Время начала не может быть позже времени окончания', 'Ошибка');
+        return;
+    }
+    
+    const workDisplay = document.getElementById('workTimeDisplay').textContent;
+    const parts = workDisplay.split(' - ');
+    const workStart = parts[0].trim();
+    const workEnd = parts[1].trim();
+    
+    if (start < workStart || end > workEnd) {
+        showAlert('Перерыв должен быть в рамках рабочего дня (' + workStart + ' - ' + workEnd + ')', 'Ошибка');
+        return;
+    }
+    
+    const allBreaks = getCurrentBreaksData();
+    
+    if (index < allBreaks.length) {
+        allBreaks[index] = { start: start, end: end };
+    } else {
+        allBreaks.push({ start: start, end: end });
+    }
+    
+    // Проверяем пересечения между перерывами
+    for (let i = 0; i < allBreaks.length; i++) {
+        for (let j = i + 1; j < allBreaks.length; j++) {
+            if (allBreaks[i].start < allBreaks[j].end && allBreaks[j].start < allBreaks[i].end) {
+                showAlert('Перерывы пересекаются между собой', 'Ошибка');
+                return;
+            }
+        }
+    }
+    
+    // ===== ПРОВЕРЯЕМ ЗАПИСИ ПЕРЕД СОХРАНЕНИЕМ =====
+    // Сначала проверяем, есть ли конфликты с записями
+    fetch(`/api/bookings/by-date/?date=${currentSelectedDate}`)
+        .then(response => response.json())
+        .then(data => {
+            const bookings = data.bookings || [];
+            let hasConflict = false;
+            
+            function timeToMinutes(timeStr) {
+                const [hours, minutes] = timeStr.split(':');
+                return parseInt(hours) * 60 + parseInt(minutes);
+            }
+            
+            function isOverlap(breakStart, breakEnd, bookingTime, bookingDuration) {
+                const breakStartMin = timeToMinutes(breakStart);
+                const breakEndMin = timeToMinutes(breakEnd);
+                const bookingStartMin = timeToMinutes(bookingTime);
+                const bookingEndMin = bookingStartMin + bookingDuration;
+                return (breakStartMin < bookingEndMin && breakEndMin > bookingStartMin);
+            }
+            
+            for (const b of allBreaks) {
+                for (const booking of bookings) {
+                    const bookingDuration = booking.service_duration || 30;
+                    if (isOverlap(b.start, b.end, booking.time, bookingDuration)) {
+                        showAlert(
+                            `⚠️ Перерыв ${b.start}-${b.end} пересекается с записью клиента "${booking.client_name}" в ${booking.time}.\n\nСначала перенесите или отмените запись, затем установите перерыв.`,
+                            'Ошибка'
+                        );
+                        hasConflict = true;
+                        break;
+                    }
+                }
+                if (hasConflict) break;
+            }
+            
+            if (hasConflict) {
+                return; // Не сохраняем
+            }
+            
+            // ===== ВСЕ ПРОВЕРКИ ПРОЙДЕНЫ - СОХРАНЯЕМ =====
+            // Теперь обновляем UI
+            const itemEl = document.getElementById(`break-item-${index}`);
+            if (itemEl) {
+                const editMode = itemEl.querySelector('.break-edit-mode');
+                if (editMode) editMode.remove();
+                
+                const viewMode = itemEl.querySelector('.break-view-mode');
+                const editBtn = itemEl.querySelector('.edit-break-btn');
+                const deleteBtn = itemEl.querySelector('.delete-break-btn');
+                const addBtn = itemEl.querySelector('.add-break-btn');
+                const display = viewMode.querySelector('.break-display');
+                
+                if (display) display.textContent = `${start} - ${end}`;
+                
+                viewMode.style.setProperty('display', 'inline-flex', 'important');
+                editBtn.style.setProperty('display', 'inline-flex', 'important');
+                if (deleteBtn) deleteBtn.style.setProperty('display', 'inline-flex', 'important');
+                if (addBtn) addBtn.style.setProperty('display', 'inline-flex', 'important');
+                itemEl._breakEditMode = false;
+            }
+            
+            // Сохраняем на сервер
+            saveAllBreaks(allBreaks);
+        })
+        .catch(err => {
+            console.error('Ошибка проверки записей:', err);
+            showAlert('Ошибка при проверке записей', 'Ошибка');
+        });
+}
+
+function addNewBreak() {
+    const allBreaks = getCurrentBreaksData();
+    
+    // Добавляем новый перерыв с пустыми полями
+    allBreaks.push({ start: '', end: '' });
+    
+    // Перерисовываем все
+    renderBreaks(allBreaks);
+    
+    // Открываем редактирование нового перерыва
+    setTimeout(() => {
+        const newIndex = allBreaks.length - 1;
+        toggleBreakEdit(newIndex);
+    }, 100);
+}
+
+function deleteBreak(index) {
+    showConfirm('Удалить этот перерыв?', (confirmed) => {
+        if (confirmed) {
+            const allBreaks = getCurrentBreaksData();
+            allBreaks.splice(index, 1);
+            
+            if (allBreaks.length === 0) {
+                // Если перерывов не осталось, сохраняем пустой массив
+                saveAllBreaks([]);
+            } else {
+                // Перерисовываем с обновлёнными индексами
+                renderBreaks(allBreaks);
+                // Сохраняем на сервер
+                saveAllBreaks(allBreaks);
+            }
+        }
+    });
+}
+
+function saveAllBreaks(breaks) {
+    // Валидация
+    for (const b of breaks) {
+        if (b.start >= b.end) {
+            showAlert('Время начала перерыва не может быть позже времени окончания', 'Ошибка');
+            return;
+        }
+    }
+    
+    const workDisplay = document.getElementById('workTimeDisplay').textContent;
+    const parts = workDisplay.split(' - ');
+    const workStart = parts[0].trim();
+    const workEnd = parts[1].trim();
+    
+    for (const b of breaks) {
+        if (b.start < workStart || b.end > workEnd) {
+            showAlert('Перерыв должен быть в рамках рабочего дня (' + workStart + ' - ' + workEnd + ')', 'Ошибка');
+            return;
+        }
+    }
+    
+    // Проверяем пересечения между перерывами
+    for (let i = 0; i < breaks.length; i++) {
+        for (let j = i + 1; j < breaks.length; j++) {
+            if (breaks[i].start < breaks[j].end && breaks[j].start < breaks[i].end) {
+                showAlert('Перерывы пересекаются между собой', 'Ошибка');
+                return;
+            }
+        }
+    }
+    
+    // ===== НОВАЯ ПРОВЕРКА: пересечение с записями =====
+    // Получаем записи на текущую дату
+    fetch(`/api/bookings/by-date/?date=${currentSelectedDate}`)
+        .then(response => response.json())
+        .then(data => {
+            const bookings = data.bookings || [];
+            let hasConflict = false;
+            
+            function timeToMinutes(timeStr) {
+                const [hours, minutes] = timeStr.split(':');
+                return parseInt(hours) * 60 + parseInt(minutes);
+            }
+            
+            function isOverlap(breakStart, breakEnd, bookingTime, bookingDuration) {
+                const breakStartMin = timeToMinutes(breakStart);
+                const breakEndMin = timeToMinutes(breakEnd);
+                const bookingStartMin = timeToMinutes(bookingTime);
+                const bookingEndMin = bookingStartMin + bookingDuration;
+                return (breakStartMin < bookingEndMin && breakEndMin > bookingStartMin);
+            }
+            
+            // Проверяем каждый перерыв
+            for (const b of breaks) {
+                for (const booking of bookings) {
+                    const bookingDuration = booking.service_duration || 30;
+                    if (isOverlap(b.start, b.end, booking.time, bookingDuration)) {
+                        showAlert(
+                            `⚠️ Перерыв ${b.start}-${b.end} пересекается с записью клиента "${booking.client_name}" в ${booking.time}.\n\nСначала перенесите или отмените запись, затем установите перерыв.`,
+                            'Ошибка'
+                        );
+                        hasConflict = true;
+                        break;
+                    }
+                }
+                if (hasConflict) break;
+            }
+            
+            // Если есть конфликт - НЕ СОХРАНЯЕМ
+            if (hasConflict) {
+                return;
+            }
+            
+            // Если все проверки пройдены - сохраняем
+            saveBreaksToServer(breaks, workStart, workEnd);
+        })
+        .catch(err => {
+            console.error('Ошибка проверки записей:', err);
+            showAlert('Ошибка при проверке записей', 'Ошибка');
+        });
+}
+
+// Выносим сохранение в отдельную функцию
+function saveBreaksToServer(breaks, workStart, workEnd) {
+    fetch('/api/extra-days/delete-by-date/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify({ date: currentSelectedDate })
+    })
+    .then(() => fetch('/api/days-off/delete-by-date/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify({ date: currentSelectedDate })
+    }))
+    .then(() => fetch('/api/extra-days/add/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify({
+            date: currentSelectedDate,
+            start_time: workStart,
+            end_time: workEnd,
+            breaks: breaks
+        })
+    }))
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            renderBreaks(breaks);
+            // showToast('✅ Перерывы обновлены', 'success');
+            loadCalendar();
+        } else {
+            showAlert(data.error || 'Ошибка при сохранении', 'Ошибка');
+        }
+    })
+    .catch(err => {
+        console.error('Ошибка:', err);
+        showAlert('Произошла ошибка', 'Ошибка');
+    });
+}
+
+// function saveAllBreaks(breaks) {
+//     // Валидация
+//     for (const b of breaks) {
+//         if (b.start >= b.end) {
+//             showAlert('Время начала перерыва не может быть позже времени окончания', 'Ошибка');
+//             return;
+//         }
+//     }
+    
+//     const workDisplay = document.getElementById('workTimeDisplay').textContent;
+//     const parts = workDisplay.split(' - ');
+//     const workStart = parts[0].trim();
+//     const workEnd = parts[1].trim();
+    
+//     for (const b of breaks) {
+//         if (b.start < workStart || b.end > workEnd) {
+//             showAlert('Перерыв должен быть в рамках рабочего дня (' + workStart + ' - ' + workEnd + ')', 'Ошибка');
+//             return;
+//         }
+//     }
+    
+//     // Проверяем пересечения
+//     for (let i = 0; i < breaks.length; i++) {
+//         for (let j = i + 1; j < breaks.length; j++) {
+//             if (breaks[i].start < breaks[j].end && breaks[j].start < breaks[i].end) {
+//                 showAlert('Перерывы пересекаются между собой', 'Ошибка');
+//                 return;
+//             }
+//         }
+//     }
+    
+//     // Сохраняем на сервер
+//     fetch('/api/extra-days/delete-by-date/', {
+//         method: 'POST',
+//         headers: {
+//             'Content-Type': 'application/json',
+//             'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+//         },
+//         body: JSON.stringify({ date: currentSelectedDate })
+//     })
+//     .then(() => fetch('/api/days-off/delete-by-date/', {
+//         method: 'POST',
+//         headers: {
+//             'Content-Type': 'application/json',
+//             'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+//         },
+//         body: JSON.stringify({ date: currentSelectedDate })
+//     }))
+//     .then(() => fetch('/api/extra-days/add/', {
+//         method: 'POST',
+//         headers: {
+//             'Content-Type': 'application/json',
+//             'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+//         },
+//         body: JSON.stringify({
+//             date: currentSelectedDate,
+//             start_time: workStart,
+//             end_time: workEnd,
+//             breaks: breaks
+//         })
+//     }))
+//     .then(r => r.json())
+//     .then(data => {
+//         if (data.success) {
+//             renderBreaks(breaks);
+//             // showToast('✅ Перерывы обновлены', 'success');
+//             loadCalendar();
+//         } else {
+//             showAlert(data.error || 'Ошибка при сохранении', 'Ошибка');
+//         }
+//     })
+//     .catch(err => {
+//         console.error('Ошибка:', err);
+//         showAlert('Произошла ошибка', 'Ошибка');
+//     });
+// }
+
+
+// ============================================================
+// ОБНОВЛЕНИЕ КНОПОК УПРАВЛЕНИЯ ДНЁМ
+// ============================================================
+
+function updateDayActions() {
+    const isWorking = currentDayData && !currentDayData.is_day_off && 
+                     (currentDayData.has_schedule || currentDayData.is_extra);
+    const isDayOff = currentDayData && currentDayData.is_day_off;
+    
+    document.getElementById('makeDayOffBtn').style.display = (isWorking && !isDayOff) ? 'inline-block' : 'none';
+    document.getElementById('dayOffActions').style.display = isDayOff ? 'block' : 'none';
+    
+    // Если день нерабочий (нет расписания и нет доп. дня и нет выходного)
+    if (!isWorking && !isDayOff) {
+        document.getElementById('makeDayOffBtn').style.display = 'none';
+        document.getElementById('dayOffActions').style.display = 'none';
+    }
+}
+
+
+// ============================================================
+// ПЕРЕХОД ИЗ ВЫХОДНОГО В РАБОЧИЙ ДЕНЬ
+// ============================================================
+
+function makeWorkingFromDayOff() {
+    // Меняем "Выходной день" на "Установи время работы"
+    document.getElementById('workTimeLabelText').textContent = 'Установи время работы';
+    
+    // Показываем время
+    document.getElementById('workTimeDisplay').textContent = '09:00 - 18:00';
+    
+    // Скрываем кнопку "Сделать рабочим"
+    document.getElementById('dayOffActions').style.display = 'none';
+    
+    // Показываем блок с перерывами
+    document.getElementById('breaksContainer').style.display = 'block';
+    
+    // Включаем режим редактирования
+    editWorkTime();
+}

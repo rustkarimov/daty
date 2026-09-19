@@ -118,7 +118,7 @@ def dashboard(request):
     
 
 # ============================================================
-# ======================= API Дашборда ============================
+# ======================= API Дашборда =======================
 # ============================================================ 
 
 @login_required
@@ -2536,6 +2536,9 @@ def create_booking(request, identifier):
         
         booking_date = datetime.strptime(date_str, '%Y-%m-%d').date()
         booking_time = datetime.strptime(time_str, '%H:%M').time()
+
+        if booking_date < date.today():
+            return api_error('Нельзя записаться на прошедшую дату', status=400)
         
         calculator = ScheduleCalculator(master)
         slots = calculator.generate_time_slots(booking_date, service.duration)
@@ -2632,6 +2635,9 @@ def create_multiple_bookings(request, identifier):
         
         booking_date = datetime.strptime(date_str, '%Y-%m-%d').date()
         start_time = datetime.strptime(start_time_str, '%H:%M').time()
+
+        if booking_date < date.today():
+            return api_error('Нельзя записаться на прошедшую дату', status=400)
         
         calculator = ScheduleCalculator(master)
         slots = calculator.generate_time_slots(booking_date, total_duration)
