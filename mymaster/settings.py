@@ -153,3 +153,12 @@ LOGIN_URL = '/'
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'home'
 
+
+# Доверенные источники для CSRF (нужно для работы через домен)
+CSRF_TRUSTED_ORIGINS = [
+    'https://daty.pro',
+    'https://www.daty.pro',
+    'http://daty.pro',
+    'http://www.daty.pro',
+]
+
