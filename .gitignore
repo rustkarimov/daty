@@ -22,4 +22,4 @@ db.sqlite3-journal
 # .gitignore
 .env
 *.env
-.env.*
+.env.*db.sqlite3
