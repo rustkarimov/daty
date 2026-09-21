@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Нет интернета — ДАТЫ</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f6fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            text-align: center;
+            color: #1a1a2e;
+        }
+        .container { padding: 24px; }
+        .icon { font-size: 64px; margin-bottom: 16px; }
+        h1 { font-size: 24px; margin-bottom: 8px; }
+        p { color: #6b7280; margin-bottom: 24px; }
+        button {
+            background: #4053d3;
+            color: white;
+            border: none;
+            padding: 12px 32px;
+            border-radius: 100px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        button:hover { background: #2f41b3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">📡</div>
+        <h1>Нет подключения к интернету</h1>
+        <p>Проверьте соединение и попробуйте снова</p>
+        <button onclick="location.reload()">Обновить</button>
+    </div>
+</body>
+</html>

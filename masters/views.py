@@ -30,6 +30,9 @@ import os
 from .utils.sms_utils import send_sms
 from .utils.call_utils import request_call_verification, check_call_status
 
+from django.http import HttpResponse
+from django.conf import settings
+
 # ============================================================
 # ======================= УТИЛИТЫ ============================
 # ============================================================ 
@@ -59,6 +62,20 @@ def format_phone(phone):
 
 def home(request):
     return render(request, 'masters/public/index.html')
+
+def service_worker(request):
+    """Отдаёт service-worker.js из корня сайта"""
+    sw_path = os.path.join(settings.BASE_DIR, 'static', 'service-worker.js')
+    if not os.path.exists(sw_path):
+        return HttpResponse('// SW not found', content_type='application/javascript', status=404)
+    
+    with open(sw_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+    
+    response = HttpResponse(content, content_type='application/javascript')
+    response['Service-Worker-Allowed'] = '/'
+    response['Cache-Control'] = 'no-cache'
+    return response
 
 @login_required
 def dashboard(request):
