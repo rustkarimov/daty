@@ -1,0 +1,14 @@
+{
+    "name": "ДАТЫ — умное расписание",
+    "short_name": "ДАТЫ",
+    "description": "Сервис для самозанятых мастеров: запись клиентов, расписание, статистика",
+    "start_url": "/",
+    "scope": "/",
+    "display": "standalone",
+    "orientation": "portrait-primary",
+    "background_color": "#f5f6fa",
+    "theme_color": "#4053d3",
+    "lang": "ru",
+    "dir": "ltr",
+    "categories": ["business", "productivity"]
+}
