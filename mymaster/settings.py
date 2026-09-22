@@ -162,19 +162,3 @@ CSRF_TRUSTED_ORIGINS = [
     'http://www.daty.pro',
 ]
 
-# ============================================================
-# PWA / Сессии / HTTPS
-# ============================================================
-
-# Сессия — 30 дней (для PWA)
-SESSION_COOKIE_AGE = 60 * 60 * 24 * 30
-SESSION_SAVE_EVERY_REQUEST = True
-
-# Безопасность на продакшене
-if not DEBUG:
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-    SECURE_SSL_REDIRECT = True
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-    SECURE_HSTS_SECONDS = 31536000
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True

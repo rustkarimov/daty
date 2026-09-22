@@ -3,8 +3,6 @@ from django.contrib.auth import views as auth_views
 from . import views
 
 urlpatterns = [
-
-    path('service-worker.js', views.service_worker, name='service_worker'),
     
     path('', views.home, name='home'),
 
