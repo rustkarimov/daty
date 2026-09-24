@@ -130,7 +130,9 @@ urlpatterns = [
     path('api/support/send/', views.send_support_message, name='api_support_send'),
     path('api/support/unread/', views.get_unread_support_count, name='api_support_unread'),
 
+    # Push-уведомления
+    path('api/push/subscribe/', views.api_push_subscribe, name='api_push_subscribe'),
+    path('api/push/unsubscribe/', views.api_push_unsubscribe, name='api_push_unsubscribe'),
+    path('api/push/vapid-key/', views.api_push_vapid_public_key, name='api_push_vapid_key'),
 
-    
-    
 ]

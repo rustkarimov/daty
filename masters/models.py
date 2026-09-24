@@ -370,3 +370,27 @@ class SupportMessage(models.Model):
     
     def __str__(self):
         return f"{self.get_direction_display()}: {self.message[:50]}"
+
+
+class PushSubscription(models.Model):
+    """Подписка на push-уведомления"""
+    master = models.ForeignKey(
+        Master,
+        on_delete=models.CASCADE,
+        related_name='push_subscriptions',
+        verbose_name="Мастер"
+    )
+    endpoint = models.TextField(verbose_name="Endpoint (URL push-сервиса)")
+    p256dh = models.TextField(verbose_name="Публичный ключ клиента (p256dh)")
+    auth = models.TextField(verbose_name="Auth-секрет клиента")
+    user_agent = models.CharField(max_length=255, blank=True, verbose_name="User Agent")
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name = "Push-подписка"
+        verbose_name_plural = "Push-подписки"
+        # Один endpoint — одна подписка. Если endpoint повторится — обновим.
+        unique_together = ['master', 'endpoint']
+    
+    def __str__(self):
+        return f"{self.master} — {self.endpoint[:50]}..."

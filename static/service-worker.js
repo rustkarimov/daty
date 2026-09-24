@@ -1,4 +1,4 @@
-const CACHE_NAME = 'daty-v4';
+const CACHE_NAME = 'daty-v8';
 const OFFLINE_URL = '/static/offline.html';
 
 // Что кешируем при установке
@@ -99,4 +99,56 @@ self.addEventListener('fetch', event => {
     // Всё остальное (API, AJAX) — ТОЛЬКО из сети, без кеша.
     // --------------------------------------------------------
     event.respondWith(fetch(request));
+});
+
+// ============================================================
+// PUSH-УВЕДОМЛЕНИЯ
+// ============================================================
+
+self.addEventListener('push', function(event) {
+    console.log('🔔 PUSH ПОЛУЧЕН');
+    console.log('event.data:', event.data);
+    
+    let data = {
+        title: 'ДАТЫ',
+        body: 'Новое уведомление',
+        url: '/dashboard/'
+    };
+    
+    if (event.data) {
+        try {
+            // Пытаемся распарсить JSON
+            const text = event.data.text();
+            console.log('Сырой текст:', text);
+            
+            try {
+                data = JSON.parse(text);
+                console.log('Распарсенные data:', data);
+            } catch (e) {
+                // Если не JSON — используем как body
+                data.body = text;
+                console.log('Не JSON, используем как body');
+            }
+        } catch (e) {
+            console.error('Ошибка чтения event.data:', e);
+        }
+    }
+    
+    const options = {
+        body: data.body,
+        icon: '/static/images/pwa/icon-192.png',
+        badge: '/static/images/pwa/icon-192.png',
+        data: {
+            url: data.url || '/dashboard/'
+        },
+        tag: data.tag || 'daty-notification'
+    };
+    
+    console.log('Показываем уведомление:', data.title, options);
+    
+    event.waitUntil(
+        self.registration.showNotification(data.title, options)
+            .then(() => console.log('✅ showNotification выполнен'))
+            .catch((err) => console.error('❌ Ошибка showNotification:', err))
+    );
 });

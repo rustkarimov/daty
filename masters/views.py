@@ -8,7 +8,7 @@ from django.contrib.auth import logout as auth_logout
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-from .models import BlacklistedClient, Master, Service, Booking, Schedule, DayOff, PhoneVerification, CustomUser, Break, ExtraWorkingDay, ExtraWorkingDayBreak, ServiceCategory, Notification, SupportMessage
+from .models import BlacklistedClient, Master, Service, Booking, Schedule, DayOff, PhoneVerification, CustomUser, Break, ExtraWorkingDay, ExtraWorkingDayBreak, ServiceCategory, Notification, SupportMessage, PushSubscription
 from .forms import PhoneRegistrationForm, PhoneVerificationForm
 
 from .utils.schedule_utils import ScheduleCalculator
@@ -36,6 +36,10 @@ from django.conf import settings
 from django.http import HttpResponse
 from django.conf import settings
 import os
+
+from .utils.push_utils import send_push_to_master
+
+
 # ============================================================
 # ======================= УТИЛИТЫ ============================
 # ============================================================ 
@@ -2724,6 +2728,29 @@ def create_multiple_bookings(request, identifier):
                 message=notification_message,
                 content_object=created_bookings[0]
             )
+
+            from .utils.push_utils import send_push_to_master
+            
+            # Формируем краткий текст
+            if len(services) == 1:
+                service_text = services[0].name
+            else:
+                service_text = f'{len(services)} услуги'
+            
+            push_title = '📅 Новая запись'
+            push_body = f'{client_name} · {start_time_str} · {service_text}'
+            
+            try:
+                result = send_push_to_master(
+                    master=master,
+                    title=push_title,
+                    body=push_body,
+                    url='/dashboard/',
+                    tag=f'booking-{created_bookings[0].id}'
+                )
+                print(f'📤 Push результат: {result}')
+            except Exception as e:
+                print(f'❌ Ошибка отправки push: {e}')
         
         return api_success({
             'message': f'✅ Запись на {len(created_bookings)} услуг создана!',
@@ -2940,6 +2967,77 @@ def get_unread_support_count(request):
     ).count()
     
     return JsonResponse({'unread_count': unread_count})
+
+
+# ============================================================
+# ======================= PUSH-УВЕДОМЛЕНИЯ ===================
+# ============================================================
+
+@login_required
+@require_http_methods(["POST"])
+def api_push_subscribe(request):
+    """Сохраняет push-подписку мастера"""
+    try:
+        master = request.user.master
+        data = json.loads(request.body)
+        
+        endpoint = data.get('endpoint')
+        keys = data.get('keys', {})
+        p256dh = keys.get('p256dh')
+        auth = keys.get('auth')
+        
+        if not endpoint or not p256dh or not auth:
+            return api_error('Неверные данные подписки', status=400)
+        
+        # update_or_create — если endpoint уже есть, обновим
+        sub, created = PushSubscription.objects.update_or_create(
+            master=master,
+            endpoint=endpoint,
+            defaults={
+                'p256dh': p256dh,
+                'auth': auth,
+                'user_agent': request.META.get('HTTP_USER_AGENT', '')[:255],
+            }
+        )
+        
+        return api_success({'created': created})
+        
+    except json.JSONDecodeError:
+        return api_error('Неверный формат данных', status=400)
+    except Exception as e:
+        return api_error(f'Ошибка: {str(e)}', status=500)
+
+
+@login_required
+@require_http_methods(["POST"])
+def api_push_unsubscribe(request):
+    """Удаляет push-подписку мастера"""
+    try:
+        master = request.user.master
+        data = json.loads(request.body)
+        endpoint = data.get('endpoint')
+        
+        if not endpoint:
+            return api_error('Endpoint не указан', status=400)
+        
+        deleted, _ = PushSubscription.objects.filter(
+            master=master, endpoint=endpoint
+        ).delete()
+        
+        return api_success({'deleted': deleted})
+        
+    except json.JSONDecodeError:
+        return api_error('Неверный формат данных', status=400)
+    except Exception as e:
+        return api_error(f'Ошибка: {str(e)}', status=500)
+
+
+@login_required
+def api_push_vapid_public_key(request):
+    """Возвращает публичный VAPID-ключ для подписки"""
+    return api_success({
+        'publicKey': os.getenv('VAPID_PUBLIC_KEY', '')
+    })
 
 
 # ============================================================
