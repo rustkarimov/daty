@@ -26,6 +26,16 @@
 {% block extra_css %}{% endblock %}
 </head>
 <body>
+
+    <!-- ЛОАДЕР -->
+        <div id="page-loader">
+            <div class="loader-content">
+                <div class="loader-spinner"></div>
+                <div class="loader-text">Загрузка...</div>
+            </div>
+        </div>
+
+
     <div class="app-container">
         <!-- Боковое меню (только для десктопа) -->
         <aside class="sidebar">
@@ -1145,6 +1155,33 @@ if ('serviceWorker' in navigator) {
 </script>
 
 {% block extra_js %}{% endblock %}
+
+
+<script>
+// Скрываем лоадер, когда страница загружена
+(function() {
+    function hideLoader() {
+        const loader = document.getElementById('page-loader');
+        if (loader) {
+            loader.classList.add('hidden');
+            setTimeout(() => loader.remove(), 300);
+        }
+    }
+    
+    // Если страница уже загружена — скрываем сразу
+    if (document.readyState === 'complete') {
+        hideLoader();
+    } else {
+        window.addEventListener('load', hideLoader);
+    }
+    
+    // На всякий случай — скрываем через 5 секунд принудительно,
+    // чтобы лоадер не «залип», если что-то пошло не так
+    setTimeout(hideLoader, 5000);
+})();
+</script>
+
+
 </body>
 </html>
 
