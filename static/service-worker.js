@@ -1,4 +1,4 @@
-const CACHE_NAME = 'daty-v1';
+const CACHE_NAME = 'daty-v4';
 const OFFLINE_URL = '/static/offline.html';
 
 // Что кешируем при установке
@@ -42,6 +42,19 @@ self.addEventListener('activate', event => {
 });
 
 // ============================================================
+// Вспомогательная функция: fetch с таймаутом
+// ============================================================
+function fetchWithTimeout(request, timeoutMs) {
+    return new Promise((resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error('timeout')), timeoutMs);
+        fetch(request).then(
+            response => { clearTimeout(timer); resolve(response); },
+            error => { clearTimeout(timer); reject(error); }
+        );
+    });
+}
+
+// ============================================================
 // FETCH — безопасная стратегия
 // ============================================================
 self.addEventListener('fetch', event => {
@@ -53,12 +66,14 @@ self.addEventListener('fetch', event => {
     if (url.origin !== location.origin) return;
 
     // --------------------------------------------------------
-    // HTML-страницы — ВСЕГДА из сети. Кеш НЕ используем.
-    // При офлайне — показываем offline.html.
+    // HTML-страницы — Network First с ТАЙМАУТОМ и ПОВТОРОМ.
+    // offline.html показываем только если сеть реально не работает.
     // --------------------------------------------------------
     if (request.mode === 'navigate' || request.headers.get('accept')?.includes('text/html')) {
         event.respondWith(
-            fetch(request).catch(() => caches.match(OFFLINE_URL))
+            fetchWithTimeout(request, 8000)              // 1-я попытка: 8 секунд
+                .catch(() => fetchWithTimeout(request, 15000))  // 2-я попытка: 15 секунд
+                .catch(() => caches.match(OFFLINE_URL))         // offline.html, если обе не прошли
         );
         return;
     }
