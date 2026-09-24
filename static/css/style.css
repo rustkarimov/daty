@@ -236,60 +236,7 @@ body {
     }
 }
 
-@font-face {
-    font-family: 'Baloo';
-    src: url('../webfonts/Baloo/baloo-cyrillic.ttf') format('truetype');
-    font-weight: 400;
-    font-style: normal;
-    font-display: swap;
-}
 
-@font-face {
-    font-family: 'Cunia';
-    src: url('../webfonts/Cunia/cunia.otf') format('opentype');
-    font-weight: 400;
-    font-style: normal;
-    font-display: swap;
-}
-
-/* ComicHelvetic — семейство шрифтов (тяжёлый) */
-@font-face {
-    font-family: 'ComicHelvetic';
-    src: url('../webfonts/Comic Helvetic/ComicHelvetic_Heavy.otf') format('opentype');
-    font-weight: 900;
-    font-style: normal;
-    font-display: swap;
-}
-
-/* ComicHelvetic — семейство шрифтов (лёгкий) */
-@font-face {
-    font-family: 'ComicHelvetic';
-    src: url('../webfonts/Comic Helvetic/ComicHelvetic_Light.otf') format('opentype');
-    font-weight: 300;
-    font-style: normal;
-    font-display: swap;
-}
-
-/* ComicHelvetic — семейство шрифтов (средний) */
-@font-face {
-    font-family: 'ComicHelvetic';
-    src: url('../webfonts/Comic Helvetic/ComicHelvetic_Medium.otf') format('opentype');
-    font-weight: 500;
-    font-style: normal;
-    font-display: swap;
-}
-
-/* Boorsok — вероятно, декоративный/кириллический */
-@font-face {
-    font-family: 'Boorsok';
-    src: url('../webfonts/Borsok/boorsok.otf') format('opentype');
-    font-weight: 400;
-    font-style: normal;
-    font-display: swap;
-}
-
-
-/* SemiBold (600) */
 @font-face {
     font-family: 'Nunito';
     src: url('../webfonts/Nunito/Nunito-SemiBold.ttf') format('truetype');
