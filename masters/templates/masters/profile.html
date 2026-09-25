@@ -84,6 +84,37 @@
                             <textarea class="form-control" id="bio" name="bio" rows="4">{{ master.bio }}</textarea>
                         </div>
 
+                        <!-- Push-уведомления -->
+<div class="mb-3 p-3" style="background: var(--gray-50); border-radius: 12px; border: 1px solid var(--gray-200);">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <strong style="font-size: 0.95rem;">
+                <i class="fas fa-bell me-2" style="color: var(--primary);"></i>
+                Push-уведомления
+            </strong>
+            <div class="text-muted" style="font-size: 0.8rem; margin-top: 4px;">
+                Получать уведомления о новых записях
+            </div>
+        </div>
+        <div>
+            <button type="button" class="btn btn-sm btn-outline-pink" 
+                    id="push-enable-btn"
+                    onclick="enablePush()">
+                Включить
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-danger" 
+                    id="push-disable-btn"
+                    onclick="disablePush()"
+                    style="display: none;">
+                Отключить
+            </button>
+        </div>
+    </div>
+    <div id="push-status" style="font-size: 0.75rem; margin-top: 8px;"></div>
+</div>
+
+
+
                         <div class="form-actions">
                             <button type="submit" class="btn btn-pink">
                                 Сохранить изменения
@@ -95,6 +126,65 @@
         </div>
     </div>
 </div>
+
+
+<!-- Уведомления -->
+<script>
+async function enablePush() {
+    const btn = document.getElementById('push-enable-btn');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    btn.disabled = true;
+    
+    const ok = await subscribeToPush();
+    
+    btn.innerHTML = originalText;
+    btn.disabled = false;
+    
+    if (ok) {
+        updatePushUI(true);
+    }
+}
+
+async function disablePush() {
+    const btn = document.getElementById('push-disable-btn');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    btn.disabled = true;
+    
+    await unsubscribeFromPush();
+    
+    btn.innerHTML = originalText;
+    btn.disabled = false;
+    
+    updatePushUI(false);
+}
+
+async function updatePushUI(subscribed) {
+    const enableBtn = document.getElementById('push-enable-btn');
+    const disableBtn = document.getElementById('push-disable-btn');
+    const status = document.getElementById('push-status');
+    
+    if (subscribed) {
+        enableBtn.style.display = 'none';
+        disableBtn.style.display = 'inline-block';
+        status.innerHTML = '<span style="color: #10b981;"><i class="fas fa-check-circle me-1"></i>Уведомления включены</span>';
+    } else {
+        enableBtn.style.display = 'inline-block';
+        disableBtn.style.display = 'none';
+        status.innerHTML = '';
+    }
+}
+
+// Проверяем статус при загрузке
+document.addEventListener('DOMContentLoaded', async function() {
+    const subscribed = await checkPushSubscription();
+    updatePushUI(subscribed);
+});
+</script>
+
+
+
 
 <script>
 // Загрузка аватара

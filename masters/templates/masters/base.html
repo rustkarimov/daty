@@ -61,12 +61,6 @@
                     <span>Профиль</span>
                 </a>
 
-                <button onclick="subscribeToPush().then(ok => alert('Результат: ' + ok))" 
-                        class="btn btn-primary" 
-                        style="position: fixed; bottom: 100px; right: 20px; z-index: 99999;">
-                    🔔 Включить уведомления
-                </button>
-                
             </nav>
             <div class="sidebar-footer">
                 <a href="{% url 'logout' %}" class="nav-item">
