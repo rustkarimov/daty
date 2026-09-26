@@ -1,4 +1,4 @@
-const CACHE_NAME = 'daty-v8';
+const CACHE_NAME = 'daty-v11';
 const OFFLINE_URL = '/static/offline.html';
 
 // Что кешируем при установке
@@ -150,5 +150,29 @@ self.addEventListener('push', function(event) {
         self.registration.showNotification(data.title, options)
             .then(() => console.log('✅ showNotification выполнен'))
             .catch((err) => console.error('❌ Ошибка showNotification:', err))
+    );
+});
+
+// ============================================================
+// КЛИК ПО УВЕДОМЛЕНИЮ
+// ============================================================
+self.addEventListener('notificationclick', function(event) {
+    console.log('👆 Клик по уведомлению');
+    event.notification.close();
+    
+    event.waitUntil(
+        clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList) {
+            for (let i = 0; i < clientList.length; i++) {
+                const client = clientList[i];
+                if (client.url.includes(self.location.origin) && 'focus' in client) {
+                    client.focus();
+                    client.postMessage({ type: 'OPEN_NOTIFICATIONS' });
+                    return;
+                }
+            }
+            if (clients.openWindow) {
+                return clients.openWindow('/dashboard/?open_notifications=1');
+            }
+        })
     );
 });

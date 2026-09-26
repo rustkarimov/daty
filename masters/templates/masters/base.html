@@ -280,6 +280,36 @@
         </div>
     </div>
 
+
+<!-- Модалка Pre-prompt -->
+<div class="modal fade" id="prePromptModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-bell me-2" style="color: var(--primary);"></i>
+                    Уведомления о записях
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Включить уведомления? Когда клиент запишется — вы сразу узнаете. Даже если приложение закрыто.</p>
+                <p class="text-muted" style="font-size: 0.85rem;">
+                    <i class="fas fa-lock me-1"></i>
+                    Мы не отправляем рекламу. Только уведомления о ваших записях.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                        onclick="dismissPrePrompt()">Позже</button>
+                <button type="button" class="btn btn-pink" onclick="confirmPrePrompt()">
+                    <i class="fas fa-bell me-1"></i>Включить
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
     <!-- Контейнер для сообщений от Django -->
     {% if messages %}
         <div id="django-messages-data" style="display: none;">
@@ -1297,6 +1327,95 @@ async function unsubscribeFromPush() {
 // }
 
 </script>
+
+
+
+<script>
+// ============================================================
+// UX: автооткрытие модалки при клике на push
+// ============================================================
+
+// 1. Слушаем сообщения от SW
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('message', function(event) {
+        console.log('📩 Сообщение от SW:', event.data);
+        
+        if (event.data && event.data.type === 'OPEN_NOTIFICATIONS') {
+            if (typeof toggleNotifications === 'function') {
+                toggleNotifications();
+            }
+        }
+    });
+}
+
+// 2. Fallback: параметр в URL
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    if (urlParams.get('open_notifications') === '1') {
+        setTimeout(function() {
+            if (typeof toggleNotifications === 'function') {
+                toggleNotifications();
+            }
+            window.history.replaceState({}, '', window.location.pathname);
+        }, 300);
+    }
+});
+</script>
+
+
+<script>
+// ============================================================
+// Pre-prompt: показываем модалку при первом заходе
+// ============================================================
+
+function dismissPrePrompt() {
+    localStorage.setItem('push_dismissed', 'true');
+}
+
+async function confirmPrePrompt() {
+    const modalEl = document.getElementById('prePromptModal');
+    const modal = bootstrap.Modal.getInstance(modalEl);
+    if (modal) modal.hide();
+    
+    const ok = await subscribeToPush();
+    if (ok && typeof updateDashboardPushUI === 'function') {
+        updateDashboardPushUI(true);
+    }
+}
+
+// Показ модалки при первом заходе (только на дашборде)
+document.addEventListener('DOMContentLoaded', async function() {
+    // Только если на дашборде
+    if (!document.getElementById('push-notification-card')) return;
+    
+    // Проверка поддержки
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+    
+    // iOS без PWA
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                         window.navigator.standalone === true;
+    if (isIOS && !isStandalone) return;
+    
+    // Уже подписан?
+    if (typeof checkPushSubscription === 'function') {
+        const subscribed = await checkPushSubscription();
+        if (subscribed) return;
+    }
+    
+    // Отказался?
+    if (localStorage.getItem('push_dismissed') === 'true') return;
+    
+    // Показываем модалку через 2 секунды
+    setTimeout(function() {
+        const modalEl = document.getElementById('prePromptModal');
+        if (modalEl) new bootstrap.Modal(modalEl).show();
+    }, 2000);
+});
+</script>
+
+
 
 {% block extra_js %}{% endblock %}
 

@@ -97,13 +97,6 @@
 </div>
 
 
-
-
-
-
-
-
-
 <!-- Статистика -->
 
 <div class="stats-grid">
@@ -154,6 +147,59 @@
         <small class="text-muted d-block mt-2">Отправь эту ссылку клиентам, и они смогут записаться</small>
     </div>
 </div>
+
+
+<!-- Push-уведомления: постоянная секция -->
+<div class="card mb-4" id="push-notification-card">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+            <div>
+                <strong style="font-size: 0.95rem;">
+                    <i class="fas fa-bell me-2" style="color: var(--primary);"></i>
+                    Push-уведомления
+                </strong>
+                <div class="text-muted" style="font-size: 0.8rem; margin-top: 4px;">
+                    Получать уведомления о новых записях
+                </div>
+            </div>
+            <div>
+                <button type="button" class="btn btn-sm btn-outline-pink" 
+                        id="push-enable-btn"
+                        onclick="enablePushFromDashboard()">
+                    Включить
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-danger" 
+                        id="push-disable-btn"
+                        onclick="disablePushFromDashboard()"
+                        style="display: none;">
+                    Отключить
+                </button>
+            </div>
+        </div>
+        <div id="push-status" style="font-size: 0.75rem; margin-top: 8px;"></div>
+
+        <!-- Пояснения -->
+        <div class="mt-3 pt-3" style="border-top: 1px solid var(--gray-200); font-size: 0.8rem; color: var(--gray-500);">
+            <div style="margin-bottom: 4px;">
+                <i class="fas fa-info-circle me-1" style="color: var(--primary);"></i>
+                Уведомления приходят, даже если приложение закрыто.
+            </div>
+            <div style="margin-bottom: 4px;">
+                <i class="fas fa-lock me-1" style="color: var(--primary);"></i>
+                Только о ваших записях. Без рекламы.
+            </div>
+            <div id="push-ios-hint" style="display: none;">
+                <i class="fas fa-mobile-alt me-1" style="color: var(--primary);"></i>
+                <strong>На iPhone:</strong> откройте сайт в Safari → «Поделиться» → «На экран Домой» → включите там.
+            </div>
+            <div id="push-unsupported" style="display: none; color: #dc2626;">
+                <i class="fas fa-exclamation-triangle me-1"></i>
+                Ваш браузер не поддерживает уведомления. Используйте Chrome, Firefox, Safari или Яндекс.Браузер.
+            </div>
+        </div>
+    </div>
+</div>
+
 
 <!-- МОДАЛЬНОЕ ОКНО ПОДТВЕРЖДЕНИЯ -->
 <div class="modal fade" id="confirmModal" tabindex="-1">
@@ -3576,6 +3622,157 @@ function makeWorkingFromDayOff() {
     // Включаем режим редактирования
     editWorkTime();
 }
+</script>
+
+
+
+
+<script>
+// ============================================================
+// МОДАЛКА ПУШИ-Уведомления
+// ============================================================
+
+// Показываем блок, только если push не включён и не отказано ранее
+document.addEventListener('DOMContentLoaded', async function() {
+    const card = document.getElementById('push-notification-card');
+    if (!card) return;
+    
+    // Проверка поддержки
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+        return; // Не поддерживается — не показываем
+    }
+    
+    // Проверка iOS без PWA
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    if (isIOS && !isStandalone) {
+        return; // iPhone без PWA — не показываем
+    }
+    
+    // Проверка — есть ли подписка
+    const subscribed = await checkPushSubscription();
+    if (subscribed) {
+        return; // Уже подписан — не показываем
+    }
+    
+    // Проверка — отказался ли пользователь
+    const dismissed = localStorage.getItem('push_dismissed');
+    if (dismissed === 'true') {
+        return; // Отказался — не показываем
+    }
+    
+    // Показываем карточку
+    card.style.display = 'block';
+});
+
+function enablePushFromDashboard() {
+    showPrePrompt();
+}
+
+function dismissPushFromDashboard() {
+    localStorage.setItem('push_dismissed', 'true');
+    const card = document.getElementById('push-notification-card');
+    if (card) card.style.display = 'none';
+}
+</script>
+
+
+<script>
+// ============================================================
+// Push-уведомления на дашборде
+// ============================================================
+
+// Кнопка «Включить» — прямое действие (без модалки)
+async function enablePushFromDashboard() {
+    const btn = document.getElementById('push-enable-btn');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    btn.disabled = true;
+    
+    const ok = await subscribeToPush();
+    
+    btn.innerHTML = originalText;
+    btn.disabled = false;
+    
+    if (ok) {
+        updateDashboardPushUI(true);
+        // Скрываем модалку, если она открыта
+        const modalEl = document.getElementById('prePromptModal');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+    }
+}
+
+// Кнопка «Отключить»
+async function disablePushFromDashboard() {
+    const btn = document.getElementById('push-disable-btn');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    btn.disabled = true;
+    
+    await unsubscribeFromPush();
+    
+    btn.innerHTML = originalText;
+    btn.disabled = false;
+    
+    updateDashboardPushUI(false);
+}
+
+function updateDashboardPushUI(subscribed) {
+    const enableBtn = document.getElementById('push-enable-btn');
+    const disableBtn = document.getElementById('push-disable-btn');
+    const status = document.getElementById('push-status');
+    
+    if (!enableBtn || !disableBtn) return;
+    
+    if (subscribed) {
+        enableBtn.style.display = 'none';
+        disableBtn.style.display = 'inline-block';
+        status.innerHTML = '<span style="color: #10b981;"><i class="fas fa-check-circle me-1"></i>Уведомления включены</span>';
+    } else {
+        enableBtn.style.display = 'inline-block';
+        disableBtn.style.display = 'none';
+        status.innerHTML = '';
+    }
+}
+
+// Инициализация при загрузке
+document.addEventListener('DOMContentLoaded', async function() {
+    const card = document.getElementById('push-notification-card');
+    if (!card) return;
+    
+    // Проверка поддержки
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+        const unsupported = document.getElementById('push-unsupported');
+        if (unsupported) unsupported.style.display = 'block';
+        const btn = document.getElementById('push-enable-btn');
+        if (btn) btn.style.display = 'none';
+        return;
+    }
+    
+    // iOS без PWA
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                         window.navigator.standalone === true;
+    if (isIOS && !isStandalone) {
+        const hint = document.getElementById('push-ios-hint');
+        if (hint) hint.style.display = 'block';
+        const btn = document.getElementById('push-enable-btn');
+        if (btn) btn.style.display = 'none';
+        return;
+    }
+    
+    // Проверка подписки
+    if (typeof checkPushSubscription === 'function') {
+        try {
+            const subscribed = await checkPushSubscription();
+            updateDashboardPushUI(subscribed);
+        } catch (e) {
+            console.warn('Ошибка проверки подписки:', e);
+            updateDashboardPushUI(false);
+        }
+    }
+});
 </script>
 
 {% endblock %}
