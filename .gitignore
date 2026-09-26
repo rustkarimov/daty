@@ -1,6 +1,5 @@
 # Виртуальное окружение
 venv/
-venv
 
 # Python кэш
 __pycache__/
@@ -19,9 +18,17 @@ db.sqlite3-journal
 *.swo
 *~
 
-# .gitignore
+# Окружение и секреты
 .env
-*.env
-.env.*db.sqlite3
-
+.env.*
 secrets/
+
+# Медиа (загрузки пользователей)
+media/
+
+# Собранная статика (collectstatic)
+static/admin/
+staticfiles/
+
+# macOS
+.DS_Store
