@@ -135,4 +135,7 @@ urlpatterns = [
     path('api/push/unsubscribe/', views.api_push_unsubscribe, name='api_push_unsubscribe'),
     path('api/push/vapid-key/', views.api_push_vapid_public_key, name='api_push_vapid_key'),
 
+    # Проверка Push-уведомлений
+    path('api/push/check/', views.api_push_check, name='api_push_check'),
+
 ]

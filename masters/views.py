@@ -3040,6 +3040,31 @@ def api_push_vapid_public_key(request):
     })
 
 
+
+
+@login_required
+@require_http_methods(["POST"])
+def api_push_check(request):
+    """Проверяет, есть ли подписка мастера с таким endpoint"""
+    try:
+        master = request.user.master
+        data = json.loads(request.body)
+        endpoint = data.get('endpoint')
+        
+        if not endpoint:
+            return api_error('Endpoint не указан', status=400)
+        
+        exists = PushSubscription.objects.filter(
+            master=master, endpoint=endpoint
+        ).exists()
+        
+        return api_success({'exists': exists})
+        
+    except json.JSONDecodeError:
+        return api_error('Неверный формат данных', status=400)
+    except Exception as e:
+        return api_error(f'Ошибка: {str(e)}', status=500)
+
 # ============================================================
 # ====================== ПОЛИТИКА ============================
 # ============================================================ 
