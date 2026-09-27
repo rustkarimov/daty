@@ -14,6 +14,14 @@ import random
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
 
+import secrets
+
+
+def generate_booking_token():
+    """Генерирует уникальный токен для записи"""
+    return secrets.token_urlsafe(16)  # 22 символа, URL-safe
+
+
 # Кастомный менеджер пользователей
 class CustomUserManager(BaseUserManager):
     def create_user(self, phone, password=None, **extra_fields):
@@ -284,6 +292,8 @@ class Booking(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     confirmed_by_master = models.BooleanField(default=False, verbose_name="Подтверждено мастером")
+
+    token = models.CharField(max_length=32, unique=True, null=True, blank=True, verbose_name="Токен для клиента", help_text="Уникальный токен для управления записью клиентом")
     
     class Meta:
         verbose_name = "Запись"
@@ -298,6 +308,16 @@ class Booking(models.Model):
         """Расшифровывает телефон (будет использоваться мастером)"""
         f = Fernet(key)
         return f.decrypt(bytes(self.encrypted_phone)).decode()
+
+    def save(self, *args, **kwargs):
+        if not self.token:
+            # Генерируем уникальный токен
+            while True:
+                token = generate_booking_token()
+                if not Booking.objects.filter(token=token).exists():
+                    self.token = token
+                    break
+        super().save(*args, **kwargs)
 
 class BlacklistedClient(models.Model):
     """Чёрный список клиентов"""
