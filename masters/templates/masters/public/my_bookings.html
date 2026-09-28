@@ -1,0 +1,301 @@
+{% extends 'masters/public/public_base.html' %}
+
+{% block title %}Мои записи{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        
+        <div class="card mb-4">
+            <div class="card-body">
+                <h2 style="font-weight: 700; margin-bottom: 4px;">Мои записи</h2>
+                <p class="text-muted" style="font-size: 0.9rem;">{{ master.first_name }} {{ master.last_name }}</p>
+                <p class="text-muted" style="font-size: 0.85rem;">Телефон: +7 *** *** {{ client_phone|slice:"-4:" }}</p>
+            </div>
+        </div>
+        
+        {% if bookings %}
+            {% for booking in bookings %}
+                <div class="card mb-3" id="booking-{{ booking.id }}">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
+                            <div>
+                                <strong style="font-size: 1rem;">{{ booking.service.name }}</strong>
+                                <div class="text-muted" style="font-size: 0.8rem;">{{ booking.service.duration }} мин · {{ booking.service.price }} ₽</div>
+                            </div>
+                        </div>
+                        <div class="mb-3 pb-3" style="border-bottom: 1px solid var(--gray-100);">
+                            <div class="text-muted" style="font-size: 0.8rem;">Дата и время</div>
+                            <div style="font-size: 0.95rem; font-weight: 600;">
+                                {{ booking.date|date:"d.m.Y" }} в {{ booking.time|time:"H:i" }}
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex gap-2 flex-wrap justify-content-center">
+                            <button type="button" class="btn btn-sm btn-pink" onclick="openChangeModal('{{ booking.token }}', '{{ booking.service.name|escapejs }}', '{{ booking.date|date:"Y-m-d" }}', '{{ booking.time|time:"H:i" }}')">
+                                Изменить
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="cancelBookingClient('{{ booking.token }}')">
+                                Отменить
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-calendar-times" style="font-size: 3rem; color: var(--gray-300);"></i>
+                    <p class="text-muted mt-3">У вас нет активных записей</p>
+                    <a href="/{{ identifier }}/" class="btn btn-pink mt-2">Записаться</a>
+                </div>
+            </div>
+        {% endif %}
+        
+        <div class="text-center mt-3">
+            <a href="/{{ identifier }}/" class="btn btn-outline-pink">
+                <i class="fas fa-calendar-plus me-1"></i>Записаться ещё
+            </a>
+        </div>
+        
+    </div>
+</div>
+
+<!-- Модалка изменения -->
+<div class="modal fade" id="changeBookingModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-calendar-alt me-2" style="color: var(--primary);"></i>
+                    Изменить запись
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted" style="font-size: 0.9rem;">
+                    Услуга: <strong id="change-service-name"></strong>
+                </p>
+                
+                <div class="mb-3">
+                    <label class="form-label">Новая дата</label>
+                    <div class="row g-2" id="change-dates-container">
+                        <div class="text-center py-3">
+                            <div class="spinner-border spinner-border-sm" style="color: var(--primary);"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-3" id="change-times-container" style="display: none;">
+                    <label class="form-label">Новое время</label>
+                    <div class="row g-2" id="change-slots-container"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-pink" id="change-save-btn" onclick="saveClientChange()" disabled>
+                    Сохранить
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const IDENTIFIER = '{{ identifier }}';
+let currentBookingToken = null;
+let selectedDate = null;
+let selectedTime = null;
+
+function openChangeModal(bookingToken, serviceName, currentDate, currentTime) {
+    currentBookingToken = bookingToken;
+    selectedDate = null;
+    selectedTime = null;
+    
+    document.getElementById('change-service-name').innerText = serviceName;
+    document.getElementById('change-save-btn').disabled = true;
+    document.getElementById('change-times-container').style.display = 'none';
+    
+    const modal = new bootstrap.Modal(document.getElementById('changeBookingModal'));
+    modal.show();
+    
+    // Загружаем даты
+    loadClientDates();
+}
+
+function loadClientDates() {
+    const container = document.getElementById('change-dates-container');
+    container.innerHTML = '<div class="text-center py-3"><div class="spinner-border spinner-border-sm" style="color: var(--primary);"></div></div>';
+    
+    // Получаем даты через API (используем get_available_dates через /api/<identifier>/dates/)
+    fetch(`/api/${IDENTIFIER}/dates/?total_duration=30`)
+        .then(r => r.json())
+        .then(data => {
+            if (!data.dates || data.dates.length === 0) {
+                container.innerHTML = '<p class="text-muted text-center">Нет доступных дат</p>';
+                return;
+            }
+            
+            let html = '';
+            data.dates.slice(0, 30).forEach(d => {
+                html += `
+                    <div class="col-4 col-md-3">
+                        <div class="card text-center date-card" 
+                             data-date="${d.date}"
+                             onclick="selectClientDate('${d.date}', this)"
+                             style="cursor: pointer; padding: 6px 4px; border-radius: 8px; border: 1px solid var(--gray-200);">
+                            <div style="font-size: 0.7rem; color: var(--gray-500);">${d.day_of_week}</div>
+                            <div style="font-weight: 600; font-size: 0.85rem;">${d.display}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        })
+        .catch(err => {
+            container.innerHTML = '<p class="text-danger text-center">Ошибка загрузки</p>';
+            console.error(err);
+        });
+}
+
+function selectClientDate(date, element) {
+    document.querySelectorAll('#change-dates-container .date-card').forEach(c => {
+        c.style.borderColor = 'var(--gray-200)';
+        c.style.background = 'white';
+    });
+    element.style.borderColor = 'var(--primary)';
+    element.style.background = 'var(--primary-light)';
+    
+    selectedDate = date;
+    selectedTime = null;
+    document.getElementById('change-save-btn').disabled = true;
+    
+    loadClientSlots(date);
+}
+
+function loadClientSlots(date) {
+    const container = document.getElementById('change-slots-container');
+    const timesContainer = document.getElementById('change-times-container');
+    
+    timesContainer.style.display = 'block';
+    container.innerHTML = '<div class="text-center py-3"><div class="spinner-border spinner-border-sm" style="color: var(--primary);"></div></div>';
+    
+    // Используем публичный API слотов (по service_id)
+    // Но нам нужен service_id. Пока используем длительность 30
+    fetch(`/api/${IDENTIFIER}/slots/?total_duration=30&date=${date}`)
+        .then(r => r.json())
+        .then(data => {
+            if (!data.slots || data.slots.length === 0) {
+                container.innerHTML = '<p class="text-muted text-center">Нет свободного времени</p>';
+                return;
+            }
+            
+            let html = '';
+            data.slots.forEach(s => {
+                html += `
+                    <div class="col-4 col-md-3">
+                        <div class="card text-center slot-card" 
+                             data-time="${s.start}"
+                             onclick="selectClientTime('${s.start}', this)"
+                             style="cursor: pointer; padding: 6px 4px; border-radius: 8px; border: 1px solid var(--gray-200);">
+                            <div style="font-size: 0.85rem; font-weight: 500;">${s.start}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        })
+        .catch(err => {
+            container.innerHTML = '<p class="text-danger text-center">Ошибка</p>';
+            console.error(err);
+        });
+}
+
+function selectClientTime(time, element) {
+    document.querySelectorAll('#change-slots-container .slot-card').forEach(c => {
+        c.style.borderColor = 'var(--gray-200)';
+        c.style.background = 'white';
+    });
+    element.style.borderColor = 'var(--primary)';
+    element.style.background = 'var(--primary-light)';
+    
+    selectedTime = time;
+    document.getElementById('change-save-btn').disabled = false;
+}
+
+function saveClientChange() {
+    if (!currentBookingToken || !selectedDate || !selectedTime) return;
+    
+    const btn = document.getElementById('change-save-btn');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Сохранение...';
+    btn.disabled = true;
+    
+    fetch(`/${IDENTIFIER}/api/booking/${currentBookingToken}/update/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ date: selectedDate, time: selectedTime })
+    })
+    .then(r => r.json())
+    .then(data => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.error || 'Ошибка');
+        }
+    })
+    .catch(err => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        alert('Ошибка');
+        console.error(err);
+    });
+}
+
+function cancelBookingClient(bookingToken) {
+    if (!confirm('Отменить эту запись?')) return;
+    
+    fetch(`/${IDENTIFIER}/api/booking/${bookingToken}/cancel/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.error || 'Ошибка');
+        }
+    })
+    .catch(err => {
+        alert('Ошибка');
+        console.error(err);
+    });
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %}

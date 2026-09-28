@@ -24,6 +24,13 @@
                 {% if master.bio %}
                     <p class="text-muted">{{ master.bio }}</p>
                 {% endif %}
+
+                <div class="mt-3">
+                    <button type="button" class="btn btn-outline-pink" onclick="openClientAuthModal()">
+                        Изменить мои записи
+                    </button>
+                </div>
+
             </div>
         </div>
         
@@ -152,6 +159,71 @@
                     <h4>Запись подтверждена!</h4>
                     <p id="confirmation-details"></p>
                     <button class="btn btn-pink mt-3" onclick="resetBooking()">Записаться еще</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Модалка авторизации клиента -->
+<div class="modal fade" id="clientAuthModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-user-check me-2" style="color: var(--primary);"></i>
+                    Мои записи
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Шаг 1: ввод телефона -->
+                <div id="auth-step-1">
+                    <p class="text-muted" style="font-size: 0.9rem;">
+                        Введите номер телефона, который указывали при записи.
+                    </p>
+                    <div class="mb-3">
+                        <label class="form-label">Телефон</label>
+                        <input type="tel" class="form-control" id="auth-phone" 
+                               placeholder="7 999 123-45-67" autocomplete="tel">
+                    </div>
+                    <div id="auth-error-1" class="text-danger mb-2" style="font-size: 0.85rem; display: none;"></div>
+                    <button type="button" class="btn btn-pink w-100" id="auth-submit-phone" onclick="submitClientPhone()">
+                        Продолжить
+                    </button>
+                </div>
+                
+                <!-- Шаг 2: звонок -->
+                <div id="auth-step-2" style="display: none;">
+                    <p class="text-muted text-center" style="font-size: 0.9rem;">
+                        Позвоните на номер:
+                    </p>
+                    <div class="text-center mb-3">
+                        <a href="#" id="auth-call-link" 
+                           style="font-size: 1.8rem; font-weight: 700; color: var(--primary); text-decoration: none; display: inline-block; padding: 8px 0;">
+                            ---
+                        </a>
+                        <div class="text-muted" style="font-size: 0.75rem;">
+                            Вам ответит робот и сбросит звонок
+                        </div>
+                        <div class="text-muted" style="font-size: 0.75rem;">
+                            Звонок бесплатный
+                        </div>
+                    </div>
+                    
+                    <div class="text-center py-3">
+                        <div class="spinner-border spinner-border-sm" style="color: var(--primary);"></div>
+                        <span class="ms-2">Ожидаем звонка...</span>
+                    </div>
+                    
+                    <div id="auth-status-2" class="text-center" style="font-size: 0.85rem; color: var(--gray-500);"></div>
+                    
+                    <div class="text-center mt-3">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="checkClientCall()">
+                            <i class="fas fa-sync me-1"></i>Проверить статус
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -919,6 +991,192 @@ document.addEventListener('DOMContentLoaded', function() {
         phoneInput.addEventListener('input', function() {
             phoneMask(this);
         });
+    }
+});
+</script>
+
+
+<script>
+// ============================================================
+// Авторизация клиента по звонку
+// ============================================================
+const IDENTIFIER = '{{ master.public_slug }}';
+let clientCheckId = null;
+let checkCallInterval = null;
+
+function openClientAuthModal() {
+    // Сбрасываем состояние
+    document.getElementById('auth-step-1').style.display = 'block';
+    document.getElementById('auth-step-2').style.display = 'none';
+    document.getElementById('auth-phone').value = '';
+    document.getElementById('auth-error-1').style.display = 'none';
+    clientCheckId = null;
+    
+    if (checkCallInterval) {
+        clearInterval(checkCallInterval);
+        checkCallInterval = null;
+    }
+    
+    const modal = new bootstrap.Modal(document.getElementById('clientAuthModal'));
+    modal.show();
+    
+    setTimeout(() => {
+        document.getElementById('auth-phone').focus();
+    }, 300);
+}
+
+function submitClientPhone() {
+    const phoneInput = document.getElementById('auth-phone');
+    const phone = phoneInput.value.replace(/\D/g, '');
+    
+    if (phone.length !== 11) {
+        document.getElementById('auth-error-1').innerText = 'Введите 11 цифр';
+        document.getElementById('auth-error-1').style.display = 'block';
+        return;
+    }
+    
+    const btn = document.getElementById('auth-submit-phone');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Проверка...';
+    btn.disabled = true;
+    
+    // 1. Проверяем, есть ли записи
+    fetch(`/${IDENTIFIER}/api/client/check-phone/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ phone: phone })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (!data.success) {
+            document.getElementById('auth-error-1').innerText = data.error || 'Ошибка';
+            document.getElementById('auth-error-1').style.display = 'block';
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            return;
+        }
+        
+        // 2. Запрашиваем звонок
+        return fetch(`/${IDENTIFIER}/api/client/request-call/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({ phone: phone })
+        })
+        .then(r => r.json())
+        .then(callData => {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            
+            if (!callData.success) {
+                document.getElementById('auth-error-1').innerText = callData.error || 'Ошибка';
+                document.getElementById('auth-error-1').style.display = 'block';
+                return;
+            }
+            
+            // Показываем шаг 2
+            document.getElementById('auth-step-1').style.display = 'none';
+            document.getElementById('auth-step-2').style.display = 'block';
+            
+            const callLink = document.getElementById('auth-call-link');
+            callLink.href = 'tel:' + callData.data.call_phone;
+            callLink.innerText = callData.data.call_phone_pretty;
+            
+            clientCheckId = callData.data.check_id;
+            
+            // Начинаем периодически проверять
+            checkCallInterval = setInterval(checkClientCall, 5000);
+            setTimeout(checkClientCall, 3000);
+        });
+    })
+    .catch(err => {
+        console.error(err);
+        document.getElementById('auth-error-1').innerText = 'Ошибка соединения';
+        document.getElementById('auth-error-1').style.display = 'block';
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    });
+}
+
+function checkClientCall() {
+    if (!clientCheckId) return;
+    
+    fetch(`/${IDENTIFIER}/api/client/check-call/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ check_id: clientCheckId })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (!data.success) {
+            console.error(data.error);
+            return;
+        }
+        
+        if (data.data.is_confirmed) {
+            // Подтверждён!
+            if (checkCallInterval) {
+                clearInterval(checkCallInterval);
+                checkCallInterval = null;
+            }
+            document.getElementById('auth-status-2').innerHTML = 
+                '<span style="color: #10b981;"><i class="fas fa-check-circle me-1"></i>Подтверждено!</span>';
+            
+            // Перенаправляем
+            setTimeout(() => {
+                window.location.href = data.data.redirect;
+            }, 500);
+        } else {
+            document.getElementById('auth-status-2').innerText = 'Ожидаем звонка...';
+        }
+    })
+    .catch(err => console.error(err));
+}
+
+// Утилита для CSRF
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Маска телефона
+document.getElementById('auth-phone')?.addEventListener('input', function() {
+    let value = this.value.replace(/\D/g, '');
+    if (value.length === 0) { this.value = ''; return; }
+    if (value[0] !== '7' && value[0] !== '8') value = '7' + value;
+    if (value[0] === '8') value = '7' + value.slice(1);
+    if (value.length > 11) value = value.slice(0, 11);
+    let formatted = value[0];
+    if (value.length > 1) formatted += ' ' + value.slice(1, 4);
+    if (value.length > 4) formatted += ' ' + value.slice(4, 7);
+    if (value.length > 7) formatted += '-' + value.slice(7, 9);
+    if (value.length > 9) formatted += '-' + value.slice(9, 11);
+    this.value = formatted;
+});
+
+// Очистка при закрытии
+document.getElementById('clientAuthModal')?.addEventListener('hidden.bs.modal', function() {
+    if (checkCallInterval) {
+        clearInterval(checkCallInterval);
+        checkCallInterval = null;
     }
 });
 </script>

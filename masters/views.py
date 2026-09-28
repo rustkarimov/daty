@@ -8,7 +8,7 @@ from django.contrib.auth import logout as auth_logout
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-from .models import BlacklistedClient, Master, Service, Booking, Schedule, DayOff, PhoneVerification, CustomUser, Break, ExtraWorkingDay, ExtraWorkingDayBreak, ServiceCategory, Notification, SupportMessage, PushSubscription
+from .models import BlacklistedClient, Master, Service, Booking, Schedule, DayOff, PhoneVerification, CustomUser, Break, ExtraWorkingDay, ExtraWorkingDayBreak, ServiceCategory, Notification, SupportMessage, PushSubscription, ClientSession
 from .forms import PhoneRegistrationForm, PhoneVerificationForm
 
 from .utils.schedule_utils import ScheduleCalculator
@@ -3071,7 +3071,7 @@ def api_push_check(request):
 # ============= КЛИЕНТ: УПРАВЛЕНИЕ ЗАПИСЬЮ ===================
 # ============================================================
 
-def client_booking_view(request, token):
+def client_booking_view(request, identifier, token):
     """
     Страница клиента для просмотра/изменения/отмены записи.
     Открывается по ссылке из push/SMS: /booking/<token>/
@@ -3104,12 +3104,13 @@ def client_booking_view(request, token):
         'master': booking.master,
         'phone_display': phone_display,
         'token': token,
+        'identifier': identifier,
     }
     
     return render(request, 'masters/public/booking_client.html', context)
 
 
-def api_client_get_booking(request, token):
+def api_client_get_booking(request, identifier, token):
     """
     API: получить данные записи по токену.
     """
@@ -3159,7 +3160,8 @@ def api_client_get_booking(request, token):
     })
 
 
-def api_client_get_slots(request, token):
+@csrf_exempt
+def api_client_get_slots(request, identifier, token):
     """
     API: получить доступные слоты для изменения записи.
     """
@@ -3196,7 +3198,8 @@ def api_client_get_slots(request, token):
     return api_success({'slots': slots})
 
 
-def api_client_cancel_booking(request, token):
+@csrf_exempt
+def api_client_cancel_booking(request, identifier, token):
     """
     API: отмена записи клиентом.
     """
@@ -3217,7 +3220,7 @@ def api_client_cancel_booking(request, token):
     Notification.objects.create(
         master=booking.master,
         type='cancelled_booking',
-        title=f'❌ Отмена: {booking.client_name}',
+        title=f'{booking.client_name}',
         message=f"📅 {booking.date.strftime('%d.%m.%Y')}\n⏰ {booking.time.strftime('%H:%M')} - {booking.service.name}",
         content_object=booking
     )
@@ -3238,7 +3241,8 @@ def api_client_cancel_booking(request, token):
     return api_success({'message': 'Запись отменена'})
 
 
-def api_client_update_booking(request, token):
+@csrf_exempt
+def api_client_update_booking(request, identifier, token):
     """
     API: изменение записи клиентом.
     """
@@ -3296,8 +3300,8 @@ def api_client_update_booking(request, token):
     Notification.objects.create(
         master=booking.master,
         type='changed_booking',
-        title=f'✏️ Изменение: {booking.client_name}',
-        message=f"📅 Было: {old_date.strftime('%d.%m.%Y')} {old_time.strftime('%H:%M')}\n📅 Стало: {new_date.strftime('%d.%m.%Y')} {new_time.strftime('%H:%M')}",
+        title=f'{booking.client_name}',
+        message=f"📅 Стало: {new_date.strftime('%d.%m.%Y')} {new_time.strftime('%H:%M')}\n⏰ {booking.service.name}\n📅 Было: {old_date.strftime('%d.%m.%Y')} {old_time.strftime('%H:%M')}",
         content_object=booking
     )
     
@@ -3315,6 +3319,193 @@ def api_client_update_booking(request, token):
         print(f'❌ Ошибка push: {e}')
     
     return api_success({'message': 'Запись изменена'})
+
+
+
+# ============================================================
+# ============= КЛИЕНТ: АВТОРИЗАЦИЯ ПО ЗВОНКУ ================
+# ============================================================
+@csrf_exempt
+def api_client_check_phone(request, identifier):
+    """Проверяет, есть ли записи у клиента с указанным телефоном."""
+    if request.method != 'POST':
+        return api_error('Метод не поддерживается', status=405)
+    
+    try:
+        master = get_master_by_identifier(identifier)
+    except Http404:
+        return api_error('Мастер не найден', status=404)
+    
+    try:
+        data = json.loads(request.body)
+        phone = data.get('phone', '')
+    except json.JSONDecodeError:
+        return api_error('Неверный формат данных', status=400)
+    
+    import re
+    phone_cleaned = re.sub(r'\D', '', phone)
+    if len(phone_cleaned) != 11:
+        return api_error('Введите корректный номер телефона (11 цифр)', status=400)
+    
+    # Ищем записи с таким телефоном
+    from cryptography.fernet import Fernet, InvalidToken
+    key = master.get_encryption_key()
+    
+    has_bookings = False
+    if key:
+        f = Fernet(key)
+        bookings = Booking.objects.filter(master=master, status='confirmed')
+        for b in bookings:
+            try:
+                b_phone = f.decrypt(bytes(b.encrypted_phone)).decode()
+                if re.sub(r'\D', '', b_phone) == phone_cleaned:
+                    has_bookings = True
+                    break
+            except:
+                pass
+    
+    if not has_bookings:
+        return api_error('Записи с таким номером не найдены', status=404)
+    
+    return api_success({'phone': phone_cleaned})
+
+
+@csrf_exempt
+def api_client_request_call(request, identifier):
+    """Запрашивает звонок для подтверждения клиента."""
+    if request.method != 'POST':
+        return api_error('Метод не поддерживается', status=405)
+    
+    try:
+        master = get_master_by_identifier(identifier)
+    except Http404:
+        return api_error('Мастер не найден', status=404)
+    
+    try:
+        data = json.loads(request.body)
+        phone = data.get('phone', '')
+    except json.JSONDecodeError:
+        return api_error('Неверный формат данных', status=400)
+    
+    import re
+    phone_cleaned = re.sub(r'\D', '', phone)
+    
+    # Запрашиваем звонок через SMS.ru
+    from .utils.call_utils import request_call_verification
+    success, check_id, call_phone, call_phone_pretty, error = request_call_verification(phone_cleaned)
+    
+    if not success:
+        return api_error(error or 'Ошибка запроса звонка', status=500)
+    
+    # Создаём сессию (неподтверждённую)
+    ClientSession.objects.create(
+        master=master,
+        phone=phone_cleaned,
+        check_id=check_id,
+        call_phone=call_phone,
+        is_confirmed=False,
+    )
+    
+    return api_success({
+        'check_id': check_id,
+        'call_phone': call_phone,
+        'call_phone_pretty': call_phone_pretty,
+    })
+
+
+@csrf_exempt
+def api_client_check_call(request, identifier):
+    """Проверяет статус звонка. Если подтверждён — генерирует session_key."""
+    if request.method != 'POST':
+        return api_error('Метод не поддерживается', status=405)
+    
+    try:
+        master = get_master_by_identifier(identifier)
+    except Http404:
+        return api_error('Мастер не найден', status=404)
+    
+    try:
+        data = json.loads(request.body)
+        check_id = data.get('check_id', '')
+    except json.JSONDecodeError:
+        return api_error('Неверный формат данных', status=400)
+    
+    session = ClientSession.objects.filter(
+        master=master, check_id=check_id
+    ).first()
+    
+    if not session:
+        return api_error('Проверка не найдена', status=404)
+    
+    # Проверяем статус звонка
+    from .utils.call_utils import check_call_status
+    success, is_confirmed, status_text, error = check_call_status(check_id)
+    
+    if not success:
+        return api_error(error or 'Ошибка проверки', status=500)
+    
+    if not is_confirmed:
+        return api_success({'is_confirmed': False})
+    
+    # Подтверждён! Генерируем session_key
+    import secrets
+    session_key = secrets.token_urlsafe(32)
+    
+    session.is_confirmed = True
+    session.session_key = session_key
+    session.save()
+    
+    # Сохраняем в Django-сессию
+    request.session['client_phone'] = session.phone
+    request.session['client_master_id'] = master.id
+    
+    return api_success({
+        'is_confirmed': True,
+        'redirect': f'/{identifier}/my-bookings/',
+    })
+
+
+
+def my_bookings_view(request, identifier):
+    """Страница «Мои записи» — для клиента."""
+    try:
+        master = get_master_by_identifier(identifier)
+    except Http404:
+        return api_error('Мастер не найден', status=404)
+    
+    client_phone = request.session.get('client_phone')
+    client_master_id = request.session.get('client_master_id')
+    
+    if not client_phone or client_master_id != master.id:
+        return redirect(f'/{identifier}/')
+    
+    # Находим все записи клиента
+    from cryptography.fernet import Fernet, InvalidToken
+    import re
+    key = master.get_encryption_key()
+    
+    bookings = []
+    if key:
+        f = Fernet(key)
+        all_bookings = Booking.objects.filter(
+            master=master, status='confirmed'
+        ).order_by('date', 'time')
+        
+        for b in all_bookings:
+            try:
+                b_phone = f.decrypt(bytes(b.encrypted_phone)).decode()
+                if re.sub(r'\D', '', b_phone) == client_phone:
+                    bookings.append(b)
+            except:
+                pass
+    
+    return render(request, 'masters/public/my_bookings.html', {
+        'master': master,
+        'identifier': identifier,
+        'bookings': bookings,
+        'client_phone': client_phone,
+    })
+
 
 # ============================================================
 # ====================== ПОЛИТИКА ============================

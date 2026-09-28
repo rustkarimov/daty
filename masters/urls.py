@@ -41,9 +41,6 @@ urlpatterns = [
     path('api/categories/<int:category_id>/delete/', views.api_delete_category, name='api_delete_category'),
     path('api/services/<int:service_id>/get/', views.api_get_service, name='api_get_service'),
 
-    # API для категорий мастера (публичная страница)
-    # path('api/master/<str:login>/categories/', views.get_master_categories, name='api_master_categories'),
-    
     # Расписание
     path('schedule/', views.schedule, name='schedule'),
     path('schedule/<int:schedule_id>/delete/', views.delete_schedule, name='delete_schedule'),
@@ -88,24 +85,23 @@ urlpatterns = [
     path('api/get-decrypted-phone/<int:booking_id>/', views.get_decrypted_phone, name='api_decrypted_phone'),
     path('api/clients/search/', views.search_clients_api, name='api_search_clients'),
 
+    # КЛИЕНТ: АВТОРИЗАЦИЯ ПО ЗВОНКУ
+    path('<str:identifier>/api/client/check-phone/', views.api_client_check_phone, name='api_client_check_phone'),
+    path('<str:identifier>/api/client/request-call/', views.api_client_request_call, name='api_client_request_call'),
+    path('<str:identifier>/api/client/check-call/', views.api_client_check_call, name='api_client_check_call'),
+    path('<str:identifier>/my-bookings/', views.my_bookings_view, name='my_bookings'),
+
     # КЛИЕНТ: УПРАВЛЕНИЕ ЗАПИСЬЮ (по токену)
-    path('booking/<str:token>/', views.client_booking_view, name='client_booking'),
-    path('api/booking/<str:token>/get/', views.api_client_get_booking, name='api_client_get_booking'),
-    path('api/booking/<str:token>/slots/', views.api_client_get_slots, name='api_client_get_slots'),
-    path('api/booking/<str:token>/cancel/', views.api_client_cancel_booking, name='api_client_cancel_booking'),
-    path('api/booking/<str:token>/update/', views.api_client_update_booking, name='api_client_update_booking'),
+    path('<str:identifier>/booking/<str:token>/', views.client_booking_view, name='client_booking'),
+    path('<str:identifier>/api/booking/<str:token>/get/', views.api_client_get_booking, name='api_client_get_booking'),
+    path('<str:identifier>/api/booking/<str:token>/slots/', views.api_client_get_slots, name='api_client_get_slots'),
+    path('<str:identifier>/api/booking/<str:token>/cancel/', views.api_client_cancel_booking, name='api_client_cancel_booking'),
+    path('<str:identifier>/api/booking/<str:token>/update/', views.api_client_update_booking, name='api_client_update_booking'),
 
     # Публичная страница мастера
     path('id<int:master_id>/', views.master_by_id, name='master_by_id'),
     path('<str:login>/', views.master_by_login, name='master_by_login'),
     
-    # API для AJAX-запросов
-    # path('api/<str:login>/dates/', views.get_available_dates, name='api_dates'),
-    # path('api/<str:login>/slots/', views.get_available_slots, name='api_slots'),
-    # path('api/<str:login>/book/', views.create_booking, name='api_book'),
-    # path('api/<str:login>/book-multiple/', views.create_multiple_bookings, name='api_book_multiple'),
-
-
     path('api/master/<str:identifier>/categories/', views.get_master_categories, name='api_master_categories'),
     path('api/<str:identifier>/dates/', views.get_available_dates, name='api_dates'),
     path('api/<str:identifier>/slots/', views.get_available_slots, name='api_slots'),

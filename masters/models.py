@@ -414,3 +414,47 @@ class PushSubscription(models.Model):
     
     def __str__(self):
         return f"{self.master} — {self.endpoint[:50]}..."
+
+
+class ClientSession(models.Model):
+    """
+    Сессия клиента для доступа к своим записям.
+    
+    Жизненный цикл:
+    1. Создаётся при запросе звонка (is_confirmed=False)
+    2. После подтверждения — is_confirmed=True, session_key генерируется
+    """
+    master = models.ForeignKey(
+        Master,
+        on_delete=models.CASCADE,
+        related_name='client_sessions',
+        verbose_name="Мастер"
+    )
+    phone = models.CharField(max_length=20, verbose_name="Телефон клиента")
+    
+    # Для проверки звонком
+    check_id = models.CharField(max_length=100, blank=True, verbose_name="ID проверки звонка")
+    call_phone = models.CharField(max_length=20, blank=True, verbose_name="Номер для звонка")
+    
+    # Статус
+    is_confirmed = models.BooleanField(default=False, verbose_name="Подтверждён")
+    
+    # Ключ сессии (после подтверждения)
+    session_key = models.CharField(
+        max_length=100, 
+        unique=True, 
+        null=True, 
+        blank=True, 
+        verbose_name="Ключ сессии"
+    )
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_activity = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = "Сессия клиента"
+        verbose_name_plural = "Сессии клиентов"
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.phone} — {self.master} — {'✅' if self.is_confirmed else '⏳'}"

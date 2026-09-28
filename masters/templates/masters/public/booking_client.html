@@ -3,15 +3,38 @@
 {% block title %}Ваша запись{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-6 col-md-8">
+
+<div class="row public-page">
+    <div class="col-lg-8 mx-auto">
+        
+        <!-- Шапка мастера -->
+        <div class="card mb-4 text-center">
+            <div class="card-body">
+                <div class="mb-3">
+                    {% if master.avatar %}
+                        <img src="{{ master.avatar.url }}" alt="{{ master.first_name }}" 
+                            style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary-light);">
+                    {% else %}
+                        <div style="width: 100px; height: 100px; border-radius: 50%; background: var(--primary-gradient); color: white; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; margin: 0 auto;">
+                            {{ master.first_name|first|default:'M'|upper }}
+                        </div>
+                    {% endif %}
+                </div>
+                <h2 style="font-weight: 700; margin-bottom: 4px;">{{ master.first_name }} {{ master.last_name }}</h2>
+                {% if master.bio %}
+                    <p class="text-muted">{{ master.bio }}</p>
+                {% endif %}
+                <a href="/{{ identifier }}/" class="btn btn-outline-pink btn-sm mt-2">
+                    Записаться ещё
+                </a>
+            </div>
+        </div>
         
         <!-- Карточка записи -->
         <div class="card mb-4" id="booking-card">
             <div class="card-body text-center py-4">
-                <div style="font-size: 3rem; margin-bottom: 8px;">📅</div>
+           
                 <h4 style="font-weight: 700; margin-bottom: 4px;">Ваша запись</h4>
-                <p class="text-muted" style="font-size: 0.9rem;">{{ master.first_name }} {{ master.last_name }}</p>
                 
                 <div class="mt-4 text-start">
                     <div class="mb-3 pb-3" style="border-bottom: 1px solid var(--gray-100);">
@@ -42,14 +65,17 @@
         </div>
         
         <!-- Кнопки управления -->
+        <!-- Кнопки управления -->
         <div class="card mb-4" id="actions-card">
-            <div class="card-body">
-                <div class="d-grid gap-2">
-                    <button type="button" class="btn btn-pink" onclick="showChangePanel()">
-                        <i class="fas fa-calendar-alt me-2"></i>Изменить дату или время
+            <div class="card-body text-center">
+                <div class="d-inline-flex flex-column gap-2" style="min-width: 240px;">
+                    <button type="button" class="btn btn-pink" 
+                style="display: flex !important; justify-content: center !important; align-items: center !important; text-align: center !important;"
+                onclick="showChangePanel()">
+                        Изменить дату и время
                     </button>
                     <button type="button" class="btn btn-outline-danger" onclick="confirmCancel()">
-                        <i class="fas fa-times me-2"></i>Отменить запись
+                        Отменить запись
                     </button>
                 </div>
             </div>
@@ -82,26 +108,39 @@
                 </div>
                 
                 <!-- Кнопка сохранения -->
-                <button type="button" class="btn btn-pink w-100" id="save-change-btn" style="display: none;" onclick="saveChange()">
-                    <i class="fas fa-check me-2"></i>Сохранить
-                </button>
+                <div class="text-center mt-3">
+                    <button type="button" class="btn btn-pink" id="save-change-btn" style="display: none; min-width: 200px;" onclick="saveChange()">
+                        Сохранить
+                    </button>
+                </div>
+
             </div>
         </div>
-        
-        <!-- Успех -->
+ 
+         <!-- Успех -->
         <div class="card mb-4" id="success-card" style="display: none;">
             <div class="card-body text-center py-5">
-                <div style="font-size: 4rem; margin-bottom: 16px;">✅</div>
+                <div style="font-size: 4rem; margin-bottom: 16px;">
+                    <i class="fas fa-check-circle" style="color: #0c8f47;"></i>
+                </div>
                 <h4 style="font-weight: 700; margin-bottom: 8px;" id="success-title">Готово!</h4>
                 <p class="text-muted" id="success-message"></p>
+                
+                <!-- <a href="/{{ identifier }}/" class="btn btn-pink mt-3">
+                    <i class="fas fa-calendar-plus me-2"></i>Записаться ещё раз
+                </a> -->
             </div>
         </div>
+    
         
     </div>
 </div>
 
 <script>
+
 const TOKEN = '{{ token }}';
+const IDENTIFIER = '{{ identifier }}';
+const API_BASE = '/' + IDENTIFIER + '/api/booking/' + TOKEN;
 let selectedDate = null;
 let selectedTime = null;
 let currentDate = '{{ booking.date|date:"Y-m-d" }}';
@@ -128,7 +167,7 @@ function loadDates() {
     const container = document.getElementById('dates-container');
     container.innerHTML = '<div class="text-center py-3"><div class="spinner-border spinner-border-sm" style="color: var(--primary);"></div></div>';
     
-    fetch(`/api/booking/${TOKEN}/get/`)
+    fetch(`${API_BASE}/get/`)
         .then(r => r.json())
         .then(data => {
             if (!data.success) {
@@ -184,7 +223,7 @@ function loadSlots(date) {
     saveBtn.style.display = 'none';
     container.innerHTML = '<div class="text-center py-3"><div class="spinner-border spinner-border-sm" style="color: var(--primary);"></div></div>';
     
-    fetch(`/api/booking/${TOKEN}/slots/?date=${date}`)
+    fetch(`${API_BASE}/slots/?date=${date}`)
         .then(r => r.json())
         .then(data => {
             if (!data.success) {
@@ -243,7 +282,7 @@ function saveChange() {
     btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Сохранение...';
     btn.disabled = true;
     
-    fetch(`/api/booking/${TOKEN}/update/`, {
+    fetch(`${API_BASE}/update/`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -260,7 +299,7 @@ function saveChange() {
         btn.disabled = false;
         
         if (data.success) {
-            showSuccess('✅ Запись изменена!', 'Мы уведомили мастера о новом времени.');
+            showSuccess('Запись изменена!', 'Мастер получил уведомление.');
         } else {
             alert(data.error || 'Ошибка');
         }
@@ -279,7 +318,7 @@ function confirmCancel() {
         return;
     }
     
-    fetch(`/api/booking/${TOKEN}/cancel/`, {
+    fetch(`${API_BASE}/cancel/`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
