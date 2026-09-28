@@ -88,6 +88,13 @@ urlpatterns = [
     path('api/get-decrypted-phone/<int:booking_id>/', views.get_decrypted_phone, name='api_decrypted_phone'),
     path('api/clients/search/', views.search_clients_api, name='api_search_clients'),
 
+    # КЛИЕНТ: УПРАВЛЕНИЕ ЗАПИСЬЮ (по токену)
+    path('booking/<str:token>/', views.client_booking_view, name='client_booking'),
+    path('api/booking/<str:token>/get/', views.api_client_get_booking, name='api_client_get_booking'),
+    path('api/booking/<str:token>/slots/', views.api_client_get_slots, name='api_client_get_slots'),
+    path('api/booking/<str:token>/cancel/', views.api_client_cancel_booking, name='api_client_cancel_booking'),
+    path('api/booking/<str:token>/update/', views.api_client_update_booking, name='api_client_update_booking'),
+
     # Публичная страница мастера
     path('id<int:master_id>/', views.master_by_id, name='master_by_id'),
     path('<str:login>/', views.master_by_login, name='master_by_login'),
@@ -137,5 +144,8 @@ urlpatterns = [
 
     # Проверка Push-уведомлений
     path('api/push/check/', views.api_push_check, name='api_push_check'),
+
+
+    
 
 ]

@@ -3065,6 +3065,257 @@ def api_push_check(request):
     except Exception as e:
         return api_error(f'Ошибка: {str(e)}', status=500)
 
+
+
+# ============================================================
+# ============= КЛИЕНТ: УПРАВЛЕНИЕ ЗАПИСЬЮ ===================
+# ============================================================
+
+def client_booking_view(request, token):
+    """
+    Страница клиента для просмотра/изменения/отмены записи.
+    Открывается по ссылке из push/SMS: /booking/<token>/
+    """
+    booking = get_object_or_404(Booking, token=token, status='confirmed')
+    
+    # Расшифровываем телефон для отображения (частично)
+    from cryptography.fernet import Fernet, InvalidToken
+    import re
+    
+    key = booking.master.get_encryption_key()
+    phone = ''
+    if key:
+        try:
+            f = Fernet(key)
+            phone = f.decrypt(bytes(booking.encrypted_phone)).decode()
+        except (InvalidToken, Exception):
+            try:
+                phone = booking.encrypted_phone.decode('utf-8')
+            except:
+                phone = ''
+    
+    phone_cleaned = re.sub(r'\D', '', phone)
+    phone_display = f"+7 *** *** {phone_cleaned[-4:]}" if len(phone_cleaned) == 11 else phone
+    
+    # Получаем все услуги в этот день для этого клиента (если это часть составной записи)
+    # Показываем только эту запись
+    context = {
+        'booking': booking,
+        'master': booking.master,
+        'phone_display': phone_display,
+        'token': token,
+    }
+    
+    return render(request, 'masters/public/booking_client.html', context)
+
+
+def api_client_get_booking(request, token):
+    """
+    API: получить данные записи по токену.
+    """
+    try:
+        booking = Booking.objects.get(token=token, status='confirmed')
+    except Booking.DoesNotExist:
+        return api_error('Запись не найдена', status=404)
+    
+    # Доступные слоты для изменения (начиная с сегодня)
+    from .utils.schedule_utils import ScheduleCalculator
+    calculator = ScheduleCalculator(booking.master)
+    
+    # Получаем доступные даты
+    dates = calculator.get_available_dates(
+        days_ahead=60,
+        min_service_duration=booking.service.duration
+    )
+    
+    # Форматируем
+    def get_month_ru(d):
+        months = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+                  'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']
+        return months[d.month - 1]
+    
+    def get_weekday_ru(d):
+        weekdays = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс']
+        return weekdays[d.weekday()]
+    
+    dates_data = [{
+        'date': d.strftime('%Y-%m-%d'),
+        'display': f"{d.day} {get_month_ru(d)}",
+        'day_of_week': get_weekday_ru(d),
+    } for d in dates[:30]]
+    
+    return api_success({
+        'booking': {
+            'id': booking.id,
+            'date': booking.date.strftime('%Y-%m-%d'),
+            'time': booking.time.strftime('%H:%M'),
+            'service_name': booking.service.name,
+            'service_duration': booking.service.duration,
+            'service_price': float(booking.service.price),
+            'client_name': booking.client_name,
+            'master_name': booking.master.first_name or 'Мастер',
+        },
+        'available_dates': dates_data,
+    })
+
+
+def api_client_get_slots(request, token):
+    """
+    API: получить доступные слоты для изменения записи.
+    """
+    try:
+        booking = Booking.objects.get(token=token, status='confirmed')
+    except Booking.DoesNotExist:
+        return api_error('Запись не найдена', status=404)
+    
+    date_str = request.GET.get('date')
+    if not date_str:
+        return api_error('Дата не указана', status=400)
+    
+    try:
+        target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+    except ValueError:
+        return api_error('Неверный формат даты', status=400)
+    
+    from .utils.schedule_utils import ScheduleCalculator
+    calculator = ScheduleCalculator(booking.master)
+    
+    current_time = None
+    if target_date == date.today():
+        from datetime import datetime as dt
+        current_time = dt.now().time()
+    
+    slots = calculator.generate_time_slots(
+        target_date,
+        booking.service.duration,
+        exclude_booking_id=booking.id,           # исключаем саму запись
+        current_time=current_time,
+        original_booking_id=booking.id           # разблокируем её время
+    )
+    
+    return api_success({'slots': slots})
+
+
+def api_client_cancel_booking(request, token):
+    """
+    API: отмена записи клиентом.
+    """
+    if request.method != 'POST':
+        return api_error('Метод не поддерживается', status=405)
+    
+    try:
+        booking = Booking.objects.get(token=token, status='confirmed')
+    except Booking.DoesNotExist:
+        return api_error('Запись не найдена', status=404)
+    
+    # Меняем статус
+    booking.status = 'cancelled'
+    booking.save()
+    
+    # Уведомление мастеру
+    from .models import Notification
+    Notification.objects.create(
+        master=booking.master,
+        type='cancelled_booking',
+        title=f'❌ Отмена: {booking.client_name}',
+        message=f"📅 {booking.date.strftime('%d.%m.%Y')}\n⏰ {booking.time.strftime('%H:%M')} - {booking.service.name}",
+        content_object=booking
+    )
+    
+    # Push мастеру
+    from .utils.push_utils import send_push_to_master
+    try:
+        send_push_to_master(
+            master=booking.master,
+            title='❌ Отмена записи',
+            body=f'{booking.client_name} · {booking.time.strftime("%H:%M")} · {booking.service.name}',
+            url='/dashboard/',
+            tag=f'booking-{booking.id}'
+        )
+    except Exception as e:
+        print(f'❌ Ошибка push: {e}')
+    
+    return api_success({'message': 'Запись отменена'})
+
+
+def api_client_update_booking(request, token):
+    """
+    API: изменение записи клиентом.
+    """
+    if request.method != 'POST':
+        return api_error('Метод не поддерживается', status=405)
+    
+    try:
+        booking = Booking.objects.get(token=token, status='confirmed')
+    except Booking.DoesNotExist:
+        return api_error('Запись не найдена', status=404)
+    
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return api_error('Неверный формат данных', status=400)
+    
+    date_str = data.get('date')
+    time_str = data.get('time')
+    
+    if not date_str or not time_str:
+        return api_error('Укажите дату и время', status=400)
+    
+    try:
+        new_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        new_time = datetime.strptime(time_str, '%H:%M').time()
+    except ValueError:
+        return api_error('Неверный формат даты/времени', status=400)
+    
+    # Проверяем доступность
+    from .utils.schedule_utils import ScheduleCalculator
+    calculator = ScheduleCalculator(booking.master)
+    
+    slots = calculator.generate_time_slots(
+        new_date,
+        booking.service.duration,
+        exclude_booking_id=booking.id,
+        original_booking_id=booking.id
+    )
+    
+    is_available = any(slot['start'] == time_str for slot in slots)
+    if not is_available:
+        return api_error('Это время уже занято. Выберите другое.', status=409)
+    
+    # Сохраняем старые значения
+    old_date = booking.date
+    old_time = booking.time
+    
+    # Обновляем
+    booking.date = new_date
+    booking.time = new_time
+    booking.save()
+    
+    # Уведомление мастеру
+    from .models import Notification
+    Notification.objects.create(
+        master=booking.master,
+        type='changed_booking',
+        title=f'✏️ Изменение: {booking.client_name}',
+        message=f"📅 Было: {old_date.strftime('%d.%m.%Y')} {old_time.strftime('%H:%M')}\n📅 Стало: {new_date.strftime('%d.%m.%Y')} {new_time.strftime('%H:%M')}",
+        content_object=booking
+    )
+    
+    # Push мастеру
+    from .utils.push_utils import send_push_to_master
+    try:
+        send_push_to_master(
+            master=booking.master,
+            title='✏️ Изменение записи',
+            body=f'{booking.client_name} · было {old_time.strftime("%H:%M")} → стало {new_time.strftime("%H:%M")}',
+            url='/dashboard/',
+            tag=f'booking-{booking.id}'
+        )
+    except Exception as e:
+        print(f'❌ Ошибка push: {e}')
+    
+    return api_success({'message': 'Запись изменена'})
+
 # ============================================================
 # ====================== ПОЛИТИКА ============================
 # ============================================================ 

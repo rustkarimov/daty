@@ -1,0 +1,330 @@
+{% extends 'masters/public/public_base.html' %}
+
+{% block title %}Ваша запись{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8">
+        
+        <!-- Карточка записи -->
+        <div class="card mb-4" id="booking-card">
+            <div class="card-body text-center py-4">
+                <div style="font-size: 3rem; margin-bottom: 8px;">📅</div>
+                <h4 style="font-weight: 700; margin-bottom: 4px;">Ваша запись</h4>
+                <p class="text-muted" style="font-size: 0.9rem;">{{ master.first_name }} {{ master.last_name }}</p>
+                
+                <div class="mt-4 text-start">
+                    <div class="mb-3 pb-3" style="border-bottom: 1px solid var(--gray-100);">
+                        <div class="text-muted small">Услуга</div>
+                        <div style="font-size: 1rem; font-weight: 600;">{{ booking.service.name }}</div>
+                        <div class="text-muted small mt-1">{{ booking.service.duration }} мин · {{ booking.service.price }} ₽</div>
+                    </div>
+                    
+                    <div class="mb-3 pb-3" style="border-bottom: 1px solid var(--gray-100);">
+                        <div class="text-muted small">Дата и время</div>
+                        <div style="font-size: 1rem; font-weight: 600;">
+                            <span id="current-date-display">{{ booking.date|date:"d.m.Y" }}</span>
+                            в <span id="current-time-display">{{ booking.time|time:"H:i" }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3 pb-3" style="border-bottom: 1px solid var(--gray-100);">
+                        <div class="text-muted small">Ваше имя</div>
+                        <div style="font-size: 1rem; font-weight: 600;">{{ booking.client_name }}</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="text-muted small">Телефон</div>
+                        <div style="font-size: 1rem; font-weight: 600;">{{ phone_display }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Кнопки управления -->
+        <div class="card mb-4" id="actions-card">
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <button type="button" class="btn btn-pink" onclick="showChangePanel()">
+                        <i class="fas fa-calendar-alt me-2"></i>Изменить дату или время
+                    </button>
+                    <button type="button" class="btn btn-outline-danger" onclick="confirmCancel()">
+                        <i class="fas fa-times me-2"></i>Отменить запись
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Панель изменения (скрыта) -->
+        <div class="card mb-4" id="change-panel" style="display: none;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 style="font-weight: 600; margin: 0;">Выберите новую дату и время</h5>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="hideChangePanel()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <!-- Даты -->
+                <div class="mb-3">
+                    <div class="text-muted small mb-2">Дата</div>
+                    <div class="row g-2" id="dates-container">
+                        <div class="text-center py-3">
+                            <div class="spinner-border spinner-border-sm" style="color: var(--primary);"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Время -->
+                <div class="mb-3" id="times-container" style="display: none;">
+                    <div class="text-muted small mb-2">Время</div>
+                    <div class="row g-2" id="slots-container"></div>
+                </div>
+                
+                <!-- Кнопка сохранения -->
+                <button type="button" class="btn btn-pink w-100" id="save-change-btn" style="display: none;" onclick="saveChange()">
+                    <i class="fas fa-check me-2"></i>Сохранить
+                </button>
+            </div>
+        </div>
+        
+        <!-- Успех -->
+        <div class="card mb-4" id="success-card" style="display: none;">
+            <div class="card-body text-center py-5">
+                <div style="font-size: 4rem; margin-bottom: 16px;">✅</div>
+                <h4 style="font-weight: 700; margin-bottom: 8px;" id="success-title">Готово!</h4>
+                <p class="text-muted" id="success-message"></p>
+            </div>
+        </div>
+        
+    </div>
+</div>
+
+<script>
+const TOKEN = '{{ token }}';
+let selectedDate = null;
+let selectedTime = null;
+let currentDate = '{{ booking.date|date:"Y-m-d" }}';
+let currentTime = '{{ booking.time|time:"H:i" }}';
+
+// Показать панель изменения
+function showChangePanel() {
+    document.getElementById('actions-card').style.display = 'none';
+    document.getElementById('change-panel').style.display = 'block';
+    loadDates();
+}
+
+function hideChangePanel() {
+    document.getElementById('actions-card').style.display = 'block';
+    document.getElementById('change-panel').style.display = 'none';
+    document.getElementById('times-container').style.display = 'none';
+    document.getElementById('save-change-btn').style.display = 'none';
+    selectedDate = null;
+    selectedTime = null;
+}
+
+// Загрузка дат
+function loadDates() {
+    const container = document.getElementById('dates-container');
+    container.innerHTML = '<div class="text-center py-3"><div class="spinner-border spinner-border-sm" style="color: var(--primary);"></div></div>';
+    
+    fetch(`/api/booking/${TOKEN}/get/`)
+        .then(r => r.json())
+        .then(data => {
+            if (!data.success) {
+                container.innerHTML = '<p class="text-danger">Ошибка загрузки</p>';
+                return;
+            }
+            
+            let html = '';
+            data.data.available_dates.forEach(d => {
+                const isCurrent = d.date === currentDate;
+                html += `
+                    <div class="col-4">
+                        <div class="card date-card text-center" 
+                             data-date="${d.date}"
+                             onclick="selectDate('${d.date}', this)"
+                             style="cursor: pointer; padding: 8px 4px; border-radius: 8px; border: 1px solid var(--gray-200);">
+                            <div class="small text-muted" style="font-size: 0.7rem;">${d.day_of_week}</div>
+                            <div style="font-weight: 600; font-size: 0.85rem;">${d.display}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        })
+        .catch(err => {
+            container.innerHTML = '<p class="text-danger">Ошибка</p>';
+            console.error(err);
+        });
+}
+
+// Выбор даты
+function selectDate(date, element) {
+    document.querySelectorAll('#dates-container .date-card').forEach(c => {
+        c.style.borderColor = 'var(--gray-200)';
+        c.style.background = 'white';
+    });
+    element.style.borderColor = 'var(--primary)';
+    element.style.background = 'var(--primary-light)';
+    
+    selectedDate = date;
+    selectedTime = null;
+    
+    loadSlots(date);
+}
+
+// Загрузка слотов
+function loadSlots(date) {
+    const container = document.getElementById('slots-container');
+    const timesContainer = document.getElementById('times-container');
+    const saveBtn = document.getElementById('save-change-btn');
+    
+    timesContainer.style.display = 'block';
+    saveBtn.style.display = 'none';
+    container.innerHTML = '<div class="text-center py-3"><div class="spinner-border spinner-border-sm" style="color: var(--primary);"></div></div>';
+    
+    fetch(`/api/booking/${TOKEN}/slots/?date=${date}`)
+        .then(r => r.json())
+        .then(data => {
+            if (!data.success) {
+                container.innerHTML = '<p class="text-danger">Ошибка загрузки</p>';
+                return;
+            }
+            
+            if (data.data.slots.length === 0) {
+                container.innerHTML = '<p class="text-muted text-center">Нет свободного времени</p>';
+                return;
+            }
+            
+            let html = '';
+            data.data.slots.forEach(s => {
+                html += `
+                    <div class="col-4 col-md-3">
+                        <div class="card slot-card text-center" 
+                             data-time="${s.start}"
+                             onclick="selectTime('${s.start}', this)"
+                             style="cursor: pointer; padding: 6px 4px; border-radius: 8px; border: 1px solid var(--gray-200);">
+                            <div style="font-size: 0.85rem; font-weight: 500;">${s.start}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        })
+        .catch(err => {
+            container.innerHTML = '<p class="text-danger">Ошибка</p>';
+            console.error(err);
+        });
+}
+
+// Выбор времени
+function selectTime(time, element) {
+    document.querySelectorAll('#slots-container .slot-card').forEach(c => {
+        c.style.borderColor = 'var(--gray-200)';
+        c.style.background = 'white';
+    });
+    element.style.borderColor = 'var(--primary)';
+    element.style.background = 'var(--primary-light)';
+    
+    selectedTime = time;
+    document.getElementById('save-change-btn').style.display = 'block';
+}
+
+// Сохранение изменения
+function saveChange() {
+    if (!selectedDate || !selectedTime) {
+        alert('Выберите дату и время');
+        return;
+    }
+    
+    const btn = document.getElementById('save-change-btn');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Сохранение...';
+    btn.disabled = true;
+    
+    fetch(`/api/booking/${TOKEN}/update/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+            date: selectedDate,
+            time: selectedTime
+        })
+    })
+    .then(r => r.json())
+    .then(data => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        
+        if (data.success) {
+            showSuccess('✅ Запись изменена!', 'Мы уведомили мастера о новом времени.');
+        } else {
+            alert(data.error || 'Ошибка');
+        }
+    })
+    .catch(err => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        alert('Ошибка при сохранении');
+        console.error(err);
+    });
+}
+
+// Отмена записи
+function confirmCancel() {
+    if (!confirm('Вы уверены, что хотите отменить запись?')) {
+        return;
+    }
+    
+    fetch(`/api/booking/${TOKEN}/cancel/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            showSuccess('❌ Запись отменена', 'Мы уведомили мастера об отмене.');
+        } else {
+            alert(data.error || 'Ошибка');
+        }
+    })
+    .catch(err => {
+        alert('Ошибка при отмене');
+        console.error(err);
+    });
+}
+
+// Показ успеха
+function showSuccess(title, message) {
+    document.getElementById('booking-card').style.display = 'none';
+    document.getElementById('actions-card').style.display = 'none';
+    document.getElementById('change-panel').style.display = 'none';
+    document.getElementById('success-card').style.display = 'block';
+    document.getElementById('success-title').innerText = title;
+    document.getElementById('success-message').innerText = message;
+}
+
+// Утилита для CSRF
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+
+{% endblock %}
