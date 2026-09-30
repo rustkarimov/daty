@@ -39,6 +39,9 @@ import os
 
 from .utils.push_utils import send_push_to_master
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 # ============================================================
 # ======================= УТИЛИТЫ ============================
@@ -306,7 +309,7 @@ def get_booking_details(request, booking_id):
                 decrypted = f.decrypt(bytes(booking.encrypted_phone)).decode()
                 phone = decrypted
             except (InvalidToken, Exception) as e:
-                print(f"Ошибка расшифровки: {e}")
+                logger.error(f"Ошибка расшифровки телефона (booking_id={booking.id}): {e}")
                 try:
                     phone = booking.encrypted_phone.decode('utf-8')
                 except:
@@ -408,11 +411,11 @@ def get_booking_details(request, booking_id):
             },
             'all_booking_ids': [booking.id]  # ← добавляем для совместимости
         })
-        
+
     except Exception as e:
-        import traceback
-        traceback.print_exc()
+        logger.exception(f"Ошибка в get_booking_details: {e}")
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    
 
 # Подтверждение записи
 @login_required
@@ -516,7 +519,7 @@ def add_manual_booking(request):
             created_by='master'
         )
 
-        print(f"🔍 Создана запись #{booking.id}, created_by={booking.created_by}")
+        logger.info(f"Мастер создал запись #{booking.id} для {client_name} на {booking_date} {booking_time}")
         
         messages.success(request, f'Запись для {client_name} добавлена!')
         return redirect('dashboard')
@@ -2266,7 +2269,7 @@ def mobile_resend_code(request):
         # Отправляем реальное SMS
         success, result = send_sms(phone, verification_code)
         if not success:
-            print(f"SMS не отправлено: {result}")
+            logger.error(f"SMS не отправлено на {phone}: {result}")
         
         return api_success({'message': 'Код отправлен повторно'})
         
@@ -2455,10 +2458,9 @@ def get_available_dates(request, identifier):
             'limit': limit,
             'has_more': has_more
         })
-        
+
     except Exception as e:
-        import traceback
-        traceback.print_exc()
+        logger.exception(f"Ошибка в get_available_dates: {e}")
         return JsonResponse({'error': str(e)}, status=500)
 
 # ============================================================
@@ -2514,11 +2516,11 @@ def get_available_slots(request, identifier):
         )
         
         return JsonResponse({'slots': slots})
-        
+
     except Exception as e:
-        import traceback
-        traceback.print_exc()
+        logger.exception(f"Ошибка в get_available_slots: {e}")
         return JsonResponse({'error': str(e)}, status=500)
+        
 
 def create_booking(request, identifier):
     if request.method != 'POST':
@@ -2739,7 +2741,7 @@ def create_multiple_bookings(request, identifier):
             
             push_title = '📅 Новая запись'
             push_body = f'{client_name} · {start_time_str} · {service_text}'
-            
+
             try:
                 result = send_push_to_master(
                     master=master,
@@ -2748,9 +2750,10 @@ def create_multiple_bookings(request, identifier):
                     url='/dashboard/',
                     tag=f'booking-{created_bookings[0].id}'
                 )
-                print(f'📤 Push результат: {result}')
+                logger.info(f"Push после создания записи #{created_bookings[0].id}: {result}")
             except Exception as e:
-                print(f'❌ Ошибка отправки push: {e}')
+                logger.error(f"Ошибка отправки push после записи #{created_bookings[0].id}: {e}")
+            
         
         return api_success({
             'message': f'✅ Запись на {len(created_bookings)} услуг создана!',
@@ -3214,6 +3217,8 @@ def api_client_cancel_booking(request, identifier, token):
     # Меняем статус
     booking.status = 'cancelled'
     booking.save()
+
+    logger.info(f"Клиент {booking.client_name} отменил запись #{booking.id} у мастера {booking.master.id}")
     
     # Уведомление мастеру
     from .models import Notification
@@ -3235,8 +3240,9 @@ def api_client_cancel_booking(request, identifier, token):
             url='/dashboard/',
             tag=f'booking-{booking.id}'
         )
+
     except Exception as e:
-        print(f'❌ Ошибка push: {e}')
+        logger.error(f"Ошибка push при отмене записи #{booking.id}: {e}")
     
     return api_success({'message': 'Запись отменена'})
 
@@ -3294,6 +3300,11 @@ def api_client_update_booking(request, identifier, token):
     booking.date = new_date
     booking.time = new_time
     booking.save()
+
+    logger.info(
+        f"Клиент {booking.client_name} перенёс запись #{booking.id} "
+        f"с {old_date} {old_time} на {new_date} {new_time}"
+    )
     
     # Уведомление мастеру
     from .models import Notification
@@ -3315,8 +3326,9 @@ def api_client_update_booking(request, identifier, token):
             url='/dashboard/',
             tag=f'booking-{booking.id}'
         )
+    
     except Exception as e:
-        print(f'❌ Ошибка push: {e}')
+        logger.error(f"Ошибка push при изменении записи #{booking.id}: {e}")
     
     return api_success({'message': 'Запись изменена'})
 

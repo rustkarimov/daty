@@ -37,3 +37,7 @@ staticfiles/
 
 # macOS
 .DS_Store
+
+logs/
+
+

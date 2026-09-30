@@ -162,3 +162,120 @@ CSRF_TRUSTED_ORIGINS = [
     'http://www.daty.pro',
 ]
 
+
+# ======================= ЛОГИРОВАНИЕ ========================
+# ============================================================
+# ======================= ЛОГИРОВАНИЕ ========================
+# ============================================================
+
+# Папка для логов
+LOG_DIR = BASE_DIR / 'logs'
+LOG_DIR.mkdir(exist_ok=True)
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+
+    # Формат сообщений
+    'formatters': {
+        'verbose': {
+            'format': '[{asctime}] {levelname} {name}:{lineno} — {message}',
+            'style': '{',
+            'datefmt': '%Y-%m-%d %H:%M:%S',
+        },
+        'simple': {
+            'format': '[{asctime}] {levelname} — {message}',
+            'style': '{',
+            'datefmt': '%Y-%m-%d %H:%M:%S',
+        },
+    },
+
+    # Куда писать
+    'handlers': {
+        # Консоль — для локальной разработки
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+            'level': 'INFO',
+        },
+        # Файл со всеми событиями приложения (без HTTP-запросов)
+        'file_info': {
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': LOG_DIR / 'daty.log',
+            'when': 'midnight',
+            'backupCount': 14,  # хранить 14 дней
+            'formatter': 'verbose',
+            'level': 'INFO',
+            'encoding': 'utf-8',
+        },
+        # Файл только с ошибками и 4xx/5xx
+        'file_error': {
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': LOG_DIR / 'daty_errors.log',
+            'when': 'midnight',
+            'backupCount': 30,  # ошибки хранить дольше — 30 дней
+            'formatter': 'verbose',
+            'level': 'ERROR',
+            'encoding': 'utf-8',
+        },
+    },
+
+    # Корневой логгер
+    'root': {
+        'handlers': ['console', 'file_info', 'file_error'],
+        'level': 'INFO',
+    },
+
+    # Логгеры конкретных модулей
+    'loggers': {
+        # Django — общий
+        'django': {
+            'handlers': ['console', 'file_info', 'file_error'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+
+        # Ошибки запросов (500-е) — только в файл ошибок
+        'django.request': {
+            'handlers': ['file_error'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+
+        # HTTP-запросы: пишем ТОЛЬКО ошибки (4xx/5xx),
+        # и только в файл ошибок. В daty.log не пишем —
+        # там должны быть только наши события.
+        'django.server': {
+            'handlers': ['console', 'file_error'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
+
+        # Наши модули
+        'masters': {
+            'handlers': ['console', 'file_info', 'file_error'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'masters.views': {
+            'handlers': ['console', 'file_info', 'file_error'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'masters.utils.push_utils': {
+            'handlers': ['console', 'file_info', 'file_error'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'masters.utils.call_utils': {
+            'handlers': ['console', 'file_info', 'file_error'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'masters.utils.sms_utils': {
+            'handlers': ['console', 'file_info', 'file_error'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}

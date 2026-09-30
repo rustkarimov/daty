@@ -95,11 +95,27 @@ self.addEventListener('fetch', event => {
         return;
     }
 
+
+
     // --------------------------------------------------------
     // Всё остальное (API, AJAX) — ТОЛЬКО из сети, без кеша.
+    // Если сеть упала — отдаём понятную ошибку.
     // --------------------------------------------------------
-    event.respondWith(fetch(request));
-});
+    event.respondWith(
+        fetch(request).catch(() => {
+            return new Response(
+                JSON.stringify({
+                    success: false,
+                    error: 'Нет соединения с сервером. Проверьте интернет и попробуйте снова.'
+                }),
+                {
+                    status: 503,
+                    statusText: 'Service Unavailable',
+                    headers: { 'Content-Type': 'application/json' }
+                }
+            );
+        })
+    );
 
 // ============================================================
 // PUSH-УВЕДОМЛЕНИЯ
