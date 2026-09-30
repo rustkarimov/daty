@@ -11,6 +11,11 @@ __pycache__/
 db.sqlite3
 db.sqlite3-journal
 
+db.sqlite3.backup_before_pg
+daty_dump.json
+
+backups/
+
 # IDE
 .vscode/
 .idea/
