@@ -3108,6 +3108,7 @@ def client_booking_view(request, identifier, token):
         'phone_display': phone_display,
         'token': token,
         'identifier': identifier,
+        'today': date.today(),
     }
     
     return render(request, 'masters/public/booking_client.html', context)
@@ -3214,6 +3215,16 @@ def api_client_cancel_booking(request, identifier, token):
     except Booking.DoesNotExist:
         return api_error('Запись не найдена', status=404)
     
+    # Проверка: запись уже прошла
+    if booking.date < date.today():
+        return api_error('Запись уже прошла, отменить её нельзя', status=400)
+    
+    # Проверка: запись сегодня, но время уже прошло
+    if booking.date == date.today():
+        from datetime import datetime as dt
+        if booking.time < dt.now().time():
+            return api_error('Время записи уже прошло, отменить её нельзя', status=400)
+    
     # Меняем статус
     booking.status = 'cancelled'
     booking.save()
@@ -3259,6 +3270,16 @@ def api_client_update_booking(request, identifier, token):
         booking = Booking.objects.get(token=token, status='confirmed')
     except Booking.DoesNotExist:
         return api_error('Запись не найдена', status=404)
+    
+    # Проверка: запись уже прошла
+    if booking.date < date.today():
+        return api_error('Запись уже прошла, перенести её нельзя', status=400)
+    
+    # Проверка: запись сегодня, но время уже прошло
+    if booking.date == date.today():
+        from datetime import datetime as dt
+        if booking.time < dt.now().time():
+            return api_error('Время записи уже прошло, перенести её нельзя', status=400)
     
     try:
         data = json.loads(request.body)
@@ -3499,8 +3520,13 @@ def my_bookings_view(request, identifier):
     bookings = []
     if key:
         f = Fernet(key)
+        
+        # Фильтруем только будущие записи (сегодня и позже)
+        today = date.today()
         all_bookings = Booking.objects.filter(
-            master=master, status='confirmed'
+            master=master,
+            status='confirmed',
+            date__gte=today  # ← фильтр на уровне БД
         ).order_by('date', 'time')
         
         for b in all_bookings:

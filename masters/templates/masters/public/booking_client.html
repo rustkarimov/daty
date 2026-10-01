@@ -66,20 +66,33 @@
         
         <!-- Кнопки управления -->
         <!-- Кнопки управления -->
-        <div class="card mb-4" id="actions-card">
-            <div class="card-body text-center">
-                <div class="d-inline-flex flex-column gap-2" style="min-width: 240px;">
-                    <button type="button" class="btn btn-pink" 
-                style="display: flex !important; justify-content: center !important; align-items: center !important; text-align: center !important;"
-                onclick="showChangePanel()">
-                        Изменить дату и время
-                    </button>
-                    <button type="button" class="btn btn-outline-danger" onclick="confirmCancel()">
-                        Отменить запись
-                    </button>
+        {% if booking.date < today %}
+            <!-- Запись уже прошла -->
+            <div class="card mb-4">
+                <div class="card-body text-center py-4">
+                    <i class="fas fa-clock fa-3x mb-3" style="color: var(--gray-400);"></i>
+                    <h5 class="text-muted mb-2">Запись уже прошла</h5>
+                    <p class="text-muted mb-0" style="font-size: 0.9rem;">
+                        Вы не можете изменить или отменить прошедшую запись
+                    </p>
                 </div>
             </div>
-        </div>
+        {% else %}
+            <!-- Кнопки управления -->
+            <div class="card mb-4" id="actions-card">
+                <div class="card-body text-center">
+                    <div class="d-inline-flex flex-column gap-2" style="min-width: 240px;">
+                        <button type="button" class="btn btn-pink" 
+                    style="display: flex !important; justify-content: center !important; align-items: center !important; text-align: center !important;"
+                    onclick="showChangePanel()">
+                            Изменить дату и время
+                        </button>
+                        <button type="button" class="btn btn-outline-danger" onclick="confirmCancel()">
+                            Отменить запись
+                        </button>
+                    </div>
+                </div>
+            </div>
         
         <!-- Панель изменения (скрыта) -->
         <div class="card mb-4" id="change-panel" style="display: none;">
