@@ -2861,57 +2861,6 @@ def get_day_status(request):
 
 
 # ============================================================
-# ====================== УВЕДОМЛЕНИЯ =========================
-# ============================================================ 
-
-@login_required
-def get_notifications(request):
-    master = request.user.master
-    limit = int(request.GET.get('limit', 20))
-    offset = int(request.GET.get('offset', 0))
-    
-    notifications = Notification.objects.filter(master=master)
-    total = notifications.count()
-    unread = notifications.filter(is_read=False).count()
-    notifications_list = notifications[offset:offset+limit]
-    
-    data = [{
-        'id': n.id,
-        'type': n.type,
-        'title': n.title,
-        'message': n.message,
-        'is_read': n.is_read,
-        'created_at': n.created_at.strftime('%d.%m.%Y %H:%M'),
-    } for n in notifications_list]
-    
-    return JsonResponse({
-        'notifications': data,
-        'total': total,
-        'unread': unread,
-        'has_more': offset + limit < total
-    })
-
-@login_required
-def mark_notification_read(request, notification_id):
-    notification = get_object_or_404(Notification, id=notification_id, master=request.user.master)
-    notification.is_read = True
-    notification.save()
-    return JsonResponse({'success': True})
-
-@login_required
-def mark_all_read(request):
-    Notification.objects.filter(master=request.user.master, is_read=False).update(is_read=True)
-    return JsonResponse({'success': True})
-
-@login_required
-def mark_notification_unread(request, notification_id):
-    notification = get_object_or_404(Notification, id=notification_id, master=request.user.master)
-    notification.is_read = False
-    notification.save()
-    return JsonResponse({'success': True})
-
-
-# ============================================================
 # ======================= ПОДДЕРЖКА ==========================
 # ============================================================ 
 
@@ -3560,16 +3509,3 @@ def my_bookings_view(request, identifier):
         'client_phone': client_phone,
     })
 
-
-# ============================================================
-# ====================== ПОЛИТИКА ============================
-# ============================================================ 
-
-def privacy_policy(request):
-    return render(request, 'masters/public/privacy.html')
-
-def terms_of_service(request):
-    return render(request, 'masters/public/terms.html')
-
-def agree(request):
-    return render(request, 'masters/public/agree.html')
