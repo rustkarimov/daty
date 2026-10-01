@@ -2263,11 +2263,20 @@ def mobile_resend_code(request):
         if not phone:
             return api_error('Телефон не найден', status=400)
         
+        import re
+        phone_cleaned = re.sub(r'\D', '', phone)
+        
+        # Проверка rate limit (защита от спама и слива баланса SMS.ru)
+        from .utils.rate_limit import check_sms_limits
+        allowed, error_msg = check_sms_limits(request, phone_cleaned)
+        if not allowed:
+            return api_error(error_msg, status=429)
+        
         verification_code = str(random.randint(100000, 999999))
-        PhoneVerification.objects.create(phone=phone, code=verification_code)
+        PhoneVerification.objects.create(phone=phone_cleaned, code=verification_code)
         
         # Отправляем реальное SMS
-        success, result = send_sms(phone, verification_code)
+        success, result = send_sms(phone_cleaned, verification_code)
         if not success:
             logger.error(f"SMS не отправлено на {phone}: {result}")
         
@@ -2276,6 +2285,7 @@ def mobile_resend_code(request):
     except json.JSONDecodeError:
         return api_error('Неверный формат данных', status=400)
     except Exception as e:
+        logger.error(f"Ошибка в mobile_resend_code: {e}")
         return api_error('Ошибка при отправке кода', status=500)
 
 
@@ -3422,6 +3432,12 @@ def api_client_request_call(request, identifier):
     
     import re
     phone_cleaned = re.sub(r'\D', '', phone)
+    
+    # Проверка rate limit (защита от спама и слива баланса SMS.ru)
+    from .utils.rate_limit import check_call_limits
+    allowed, error_msg = check_call_limits(request, phone_cleaned)
+    if not allowed:
+        return api_error(error_msg, status=429)
     
     # Запрашиваем звонок через SMS.ru
     from .utils.call_utils import request_call_verification

@@ -163,10 +163,25 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 
+if DEBUG:
+    # Локально — кеш в памяти (для rate limit, работает в одном процессе)
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        }
+    }
+else:
+    # На проде — файловый кеш (между воркерами gunicorn)
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+            'LOCATION': BASE_DIR / 'cache',
+        }
+    }
+
+
 # ======================= ЛОГИРОВАНИЕ ========================
-# ============================================================
-# ======================= ЛОГИРОВАНИЕ ========================
-# ============================================================
+
 
 # Папка для логов
 LOG_DIR = BASE_DIR / 'logs'
