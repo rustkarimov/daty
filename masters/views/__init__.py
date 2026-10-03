@@ -6,6 +6,8 @@ Views для приложения masters.
 """
 from ..views_old import *  
 
+from .main import home, service_worker
+
 from .policies import privacy_policy, terms_of_service, agree
 
 from .notifications import (
@@ -72,3 +74,53 @@ from .schedule import (
     api_delete_day_off_by_date,
 )
 
+from .bookings import (  
+    add_manual_booking,
+    get_booking_slots_for_master,
+    get_booking_for_edit,
+    api_update_booking,
+    api_delete_booking,
+)
+
+from .dashboard import (
+    dashboard,
+    get_calendar_schedule,
+    get_bookings_api,
+    get_booking_details,
+    api_confirm_booking,
+    api_unconfirm_booking,
+    get_bookings_counts,
+    get_bookings_by_date,
+    get_day_status,
+)
+
+from .public import (
+    get_available_dates,
+    get_available_slots,
+    create_booking,
+    create_multiple_bookings,
+    master_by_id,
+    master_by_login,
+)
+
+from .client_api import ( 
+    client_booking_view,
+    api_client_get_booking,
+    api_client_get_slots,
+    api_client_cancel_booking,
+    api_client_update_booking,
+    api_client_check_phone,
+    api_client_request_call,
+    api_client_check_call,
+    my_bookings_view,
+)
+
+
+from .clients import (  # noqa
+    clients_statistics,
+    get_clients_statistics_api,
+    search_clients_api,
+    get_decrypted_phone,
+    api_blacklist_add,
+    api_blacklist_delete,
+)
