@@ -2,13 +2,15 @@
 Главные страницы: home (промо) и service worker.
 """
 import os
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.conf import settings
 
 
 def home(request):
-    """Главная промо-страница сайта."""
+    """Главная промо-страница сайта. Залогиненных мастеров редиректим в кабинет."""
+    if request.user.is_authenticated:
+        return redirect('dashboard')
     return render(request, 'masters/public/index.html')
 
 

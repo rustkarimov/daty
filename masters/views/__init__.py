@@ -1,10 +1,8 @@
 """
 Views для приложения masters.
 
-ВРЕМЕННО: реэкспорт из старого views_old.py.
-По мере переноса модулей эта строка будет заменена на конкретные импорты.
 """
-from ..views_old import *  
+
 
 from .main import home, service_worker
 
