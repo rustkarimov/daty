@@ -9,7 +9,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 
-from ..models import Schedule, Break, ExtraWorkingDay, ExtraWorkingDayBreak, DayOff
+from ..models import Schedule, Break, ExtraWorkingDay, ExtraWorkingDayBreak, DayOff, Booking
 from ..utils.response_utils import api_success, api_error
 
 
@@ -222,7 +222,6 @@ def api_delete_schedule(request, schedule_id):
 # ============================================================
 # ДОПОЛНИТЕЛЬНЫЕ РАБОЧИЕ ДНИ
 # ============================================================
-
 @login_required
 @require_http_methods(["POST"])
 def api_add_extra_day(request):
@@ -265,7 +264,7 @@ def api_add_extra_day(request):
                         status=400
                     )
         
-        # 4. Проверка пересечения перерывов
+        # 4. Проверка пересечения перерывов между собой
         for i in range(len(breaks)):
             for j in range(i + 1, len(breaks)):
                 b1 = breaks[i]
@@ -278,6 +277,39 @@ def api_add_extra_day(request):
                         )
         
         # ===== ВСЕ ПРОВЕРКИ ПРОЙДЕНЫ → СОЗДАЕМ =====
+        
+        def time_to_minutes(t_str):
+            """'14:30' → 870 (минут от начала дня)"""
+            h, m = map(int, t_str.split(':'))
+            return h * 60 + m
+        
+        # 5. Проверка: перерывы не должны пересекаться с существующими записями
+        # (проверяем ДО удаления ExtraWorkingDay/DayOff, чтобы не сломать данные)
+        existing_bookings = Booking.objects.filter(
+            master=master,
+            date=target_date,
+            status='confirmed'
+        ).select_related('service')
+        
+        for break_data in breaks:
+            if not break_data.get('start') or not break_data.get('end'):
+                continue
+            
+            b_start = time_to_minutes(break_data['start'])
+            b_end = time_to_minutes(break_data['end'])
+            
+            for booking in existing_bookings:
+                booking_start = time_to_minutes(booking.time.strftime('%H:%M'))
+                booking_end = booking_start + booking.service.duration
+                
+                # Пересечение: b_start < booking_end И booking_start < b_end
+                if b_start < booking_end and booking_start < b_end:
+                    return api_error(
+                        f'Перерыв {break_data["start"]}-{break_data["end"]} пересекается '
+                        f'с записью клиента "{booking.client_name}" в {booking.time.strftime("%H:%M")}. '
+                        f'Сначала перенесите или отмените запись.',
+                        status=409
+                    )
         
         # Удаляем существующие записи для этой даты
         ExtraWorkingDay.objects.filter(master=master, date=target_date).delete()

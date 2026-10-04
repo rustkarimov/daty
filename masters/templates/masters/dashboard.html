@@ -8,7 +8,7 @@
 {% block title %}Личный кабинет - {{ master.first_name }} {{ master.last_name }}{% endblock %}
 
 {% block content %}
-<div id="react-dashboard"></div>
+<div id="react-dashboard" data-master-slug="{{ master.public_slug }}"></div>
 {% endblock %}
 
 {% block extra_js %}
