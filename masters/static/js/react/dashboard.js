@@ -7262,13 +7262,13 @@ async function createMultipleBookings(masterSlug, data) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "X-CSRFToken": getCookie$2("csrftoken")
+      "X-CSRFToken": getCookie$3("csrftoken")
     },
     body: JSON.stringify(data)
   });
   return r2.json();
 }
-function getCookie$2(name) {
+function getCookie$3(name) {
   let cookieValue = null;
   if (document.cookie && document.cookie !== "") {
     const cookies = document.cookie.split(";");
@@ -7297,7 +7297,7 @@ async function makeDayOff(date) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "X-CSRFToken": getCookie$1("csrftoken")
+      "X-CSRFToken": getCookie$2("csrftoken")
     },
     body: JSON.stringify({ date, reason: "Выходной" })
   });
@@ -7308,7 +7308,7 @@ async function makeDayWorking(date) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "X-CSRFToken": getCookie$1("csrftoken")
+      "X-CSRFToken": getCookie$2("csrftoken")
     },
     body: JSON.stringify({
       date,
@@ -7319,7 +7319,7 @@ async function makeDayWorking(date) {
   });
   return r2.json();
 }
-function getCookie$1(name) {
+function getCookie$2(name) {
   let cookieValue = null;
   if (document.cookie && document.cookie !== "") {
     const cookies = document.cookie.split(";");
@@ -7338,7 +7338,7 @@ async function deleteBooking(bookingId) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "X-CSRFToken": getCookie$1("csrftoken")
+      "X-CSRFToken": getCookie$2("csrftoken")
     }
   });
   return r2.json();
@@ -7353,7 +7353,7 @@ async function updateBooking(bookingId, data) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "X-CSRFToken": getCookie$1("csrftoken")
+      "X-CSRFToken": getCookie$2("csrftoken")
     },
     body: JSON.stringify(data)
   });
@@ -8093,7 +8093,7 @@ function DayModal({ dateStr, masterSlug, onClose, onDataChanged }) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-CSRFToken": getCookie("csrftoken")
+          "X-CSRFToken": getCookie$1("csrftoken")
         },
         body: JSON.stringify({
           date: dateStr,
@@ -8183,7 +8183,7 @@ function DayModal({ dateStr, masterSlug, onClose, onDataChanged }) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-CSRFToken": getCookie("csrftoken")
+          "X-CSRFToken": getCookie$1("csrftoken")
         },
         body: JSON.stringify({
           date: dateStr,
@@ -8392,7 +8392,7 @@ function DayModal({ dateStr, masterSlug, onClose, onDataChanged }) {
     )
   ] });
 }
-function getCookie(name) {
+function getCookie$1(name) {
   let cookieValue = null;
   if (document.cookie && document.cookie !== "") {
     const cookies = document.cookie.split(";");
@@ -8535,11 +8535,479 @@ function Calendar({ masterSlug }) {
     )
   ] });
 }
-function Dashboard({ masterSlug }) {
-  return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "card mb-4", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "card-inner", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "card-body", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Calendar, { masterSlug }) }) }) });
+async function loadBookings(page = 1, limit = 3) {
+  const r2 = await fetch(`/api/bookings/?page=${page}&limit=${limit}`);
+  if (!r2.ok) throw new Error(`HTTP ${r2.status}`);
+  return r2.json();
+}
+async function confirmBooking(bookingId) {
+  const r2 = await fetch(`/api/booking/${bookingId}/confirm/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRFToken": getCookie("csrftoken")
+    }
+  });
+  return r2.json();
+}
+async function unconfirmBooking(bookingId) {
+  const r2 = await fetch(`/api/booking/${bookingId}/unconfirm/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRFToken": getCookie("csrftoken")
+    }
+  });
+  return r2.json();
+}
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== "") {
+    const cookies = document.cookie.split(";");
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === name + "=") {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+async function loadBookingDetails(bookingId) {
+  const r2 = await fetch(`/api/booking/${bookingId}/details/`);
+  if (!r2.ok) throw new Error(`HTTP ${r2.status}`);
+  return r2.json();
+}
+function BookingDetailsModal({ bookingId, onClose }) {
+  var _a, _b, _c, _d, _e, _f;
+  const [data, setData] = reactExports.useState(null);
+  const [loading, setLoading] = reactExports.useState(true);
+  reactExports.useEffect(() => {
+    setLoading(true);
+    loadBookingDetails(bookingId).then((d) => {
+      setData(d);
+      setLoading(false);
+    }).catch((error) => {
+      console.error("Ошибка загрузки деталей:", error);
+      setLoading(false);
+    });
+  }, [bookingId]);
+  function handleBackdropClick(e) {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  }
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(
+    "div",
+    {
+      className: "modal fade show",
+      style: {
+        display: "block",
+        backgroundColor: "rgba(0, 0, 0, 0.6)",
+        zIndex: 1080,
+        overflowY: "auto"
+      },
+      onClick: handleBackdropClick,
+      children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "modal-dialog modal-dialog-centered", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "modal-content", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "modal-header", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("h5", { className: "modal-title", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "fas fa-info-circle me-2", style: { color: "var(--primary)" } }),
+            "Подробности записи"
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("button", { type: "button", className: "btn-close", onClick: onClose })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "modal-body", children: loading ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-center py-3", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "spinner-border", style: { color: "#4053d3" } }) }) : !(data == null ? void 0 : data.success) ? /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-danger", children: "Не удалось загрузить данные" }) : /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mb-3", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("strong", { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "fas fa-user me-2" }),
+              "Клиент:"
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-1 mb-0", children: data.client_name })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mb-3", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("strong", { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "fas fa-phone me-2" }),
+              "Телефон:"
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-1 mb-0", children: data.client_phone_formatted || data.client_phone })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mb-3", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("strong", { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "fas fa-calendar-day me-2" }),
+              "Дата:"
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-1 mb-0", children: data.date })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mb-3", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("strong", { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "fas fa-clock me-2" }),
+              "Время:"
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-1 mb-0", children: data.time || "—" })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mb-3", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("strong", { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "fas fa-cut me-2" }),
+              "Услуги (",
+              data.total_services,
+              "):"
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-2", children: (_a = data.services) == null ? void 0 : _a.map((s, i) => /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "d-flex justify-content-between align-items-center mb-2 p-2", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+              s.category_name && /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-muted small", children: [
+                s.category_name,
+                ": "
+              ] }),
+              s.name
+            ] }) }, i)) })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mb-3", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("strong", { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "fas fa-comment me-2" }),
+              "Комментарий:"
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-1 mb-0", children: data.comment || "—" })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("hr", {}),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mb-3", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("strong", { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "fas fa-chart-line me-2" }),
+              "Статистика клиента:"
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-2 p-2 bg-light rounded", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "row text-center", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "col-4", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "fs-4 fw-bold", style: { color: "var(--primary)" }, children: ((_b = data.client_stats) == null ? void 0 : _b.total_visits) || 0 }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "small text-muted", children: "Всего визитов" })
+              ] }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "col-4", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "small text-muted", children: "Первый визит" }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("div", { children: /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: ((_c = data.client_stats) == null ? void 0 : _c.first_visit) || "—" }) })
+              ] }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "col-4", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "small text-muted", children: "Последний визит" }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("div", { children: /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: ((_d = data.client_stats) == null ? void 0 : _d.last_visit) || "—" }) })
+              ] })
+            ] }) })
+          ] }),
+          ((_f = (_e = data.client_stats) == null ? void 0 : _e.visits) == null ? void 0 : _f.length) > 0 && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mb-3", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("strong", { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "fas fa-history me-2" }),
+              "История визитов:"
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-1", style: { maxHeight: "200px", overflowY: "auto" }, children: data.client_stats.visits.map((v2, i) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "d-flex justify-content-between align-items-center mb-1 p-1", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: v2.date }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-muted small", children: v2.time }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-muted small", children: v2.service })
+            ] }, i)) })
+          ] })
+        ] }) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "modal-footer", children: /* @__PURE__ */ jsxRuntimeExports.jsx("button", { className: "btn btn-secondary", onClick: onClose, children: "Закрыть" }) })
+      ] }) })
+    }
+  );
+}
+function UpcomingBookings({ masterSlug, masterMaxLink, onEdit, onDataChanged }) {
+  const [bookings, setBookings] = reactExports.useState([]);
+  const [total, setTotal] = reactExports.useState(0);
+  const [page, setPage] = reactExports.useState(1);
+  const [limit, setLimit] = reactExports.useState(3);
+  const [loading, setLoading] = reactExports.useState(true);
+  const [hasMore, setHasMore] = reactExports.useState(false);
+  const [detailsBookingId, setDetailsBookingId] = reactExports.useState(null);
+  const [contactMenuId, setContactMenuId] = reactExports.useState(null);
+  reactExports.useEffect(() => {
+    loadData(1, false);
+  }, [limit]);
+  async function loadData(p2, append) {
+    setLoading(true);
+    try {
+      const data = await loadBookings(p2, limit);
+      if (append) {
+        setBookings((prev) => [...prev, ...data.bookings || []]);
+      } else {
+        setBookings(data.bookings || []);
+      }
+      setTotal(data.total || 0);
+      setPage(p2);
+      setHasMore(!!data.has_more);
+    } catch (error) {
+      console.error("Ошибка загрузки записей:", error);
+    } finally {
+      setLoading(false);
+    }
+  }
+  function handleLimitChange(newLimit) {
+    setLimit(newLimit);
+  }
+  function handleLoadMore() {
+    loadData(page + 1, true);
+  }
+  async function handleToggleConfirm(booking) {
+    try {
+      const fn = booking.confirmed_by_master ? unconfirmBooking : confirmBooking;
+      const data = await fn(booking.id);
+      if (data.success) {
+        setBookings((prev) => prev.map(
+          (b) => b.id === booking.id ? { ...b, confirmed_by_master: !b.confirmed_by_master } : b
+        ));
+      } else {
+        alert(data.error || "Ошибка");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Ошибка соединения");
+    }
+  }
+  async function handleDelete(booking) {
+    if (!confirm(`Удалить запись клиента "${booking.client_name}" на ${booking.time}?`)) return;
+    try {
+      const data = await deleteBooking(booking.id);
+      if (data.success) {
+        setBookings((prev) => prev.filter((b) => b.id !== booking.id));
+        setTotal((prev) => prev - 1);
+        if (onDataChanged) onDataChanged();
+      } else {
+        alert(data.error || "Ошибка удаления");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Ошибка соединения");
+    }
+  }
+  reactExports.useEffect(() => {
+    function handleClickOutside() {
+      setContactMenuId(null);
+    }
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
+  function cleanPhone(phone) {
+    return (phone || "").replace(/\D/g, "");
+  }
+  function callClient(phone) {
+    window.location.href = `tel:+${cleanPhone(phone)}`;
+  }
+  function sendSms(phone) {
+    window.location.href = `sms:+${cleanPhone(phone)}`;
+  }
+  function openWhatsApp(phone) {
+    window.open(`https://wa.me/${cleanPhone(phone)}`, "_blank");
+  }
+  function openTelegram(phone) {
+    const clean = cleanPhone(phone);
+    const tgLink = `tg://resolve?phone=${clean}`;
+    window.location.href = tgLink;
+    setTimeout(() => {
+      if (document.hasFocus()) {
+        alert("💬 Telegram не установлен или не открылся.\nСвяжитесь с клиентом по телефону.");
+      }
+    }, 2e3);
+  }
+  function openMax() {
+    if (!masterMaxLink) {
+      alert("⚠️ Ссылка на MAX не настроена.\nДобавьте её в настройках профиля.");
+      return;
+    }
+    window.open(masterMaxLink, "_blank");
+  }
+  function toggleContactMenu(e, bookingId) {
+    e.stopPropagation();
+    setContactMenuId((prev) => prev === bookingId ? null : bookingId);
+  }
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "card mb-4 booking-card", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "card-inner", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "card-header bg-white", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("h5", { className: "mb-0", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "fas fa-clock me-2", style: { color: "var(--primary)" } }),
+        "Ближайшие записи"
+      ] }) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "card-body", children: loading && bookings.length === 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-center py-3", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "spinner-border", style: { color: "#4053d3" } }) }) : bookings.length === 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-muted text-center mb-0", children: "Нет предстоящих записей" }) : /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "table-responsive", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("table", { className: "table", id: "upcoming-bookings-table", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("thead", { children: /* @__PURE__ */ jsxRuntimeExports.jsxs("tr", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("th", { children: "Дата" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("th", { children: "Время" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("th", { children: "Клиент" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("th", { children: "Услуги" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("th", {})
+        ] }) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("tbody", { children: bookings.map((b) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          "tr",
+          {
+            style: contactMenuId === b.id ? { position: "relative", zIndex: 100 } : void 0,
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("td", { "data-label": "Дата", children: b.date }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("td", { "data-label": "Время", children: b.time }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("td", { "data-label": "Клиент", children: b.client_name }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("td", { "data-label": "Услуги", children: b.service_name }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("td", { "data-label": "", className: "actions-cell", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "all-buttons-row", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "button",
+                  {
+                    className: "btn btn-sm",
+                    onClick: () => setDetailsBookingId(b.id),
+                    title: "Подробности",
+                    children: /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "fas fa-info-circle" })
+                  }
+                ),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "button",
+                  {
+                    className: "btn btn-sm",
+                    onClick: () => onEdit(b.id),
+                    title: "Редактировать",
+                    children: /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "fas fa-edit" })
+                  }
+                ),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "button",
+                  {
+                    className: "btn btn-sm",
+                    onClick: () => handleDelete(b),
+                    title: "Удалить",
+                    children: /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "fas fa-trash" })
+                  }
+                ),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "contact-dropdown-wrapper", style: { position: "relative", display: "inline-block", zIndex: 10 }, children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                    "button",
+                    {
+                      className: "contact-dropdown-btn",
+                      onClick: (e) => toggleContactMenu(e, b.id),
+                      children: [
+                        /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "fas fa-phone-alt" }),
+                        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "Связаться" }),
+                        /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "fas fa-chevron-down" })
+                      ]
+                    }
+                  ),
+                  contactMenuId === b.id && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "contact-dropdown-menu", style: { display: "block", zIndex: 1100 }, onClick: (e) => e.stopPropagation(), children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { onClick: () => callClient(b.phone), children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "fas fa-phone" }),
+                      " Позвонить"
+                    ] }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { onClick: () => sendSms(b.phone), children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "fas fa-sms" }),
+                      " SMS"
+                    ] }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { onClick: () => openTelegram(b.phone), children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "fab fa-telegram-plane" }),
+                      " Telegram"
+                    ] }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { onClick: () => openWhatsApp(b.phone), children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "fab fa-whatsapp" }),
+                      " WhatsApp"
+                    ] }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { onClick: openMax, disabled: !masterMaxLink, children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "max-icon", children: "M" }),
+                      " MAX"
+                    ] })
+                  ] })
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "button",
+                  {
+                    className: `confirm-btn ${b.confirmed_by_master ? "confirmed" : ""}`,
+                    onClick: () => handleToggleConfirm(b),
+                    title: b.confirmed_by_master ? "Подтверждено" : "Подтвердить",
+                    children: /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: `fas ${b.confirmed_by_master ? "fa-check-circle" : "fa-circle"}` })
+                  }
+                )
+              ] }) })
+            ]
+          },
+          b.id
+        )) })
+      ] }) }) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "card-footer bg-white border-0 d-flex justify-content-between align-items-center pt-0 flex-wrap", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          "button",
+          {
+            className: "btn btn-sm btn-outline-primary",
+            style: { display: hasMore ? "inline-block" : "none" },
+            onClick: handleLoadMore,
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "fas fa-chevron-down me-1" }),
+              "Показать еще"
+            ]
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "footer-info-row", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "footer-right", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "total-label", children: "Всего записей" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "total-number", children: total })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "footer-left", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("label", { className: "form-label me-1 mb-0 small", children: "Показывать:" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(
+              "select",
+              {
+                className: "form-select form-select-sm",
+                value: limit,
+                onChange: (e) => handleLimitChange(parseInt(e.target.value)),
+                style: { width: "auto" },
+                children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("option", { value: "3", children: "3" }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("option", { value: "5", children: "5" }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("option", { value: "10", children: "10" }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("option", { value: "15", children: "15" })
+                ]
+              }
+            )
+          ] })
+        ] })
+      ] })
+    ] }),
+    detailsBookingId && /* @__PURE__ */ jsxRuntimeExports.jsx(
+      BookingDetailsModal,
+      {
+        bookingId: detailsBookingId,
+        onClose: () => setDetailsBookingId(null)
+      }
+    )
+  ] });
+}
+function Dashboard({ masterSlug, masterMaxLink }) {
+  const [editingBookingId, setEditingBookingId] = reactExports.useState(null);
+  const [refreshKey, setRefreshKey] = reactExports.useState(0);
+  function handleEditBooking(bookingId) {
+    setEditingBookingId(bookingId);
+  }
+  function handleCloseEdit() {
+    setEditingBookingId(null);
+  }
+  function handleDataChanged() {
+    setRefreshKey((prev) => prev + 1);
+  }
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsx(
+      UpcomingBookings,
+      {
+        masterSlug,
+        masterMaxLink,
+        onEdit: handleEditBooking
+      }
+    ),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "card mb-4", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "card-inner", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "card-body", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+      Calendar,
+      {
+        masterSlug
+      },
+      `calendar-${refreshKey}`
+    ) }) }) }),
+    editingBookingId && /* @__PURE__ */ jsxRuntimeExports.jsx(
+      EditBookingModal,
+      {
+        bookingId: editingBookingId,
+        masterSlug,
+        onClose: handleCloseEdit,
+        onSaved: handleDataChanged
+      }
+    )
+  ] });
 }
 const el = document.getElementById("react-dashboard");
 if (el) {
   const masterSlug = el.dataset.masterSlug || "";
-  client.createRoot(el).render(/* @__PURE__ */ jsxRuntimeExports.jsx(Dashboard, { masterSlug }));
+  const masterMaxLink = el.dataset.masterMaxLink || "";
+  client.createRoot(el).render(
+    /* @__PURE__ */ jsxRuntimeExports.jsx(Dashboard, { masterSlug, masterMaxLink })
+  );
 }
