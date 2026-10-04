@@ -8,7 +8,7 @@ const MONTH_NAMES = [
     'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
 ];
 
-export default function Calendar() {
+export default function Calendar({ masterSlug }) {
     const [currentDate, setCurrentDate] = useState(new Date());
     const [calendarData, setCalendarData] = useState(null);
     const [countsData, setCountsData] = useState(null);
@@ -99,10 +99,12 @@ export default function Calendar() {
             {selectedDate && (
                 <DayModal
                     dateStr={selectedDate}
+                    masterSlug={masterSlug}
                     onClose={handleCloseModal}
                     onDataChanged={handleDataChanged}
                 />
             )}
+
         </div>
     );
 }

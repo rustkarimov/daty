@@ -4,5 +4,6 @@ import Dashboard from './components/Dashboard';
 
 const el = document.getElementById('react-dashboard');
 if (el) {
-    ReactDOM.createRoot(el).render(<Dashboard />);
+    const masterSlug = el.dataset.masterSlug || '';
+    ReactDOM.createRoot(el).render(<Dashboard masterSlug={masterSlug} />);
 }

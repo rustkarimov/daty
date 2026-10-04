@@ -55,3 +55,32 @@ function getCookie(name) {
     }
     return cookieValue;
 }
+
+export async function deleteBooking(bookingId) {
+    const r = await fetch(`/api/booking/${bookingId}/delete/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken'),
+        },
+    });
+    return r.json();
+}
+
+export async function loadBookingForEdit(bookingId) {
+    const r = await fetch(`/api/booking/${bookingId}/get/`);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    return r.json();
+}
+
+export async function updateBooking(bookingId, data) {
+    const r = await fetch(`/api/booking/${bookingId}/update/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken'),
+        },
+        body: JSON.stringify(data),
+    });
+    return r.json();
+}
