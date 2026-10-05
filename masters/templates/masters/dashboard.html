@@ -8,11 +8,87 @@
 {% block title %}Личный кабинет - {{ master.first_name }} {{ master.last_name }}{% endblock %}
 
 {% block content %}
+
 <div id="react-dashboard"
      data-master-slug="{{ master.public_slug }}"
      data-master-max-link="{{ master.max_link|default:'' }}"></div>
+
+<!-- Статистика -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
+        <div class="stat-number">{{ total_bookings }}</div>
+        <div class="stat-label">Записей</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-cut"></i></div>
+        <div class="stat-number">{{ total_services }}</div>
+        <div class="stat-label">Услуг</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-users"></i></div>
+        <div class="stat-number">{{ total_clients }}</div>
+        <div class="stat-label">Клиентов</div>
+    </div>
+</div>
+
+
+
+<!-- Ваша страница для записи -->
+<div class="card mb-4">
+    <div class="card-body">
+        <h5><i class="fas fa-share-alt me-2" style="color: var(--primary);"></i>Твоя страница для записи</h5>
+        
+        <!-- Десктопная версия: строка + кнопка в одной строке -->
+        <div class="public-link-desktop">
+            <div class="input-group">
+                <input type="text" class="form-control" id="publicLink" 
+                    value="{{ request.scheme }}://{{ request.get_host }}/{{ master.public_slug }}/" readonly>
+                <button class="btn btn-primary" type="button" onclick="copyPublicLink()">
+                    <i class="fas fa-copy"></i> Копировать
+                </button>
+            </div>
+        </div>
+        
+        <!-- Мобильная версия: строка сверху, кнопка снизу -->
+        <div class="public-link-mobile">
+            <input type="text" class="form-control mb-2" id="publicLinkMobile" 
+                value="{{ request.scheme }}://{{ request.get_host }}/{{ master.public_slug }}/" readonly>
+            <button class="btn btn-primary w-100" type="button" onclick="copyPublicLinkMobile()">
+                <i class="fas fa-copy me-2"></i> Копировать ссылку
+            </button>
+        </div>
+        
+        <small class="text-muted d-block mt-2">Отправь эту ссылку клиентам, и они смогут записаться</small>
+    </div>
+</div>
+
 {% endblock %}
 
+
 {% block extra_js %}
+
 <script src="{% static 'js/react/dashboard.js' %}" defer></script>
+
+<script>
+// ============================================================
+// КОПИРОВАНИЕ ССЫЛКИ
+// ============================================================
+function copyPublicLink() {
+    const t = document.getElementById("publicLink");
+    t.select();
+    t.setSelectionRange(0, 99999);
+    navigator.clipboard.writeText(t.value);
+    showAlert('Ссылка скопирована!', 'Готово');
+}
+
+function copyPublicLinkMobile() {
+    const t = document.getElementById("publicLinkMobile");
+    t.select();
+    t.setSelectionRange(0, 99999);
+    navigator.clipboard.writeText(t.value);
+    showAlert('Ссылка скопирована!', 'Готово');
+}
+</script>
+
 {% endblock %}
