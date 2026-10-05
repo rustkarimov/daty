@@ -16,7 +16,6 @@ export default function Dashboard({ masterSlug, masterMaxLink }) {
     }
 
     function handleDataChanged() {
-        // Обновляем оба компонента — календарь и список записей
         setRefreshKey(prev => prev + 1);
     }
 
@@ -26,6 +25,7 @@ export default function Dashboard({ masterSlug, masterMaxLink }) {
                 masterSlug={masterSlug}
                 masterMaxLink={masterMaxLink}
                 onEdit={handleEditBooking}
+                onDataChanged={handleDataChanged}
             />
 
             <div className="card mb-4">

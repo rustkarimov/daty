@@ -6644,7 +6644,7 @@ function dl(a) {
   }
   return b;
 }
-function el$1(a, b, c, d, e, f2, g, h, k2) {
+function el(a, b, c, d, e, f2, g, h, k2) {
   a = bl(c, d, true, a, e, f2, g, h, k2);
   a.context = dl(null);
   c = a.current;
@@ -6745,7 +6745,7 @@ function ql(a, b, c, d, e) {
         f2.call(a2);
       };
     }
-    var g = el$1(b, d, a, 0, null, false, false, "", pl);
+    var g = el(b, d, a, 0, null, false, false, "", pl);
     a._reactRootContainer = g;
     a[uf] = g.current;
     sf(8 === a.nodeType ? a.parentNode : a);
@@ -6913,7 +6913,7 @@ reactDom_production_min.hydrateRoot = function(a, b, c) {
   if (!nl(a)) throw Error(p(405));
   var d = null != c && c.hydratedSources || null, e = false, f2 = "", g = kl;
   null !== c && void 0 !== c && (true === c.unstable_strictMode && (e = true), void 0 !== c.identifierPrefix && (f2 = c.identifierPrefix), void 0 !== c.onRecoverableError && (g = c.onRecoverableError));
-  b = el$1(b, null, a, 1, null != c ? c : null, e, false, f2, g);
+  b = el(b, null, a, 1, null != c ? c : null, e, false, f2, g);
   a[uf] = b.current;
   sf(a);
   if (d) for (a = 0; a < d.length; a++) c = d[a], e = c._getVersion, e = e(c._source), null == b.mutableSourceEagerHydrationData ? b.mutableSourceEagerHydrationData = [c, e] : b.mutableSourceEagerHydrationData.push(
@@ -7262,13 +7262,13 @@ async function createMultipleBookings(masterSlug, data) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "X-CSRFToken": getCookie$3("csrftoken")
+      "X-CSRFToken": getCookie$4("csrftoken")
     },
     body: JSON.stringify(data)
   });
   return r2.json();
 }
-function getCookie$3(name) {
+function getCookie$4(name) {
   let cookieValue = null;
   if (document.cookie && document.cookie !== "") {
     const cookies = document.cookie.split(";");
@@ -7297,7 +7297,7 @@ async function makeDayOff(date) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "X-CSRFToken": getCookie$2("csrftoken")
+      "X-CSRFToken": getCookie$3("csrftoken")
     },
     body: JSON.stringify({ date, reason: "Выходной" })
   });
@@ -7308,7 +7308,7 @@ async function makeDayWorking(date) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "X-CSRFToken": getCookie$2("csrftoken")
+      "X-CSRFToken": getCookie$3("csrftoken")
     },
     body: JSON.stringify({
       date,
@@ -7319,7 +7319,7 @@ async function makeDayWorking(date) {
   });
   return r2.json();
 }
-function getCookie$2(name) {
+function getCookie$3(name) {
   let cookieValue = null;
   if (document.cookie && document.cookie !== "") {
     const cookies = document.cookie.split(";");
@@ -7338,7 +7338,7 @@ async function deleteBooking(bookingId) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "X-CSRFToken": getCookie$2("csrftoken")
+      "X-CSRFToken": getCookie$3("csrftoken")
     }
   });
   return r2.json();
@@ -7353,7 +7353,7 @@ async function updateBooking(bookingId, data) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "X-CSRFToken": getCookie$2("csrftoken")
+      "X-CSRFToken": getCookie$3("csrftoken")
     },
     body: JSON.stringify(data)
   });
@@ -8093,7 +8093,7 @@ function DayModal({ dateStr, masterSlug, onClose, onDataChanged }) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-CSRFToken": getCookie$1("csrftoken")
+          "X-CSRFToken": getCookie$2("csrftoken")
         },
         body: JSON.stringify({
           date: dateStr,
@@ -8183,7 +8183,7 @@ function DayModal({ dateStr, masterSlug, onClose, onDataChanged }) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-CSRFToken": getCookie$1("csrftoken")
+          "X-CSRFToken": getCookie$2("csrftoken")
         },
         body: JSON.stringify({
           date: dateStr,
@@ -8392,7 +8392,7 @@ function DayModal({ dateStr, masterSlug, onClose, onDataChanged }) {
     )
   ] });
 }
-function getCookie$1(name) {
+function getCookie$2(name) {
   let cookieValue = null;
   if (document.cookie && document.cookie !== "") {
     const cookies = document.cookie.split(";");
@@ -8545,7 +8545,7 @@ async function confirmBooking(bookingId) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "X-CSRFToken": getCookie("csrftoken")
+      "X-CSRFToken": getCookie$1("csrftoken")
     }
   });
   return r2.json();
@@ -8555,12 +8555,12 @@ async function unconfirmBooking(bookingId) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "X-CSRFToken": getCookie("csrftoken")
+      "X-CSRFToken": getCookie$1("csrftoken")
     }
   });
   return r2.json();
 }
-function getCookie(name) {
+function getCookie$1(name) {
   let cookieValue = null;
   if (document.cookie && document.cookie !== "") {
     const cookies = document.cookie.split(";");
@@ -8982,7 +8982,8 @@ function Dashboard({ masterSlug, masterMaxLink }) {
       {
         masterSlug,
         masterMaxLink,
-        onEdit: handleEditBooking
+        onEdit: handleEditBooking,
+        onDataChanged: handleDataChanged
       }
     ),
     /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "card mb-4", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "card-inner", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "card-body", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -9003,11 +9004,235 @@ function Dashboard({ masterSlug, masterMaxLink }) {
     )
   ] });
 }
-const el = document.getElementById("react-dashboard");
-if (el) {
-  const masterSlug = el.dataset.masterSlug || "";
-  const masterMaxLink = el.dataset.masterMaxLink || "";
-  client.createRoot(el).render(
+async function getVapidPublicKey() {
+  const r2 = await fetch("/api/push/vapid-key/");
+  return r2.json();
+}
+async function saveSubscription(subscription) {
+  const r2 = await fetch("/api/push/subscribe/", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRFToken": getCookie("csrftoken")
+    },
+    body: JSON.stringify(subscription)
+  });
+  return r2.json();
+}
+async function removeSubscription(endpoint) {
+  const r2 = await fetch("/api/push/unsubscribe/", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRFToken": getCookie("csrftoken")
+    },
+    body: JSON.stringify({ endpoint })
+  });
+  return r2.json();
+}
+async function checkSubscription(endpoint) {
+  const r2 = await fetch("/api/push/check/", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRFToken": getCookie("csrftoken")
+    },
+    body: JSON.stringify({ endpoint })
+  });
+  return r2.json();
+}
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== "") {
+    const cookies = document.cookie.split(";");
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === name + "=") {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+function urlBase64ToUint8Array(base64String) {
+  const padding = "=".repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/\-/g, "+").replace(/_/g, "/");
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+function isPushSupported() {
+  return "serviceWorker" in navigator && "PushManager" in window;
+}
+function isIOSWithoutPWA() {
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const isStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+  return isIOS && !isStandalone;
+}
+async function subscribeToPush() {
+  if (!isPushSupported()) {
+    throw new Error("Браузер не поддерживает push-уведомления");
+  }
+  const permission = await Notification.requestPermission();
+  if (permission !== "granted") {
+    throw new Error("Разрешение на уведомления отклонено");
+  }
+  const registration = await navigator.serviceWorker.ready;
+  const vapidData = await getVapidPublicKey();
+  if (!vapidData.success) {
+    throw new Error("Не удалось получить VAPID-ключ");
+  }
+  const vapidPublicKey = vapidData.data.publicKey;
+  const subscription = await registration.pushManager.subscribe({
+    userVisibleOnly: true,
+    applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
+  });
+  const subData = subscription.toJSON();
+  const result = await saveSubscription({
+    endpoint: subData.endpoint,
+    keys: subData.keys
+  });
+  if (!result.success) {
+    throw new Error(result.error || "Ошибка сохранения подписки");
+  }
+  return true;
+}
+async function unsubscribeFromPush() {
+  if (!isPushSupported()) return false;
+  const registration = await navigator.serviceWorker.ready;
+  const subscription = await registration.pushManager.getSubscription();
+  if (subscription) {
+    const endpoint = subscription.endpoint;
+    await subscription.unsubscribe();
+    await removeSubscription(endpoint);
+    return true;
+  }
+  return false;
+}
+async function checkPushSubscription() {
+  if (!isPushSupported()) return false;
+  try {
+    const registration = await navigator.serviceWorker.ready;
+    const subscription = await registration.pushManager.getSubscription();
+    if (!subscription) return false;
+    const data = await checkSubscription(subscription.endpoint);
+    if (!data.success || !data.data || data.data.exists !== true) {
+      try {
+        await subscription.unsubscribe();
+      } catch (e) {
+        console.warn("Не удалось удалить старую подписку:", e);
+      }
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error("Ошибка проверки подписки:", error);
+    return false;
+  }
+}
+function PushSettings() {
+  const [subscribed, setSubscribed] = reactExports.useState(false);
+  const [loading, setLoading] = reactExports.useState(true);
+  const [busy, setBusy] = reactExports.useState(false);
+  const supported = isPushSupported();
+  const iosHint = isIOSWithoutPWA();
+  reactExports.useEffect(() => {
+    if (!supported || iosHint) {
+      setLoading(false);
+      return;
+    }
+    checkPushSubscription().then((result) => {
+      setSubscribed(result);
+      setLoading(false);
+    }).catch(() => {
+      setLoading(false);
+    });
+  }, [supported, iosHint]);
+  async function handleEnable() {
+    setBusy(true);
+    try {
+      await subscribeToPush();
+      setSubscribed(true);
+    } catch (error) {
+      alert(error.message || "Ошибка подписки");
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function handleDisable() {
+    setBusy(true);
+    try {
+      await unsubscribeFromPush();
+      setSubscribed(false);
+    } catch (error) {
+      alert(error.message || "Ошибка отписки");
+    } finally {
+      setBusy(false);
+    }
+  }
+  return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "card mb-4", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "card-body", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "d-flex justify-content-between align-items-start flex-wrap gap-2", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("strong", { style: { fontSize: "0.95rem" }, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "fas fa-bell me-2", style: { color: "var(--primary)" } }),
+          "Push-уведомления"
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-muted", style: { fontSize: "0.8rem", marginTop: "4px" }, children: "Получать уведомления о новых записях" })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { children: supported && !iosHint && /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: subscribed ? /* @__PURE__ */ jsxRuntimeExports.jsx(
+        "button",
+        {
+          type: "button",
+          className: "btn btn-sm btn-outline-danger",
+          onClick: handleDisable,
+          disabled: busy || loading,
+          children: busy ? "Отключение..." : "Отключить"
+        }
+      ) : /* @__PURE__ */ jsxRuntimeExports.jsx(
+        "button",
+        {
+          type: "button",
+          className: "btn btn-sm btn-outline-pink",
+          onClick: handleEnable,
+          disabled: busy || loading,
+          children: busy ? "Включение..." : "Включить"
+        }
+      ) }) })
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mt-3 pt-3", style: { borderTop: "1px solid var(--gray-200)", fontSize: "0.8rem", color: "var(--gray-500)" }, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { marginBottom: "4px" }, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "fas fa-info-circle me-1", style: { color: "var(--primary)" } }),
+        "Уведомления приходят, даже если приложение закрыто."
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { marginBottom: "4px" }, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "fas fa-lock me-1", style: { color: "var(--primary)" } }),
+        "Только о ваших записях. Без рекламы."
+      ] }),
+      iosHint && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "fas fa-mobile-alt me-1", style: { color: "var(--primary)" } }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: "На iPhone:" }),
+        " откройте сайт в Safari → «Поделиться» → «На экран Домой» → включите там."
+      ] }),
+      !supported && !iosHint && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { color: "#dc2626" }, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "fas fa-exclamation-triangle me-1" }),
+        "Ваш браузер не поддерживает уведомления."
+      ] })
+    ] })
+  ] }) });
+}
+const dashboardEl = document.getElementById("react-dashboard");
+if (dashboardEl) {
+  const masterSlug = dashboardEl.dataset.masterSlug || "";
+  const masterMaxLink = dashboardEl.dataset.masterMaxLink || "";
+  client.createRoot(dashboardEl).render(
     /* @__PURE__ */ jsxRuntimeExports.jsx(Dashboard, { masterSlug, masterMaxLink })
   );
+}
+const pushEl = document.getElementById("react-push-settings");
+if (pushEl) {
+  client.createRoot(pushEl).render(/* @__PURE__ */ jsxRuntimeExports.jsx(PushSettings, {}));
 }
