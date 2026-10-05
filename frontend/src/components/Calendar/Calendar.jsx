@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import MonthGrid from './MonthGrid';
 import DayModal from './DayModal';
 import { loadCalendar, loadCounts } from '../../api/calendar';
+import styles from './Calendar.module.css';
 
 const MONTH_NAMES = [
     'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
@@ -18,7 +19,6 @@ export default function Calendar({ masterSlug }) {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
 
-    // Функция загрузки данных — можно вызвать в любой момент
     const reloadData = useCallback(() => {
         setLoading(true);
         Promise.all([loadCalendar(), loadCounts()])
@@ -33,7 +33,6 @@ export default function Calendar({ masterSlug }) {
             });
     }, []);
 
-    // Загрузка при монтировании
     useEffect(() => {
         reloadData();
     }, [reloadData]);
@@ -55,25 +54,19 @@ export default function Calendar({ masterSlug }) {
     }
 
     return (
-        <div>
-            <div className="text-center mb-3">
-                <button
-                    className="btn btn-sm btn-outline-primary calendar-nav-btn"
-                    onClick={() => changeMonth(-1)}
-                >
+        <div className={styles.calendar}>
+            <div className={styles.nav}>
+                <button className={styles.navBtn} onClick={() => changeMonth(-1)}>
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
                          stroke="currentColor" strokeWidth="2.5"
                          strokeLinecap="round" strokeLinejoin="round">
                         <polyline points="15 18 9 12 15 6" />
                     </svg>
                 </button>
-                <span className="mx-3 fw-bold">
+                <span className={styles.navTitle}>
                     {MONTH_NAMES[month]} {year}
                 </span>
-                <button
-                    className="btn btn-sm btn-outline-primary calendar-nav-btn"
-                    onClick={() => changeMonth(1)}
-                >
+                <button className={styles.navBtn} onClick={() => changeMonth(1)}>
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
                          stroke="currentColor" strokeWidth="2.5"
                          strokeLinecap="round" strokeLinejoin="round">
@@ -83,7 +76,7 @@ export default function Calendar({ masterSlug }) {
             </div>
 
             {loading ? (
-                <div className="text-center py-3">
+                <div className={styles.loading}>
                     <div className="spinner-border" style={{ color: '#4053d3' }} />
                 </div>
             ) : (
@@ -104,7 +97,6 @@ export default function Calendar({ masterSlug }) {
                     onDataChanged={handleDataChanged}
                 />
             )}
-
         </div>
     );
 }

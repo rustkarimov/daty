@@ -1,0 +1,590 @@
+/* ============================================================ */
+/* ========== UPCOMING BOOKINGS (CSS Module) ================== */
+/* ============================================================ */
+
+/* ---- Карточка ---- */
+.card {
+    background: white;
+    border-radius: 30px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    margin-bottom: 24px;
+    width: 100%;
+    overflow: visible;
+}
+
+.cardInner {
+    background: white;
+    border-radius: 30px;
+    overflow: visible;
+}
+
+.cardHeader {
+    background: white;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--gray-200);
+    border-radius: 20px 20px 0 0;
+}
+
+.cardHeader h5 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--gray-800);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cardBody {
+    padding: 20px;
+}
+
+/* ---- Состояния ---- */
+.loadingState,
+.emptyState {
+    text-align: center;
+    padding: 24px 0;
+    color: var(--gray-500);
+}
+
+/* ---- Таблица ---- */
+.tableWrapper {
+    overflow: visible;
+}
+
+.table {
+    width: 100%;
+    font-size: 0.9rem;
+    border-collapse: collapse;
+}
+
+.table thead th {
+    font-weight: 600;
+    color: var(--gray-600);
+    border-bottom: 2px solid var(--gray-200);
+    padding: 10px 16px;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    text-align: left;
+    background: var(--gray-50);
+}
+
+.table tbody td {
+    padding: 10px 16px;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--gray-100);
+}
+
+.table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* ---- Ячейка действий ---- */
+.actionsCell {
+    white-space: nowrap;
+}
+
+.allButtonsRow {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: nowrap;
+}
+
+/* ---- Кнопки-иконки ---- */
+.iconBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--gray-600);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.iconBtn:hover {
+    background: var(--gray-100);
+    color: var(--gray-800);
+}
+
+.iconBtnDelete:hover {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+/* ---- Кнопка «Связаться» + меню ---- */
+.contactWrapper {
+    position: relative;
+    display: inline-flex;
+    z-index: 200;
+}
+
+.contactBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    font-size: 0.7rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: var(--gray-700);
+    white-space: nowrap;
+}
+
+.contactBtn:hover {
+    background: var(--primary-light);
+    color: var(--primary);
+}
+
+.contactBtn .fa-chevron-down {
+    font-size: 0.5rem;
+    margin-left: 2px;
+}
+
+.contactMenu {
+    position: absolute;
+    top: 110%;
+    left: 0;
+    min-width: 180px;
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    padding: 6px 0;
+    z-index: 1200;
+    animation: slideDown 0.2s ease;
+}
+
+.contactMenu button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 14px;
+    border: none;
+    background: none;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    color: var(--gray-700);
+    text-align: left;
+}
+
+.contactMenu button:hover {
+    background: var(--gray-50);
+}
+
+.contactMenu button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.maxIcon {
+    font-weight: 700;
+    font-size: 0.75rem;
+    background: #e91e63;
+    color: white;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* ---- Галочка подтверждения ---- */
+.confirmBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--gray-400);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 1rem;
+}
+
+.confirmBtn:hover {
+    background: var(--gray-100);
+    color: var(--primary);
+}
+
+.confirmBtn.confirmed {
+    color: #2e7d32;
+}
+
+.confirmBtn.confirmed:hover {
+    color: #1b5e20;
+}
+
+/* ---- Футер ---- */
+.cardFooter {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px 20px 16px 20px;
+    background: white;
+    border-radius: 0 0 30px 30px;
+}
+
+.loadMoreBtn {
+    width: 20%;
+    padding: 8px;
+    font-size: 0.85rem;
+    border-radius: 30px;
+    border: 1px solid var(--primary);
+    color: var(--primary);
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.loadMoreBtn:hover {
+    background: var(--primary-gradient);
+    border-color: transparent;
+    color: white;
+}
+
+.footerInfoRow {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding-top: 6px;
+    justify-content: flex-start;
+    gap: 30px;
+}
+
+.footerLeft,
+.footerRight {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.totalLabel {
+    font-size: 0.75rem;
+    color: var(--gray-500);
+    font-weight: 400;
+}
+
+.totalNumber {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--gray-700);
+    background: var(--gray-100);
+    padding: 0 12px;
+    border-radius: 16px;
+    line-height: 24px;
+    min-width: 28px;
+    text-align: center;
+}
+
+.limitLabel {
+    font-size: 0.75rem;
+    color: var(--gray-500);
+    font-weight: 400;
+    margin: 0 4px 0 0;
+}
+
+.limitSelect {
+    font-size: 0.75rem;
+    height: 28px;
+    padding: 2px 4px 2px 8px;
+    border-radius: 16px;
+    border: 1px solid var(--gray-200);
+    width: 50px;
+    background: white;
+    cursor: pointer;
+}
+
+/* ---- Анимация ---- */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ============================================================ */
+/* ==================== АДАПТИВ =============================== */
+/* ============================================================ */
+
+/* ---- 1600px+ (по умолчанию стили выше) ---- */
+
+/* ---- 1200-1600 (ноутбуки) ---- */
+@media (max-width: 1600px) {
+    .loadMoreBtn {
+        width: 30%;
+    }
+}
+
+/* ---- 992-1200 (маленькие ноутбуки) ---- */
+@media (max-width: 1200px) {
+    .table {
+        font-size: 0.85rem;
+    }
+    
+    .table thead th,
+    .table tbody td {
+        padding: 8px 12px;
+    }
+}
+
+/* ---- 768-992 (планшеты) ---- */
+@media (max-width: 992px) {
+    .table thead th,
+    .table tbody td {
+        padding: 8px 10px;
+        font-size: 0.8rem;
+    }
+    
+    .iconBtn,
+    .confirmBtn {
+        width: 28px;
+        height: 28px;
+        font-size: 0.75rem;
+    }
+    
+    .contactBtn {
+        padding: 4px 8px;
+        height: 28px;
+        font-size: 0.65rem;
+    }
+    
+    .loadMoreBtn {
+        width: 40%;
+    }
+}
+
+/* ---- <768 (смартфоны) ---- */
+@media (max-width: 768px) {
+    .card {
+        border-radius: 12px;
+        margin-bottom: 8px;
+    }
+    
+    .cardInner {
+        border-radius: 12px;
+    }
+    
+    .cardHeader {
+        padding: 16px 16px 4px 16px;
+        border-bottom: none;
+        border-radius: 12px 12px 0 0;
+    }
+    
+    .cardHeader h5 {
+        font-weight: 700;
+    }
+    
+    .cardHeader h5 i {
+        display: none;
+    }
+    
+    .cardBody {
+        padding: 10px;
+    }
+    
+    /* Таблица → карточки */
+    .table,
+    .table tbody,
+    .table tr,
+    .table td {
+        display: block;
+        width: 100%;
+    }
+    
+    .table thead {
+        display: none;
+    }
+    
+    .table tbody tr {
+        border-radius: 12px;
+        margin-bottom: 8px;
+        padding: 8px 10px;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+        border: 0.5px solid rgb(155, 155, 155);
+    }
+    
+    .table tbody td {
+        padding: 1px 0;
+        border: none;
+        font-size: 0.8rem;
+    }
+    
+    /* Дата + время — в одну строку */
+    .table tbody td:first-child,
+    .table tbody td:nth-child(2) {
+        display: inline-block;
+        width: auto;
+        font-size: 13px;
+    }
+    
+    .table tbody td:first-child {
+        font-weight: 600;
+        color: var(--primary);
+        margin-right: 8px;
+    }
+    
+    .table tbody td:nth-child(2) {
+        color: black;
+        font-weight: 600;
+    }
+    
+    /* Имя клиента */
+    .table tbody td:nth-child(3) {
+        font-weight: 500;
+        font-size: 0.85rem;
+        margin-top: 2px;
+        margin-bottom: 2px;
+    }
+    
+    /* Услуга */
+    .table tbody td:nth-child(4) {
+        color: var(--gray-500);
+        font-size: 0.7rem;
+        margin-bottom: 6px;
+        white-space: normal;
+        word-break: break-word;
+    }
+    
+    /* Действия */
+    .table tbody td:last-child {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        border-top: 1px solid var(--gray-200);
+        padding-top: 6px;
+        margin-top: 4px;
+    }
+    
+    .actionsCell {
+        white-space: normal;
+    }
+    
+    .allButtonsRow {
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+    
+    .iconBtn,
+    .confirmBtn {
+        width: 32px;
+        height: 32px;
+        font-size: 0.75rem;
+    }
+    
+    .contactBtn {
+        padding: 4px 8px;
+        width: 32px;
+        justify-content: center;
+    }
+    
+    .contactBtn span {
+        display: none;
+    }
+    
+    .contactMenu {
+        left: 50%;
+        transform: translateX(-50%);
+        min-width: 160px;
+    }
+    
+    /* Футер */
+    .cardFooter {
+        padding: 6px 12px 12px 12px;
+        gap: 6px;
+    }
+    
+    .loadMoreBtn {
+        width: 100%;
+        font-size: 0.8rem;
+        padding: 8px;
+    }
+    
+    .footerInfoRow {
+        padding-top: 4px;
+        flex-wrap: wrap;
+        justify-content: space-between;
+    }
+    
+    .totalLabel,
+    .limitLabel {
+        font-size: 0.7rem;
+    }
+    
+    .totalNumber {
+        font-size: 0.7rem;
+        line-height: 20px;
+        padding: 0 8px;
+        min-width: 20px;
+    }
+    
+    .limitSelect {
+        font-size: 0.7rem;
+        height: 25px;
+        width: 50px;
+        padding: 0 4px 0 6px;
+        font-weight: 900;
+    }
+}
+
+/* ---- <480 (маленькие смартфоны) ---- */
+@media (max-width: 480px) {
+    .cardBody {
+        padding: 8px;
+    }
+    
+    .table tbody tr {
+        padding: 6px 8px;
+    }
+    
+    .table tbody td:first-child,
+    .table tbody td:nth-child(2) {
+        font-size: 12px;
+    }
+    
+    .table tbody td:nth-child(3) {
+        font-size: 0.8rem;
+    }
+    
+    .table tbody td:nth-child(4) {
+        font-size: 0.65rem;
+    }
+    
+    .iconBtn,
+    .confirmBtn {
+        width: 28px;
+        height: 28px;
+        font-size: 0.7rem;
+    }
+    
+    .contactBtn {
+        width: 28px;
+        height: 28px;
+    }
+}

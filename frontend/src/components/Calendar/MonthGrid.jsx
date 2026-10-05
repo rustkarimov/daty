@@ -1,30 +1,22 @@
 import React from 'react';
 import DayCell from './DayCell';
+import styles from './Calendar.module.css';
 
 export default function MonthGrid({ year, month, calendarData, countsData, onDayClick }) {
-    // year — 2026
-    // month — 0-11 (0=январь)
-    // calendarData — данные из /api/schedule/calendar/
-    // countsData — данные из /api/bookings/counts/
-    // onDayClick — что делать при клике на день
-
     const firstDay = new Date(year, month, 1);
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const startWeekday = firstDay.getDay(); // 0=Вс, 1=Пн, ...
+    const startWeekday = firstDay.getDay();
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // Сдвиг для Пн-первого дня недели
     const adjustedStartWeekday = startWeekday === 0 ? 6 : startWeekday - 1;
 
-    // Пустые ячейки в начале
     const emptyCells = [];
     for (let i = 0; i < adjustedStartWeekday; i++) {
-        emptyCells.push(<div key={`empty-${i}`} className="calendar-date empty" />);
+        emptyCells.push(<div key={`empty-${i}`} className={`${styles.dateCell} ${styles.empty}`} />);
     }
 
-    // Функция для определения статуса дня
     function getDayStatus(day) {
         const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         const currentDate = new Date(year, month, day);
@@ -56,7 +48,6 @@ export default function MonthGrid({ year, month, calendarData, countsData, onDay
         return { workingClass, statusText, hasBreaks };
     }
 
-    // Ячейки с днями
     const dayCells = [];
     for (let d = 1; d <= daysInMonth; d++) {
         const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
@@ -84,12 +75,12 @@ export default function MonthGrid({ year, month, calendarData, countsData, onDay
 
     return (
         <>
-            <div className="calendar-weekdays">
+            <div className={styles.weekdays}>
                 {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map(d => (
-                    <div key={d} className="calendar-weekday">{d}</div>
+                    <div key={d} className={styles.weekday}>{d}</div>
                 ))}
             </div>
-            <div className="calendar-dates">
+            <div className={styles.dates}>
                 {emptyCells}
                 {dayCells}
             </div>

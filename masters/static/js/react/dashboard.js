@@ -6962,22 +6962,63 @@ var m = reactDomExports;
   client.createRoot = m.createRoot;
   client.hydrateRoot = m.hydrateRoot;
 }
+const calendar = "_calendar_14dq7_11";
+const nav = "_nav_14dq7_29";
+const navBtn = "_navBtn_14dq7_47";
+const navTitle = "_navTitle_14dq7_107";
+const weekdays = "_weekdays_14dq7_133";
+const weekday = "_weekday_14dq7_133";
+const dates = "_dates_14dq7_169";
+const dateCell = "_dateCell_14dq7_191";
+const empty = "_empty_14dq7_217";
+const working = "_working_14dq7_231";
+const nonWorking = "_nonWorking_14dq7_241";
+const past = "_past_14dq7_255";
+const today = "_today_14dq7_265";
+const dateNumber = "_dateNumber_14dq7_277";
+const dateTime = "_dateTime_14dq7_289";
+const icons = "_icons_14dq7_311";
+const bookingBadge = "_bookingBadge_14dq7_333";
+const breakBadge = "_breakBadge_14dq7_363";
+const loading = "_loading_14dq7_415";
+const styles$1 = {
+  calendar,
+  nav,
+  navBtn,
+  navTitle,
+  weekdays,
+  weekday,
+  dates,
+  dateCell,
+  empty,
+  working,
+  nonWorking,
+  past,
+  today,
+  dateNumber,
+  dateTime,
+  icons,
+  bookingBadge,
+  breakBadge,
+  loading
+};
 function DayCell({ day, dateStr, status, bookingCount, hasBreaks, isToday, isPast, onClick }) {
   const workingClass = (status == null ? void 0 : status.workingClass) || "";
   const statusText = (status == null ? void 0 : status.statusText) || "";
   const showIcons = !isPast;
   const className = [
-    "calendar-date",
-    workingClass,
-    isPast ? "past" : "",
-    isToday ? "today" : ""
+    styles$1.dateCell,
+    workingClass === "working" ? styles$1.working : "",
+    workingClass === "non-working" ? styles$1.nonWorking : "",
+    isPast ? styles$1.past : "",
+    isToday ? styles$1.today : ""
   ].filter(Boolean).join(" ");
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className, onClick: () => onClick(dateStr), children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "date-number", children: day }),
-    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "calendar-time", children: statusText }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "calendar-icons", children: [
-      showIcons && bookingCount > 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "booking-badge", children: bookingCount }),
-      showIcons && hasBreaks && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "break-badge", title: "В этот день есть перерывы", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+    /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: styles$1.dateNumber, children: day }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.dateTime, children: statusText }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.icons, children: [
+      showIcons && bookingCount > 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: styles$1.bookingBadge, children: bookingCount }),
+      showIcons && hasBreaks && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: styles$1.breakBadge, title: "В этот день есть перерывы", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
         "svg",
         {
           width: "10",
@@ -7002,12 +7043,12 @@ function MonthGrid({ year, month, calendarData, countsData, onDayClick }) {
   const firstDay = new Date(year, month, 1);
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const startWeekday = firstDay.getDay();
-  const today = /* @__PURE__ */ new Date();
-  today.setHours(0, 0, 0, 0);
+  const today2 = /* @__PURE__ */ new Date();
+  today2.setHours(0, 0, 0, 0);
   const adjustedStartWeekday = startWeekday === 0 ? 6 : startWeekday - 1;
   const emptyCells = [];
   for (let i = 0; i < adjustedStartWeekday; i++) {
-    emptyCells.push(/* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "calendar-date empty" }, `empty-${i}`));
+    emptyCells.push(/* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: `${styles$1.dateCell} ${styles$1.empty}` }, `empty-${i}`));
   }
   function getDayStatus(day) {
     var _a2, _b, _c, _d, _e;
@@ -7040,8 +7081,8 @@ function MonthGrid({ year, month, calendarData, countsData, onDayClick }) {
   for (let d = 1; d <= daysInMonth; d++) {
     const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
     const currentDate = new Date(year, month, d);
-    const isPast = currentDate < today;
-    const isToday = currentDate.toDateString() === today.toDateString();
+    const isPast = currentDate < today2;
+    const isToday = currentDate.toDateString() === today2.toDateString();
     const status = getDayStatus(d);
     const bookingCount = ((_a = countsData == null ? void 0 : countsData.counts) == null ? void 0 : _a[dateStr]) || 0;
     dayCells.push(
@@ -7062,8 +7103,8 @@ function MonthGrid({ year, month, calendarData, countsData, onDayClick }) {
     );
   }
   return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "calendar-weekdays", children: ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"].map((d) => /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "calendar-weekday", children: d }, d)) }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "calendar-dates", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.weekdays, children: ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"].map((d) => /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.weekday, children: d }, d)) }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.dates, children: [
       emptyCells,
       dayCells
     ] })
@@ -7388,7 +7429,7 @@ function EditBookingModal({ bookingId, masterSlug, onClose, onSaved }) {
   const [clientName, setClientName] = reactExports.useState("");
   const [clientPhone, setClientPhone] = reactExports.useState("");
   const [comment, setComment] = reactExports.useState("");
-  const [loading, setLoading] = reactExports.useState(true);
+  const [loading2, setLoading] = reactExports.useState(true);
   const [loadingDates, setLoadingDates] = reactExports.useState(false);
   const [loadingSlots, setLoadingSlots] = reactExports.useState(false);
   const [saving, setSaving] = reactExports.useState(false);
@@ -7525,7 +7566,7 @@ function EditBookingModal({ bookingId, masterSlug, onClose, onSaved }) {
           ] }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("button", { type: "button", className: "btn-close", onClick: onClose })
         ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "modal-body", children: loading ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-center py-3", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "spinner-border", style: { color: "#4053d3" } }) }) : !form ? /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-danger", children: "Не удалось загрузить данные" }) : /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "modal-body", children: loading2 ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-center py-3", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "spinner-border", style: { color: "#4053d3" } }) }) : !form ? /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-danger", children: "Не удалось загрузить данные" }) : /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx("label", { className: "form-label mb-2", style: { fontWeight: 600 }, children: "Услуга" }),
           categories.map((cat) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mb-3", children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { fontSize: "0.75rem", color: "#6b7280", textTransform: "uppercase", marginBottom: "6px" }, children: cat.name }),
@@ -7692,7 +7733,7 @@ function AddBookingModal({ masterSlug, defaultDate, onClose, onCreated }) {
   const [clientName, setClientName] = reactExports.useState("");
   const [clientPhone, setClientPhone] = reactExports.useState("");
   const [comment, setComment] = reactExports.useState("");
-  const [loading, setLoading] = reactExports.useState(true);
+  const [loading2, setLoading] = reactExports.useState(true);
   const [loadingDates, setLoadingDates] = reactExports.useState(false);
   const [loadingSlots, setLoadingSlots] = reactExports.useState(false);
   const [saving, setSaving] = reactExports.useState(false);
@@ -7825,7 +7866,7 @@ function AddBookingModal({ masterSlug, defaultDate, onClose, onCreated }) {
           ] }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("button", { type: "button", className: "btn-close", onClick: onClose })
         ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "modal-body", children: loading ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-center py-3", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "spinner-border", style: { color: "#4053d3" } }) }) : /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "modal-body", children: loading2 ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-center py-3", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "spinner-border", style: { color: "#4053d3" } }) }) : /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx("label", { className: "form-label mb-2", style: { fontWeight: 600 }, children: "Шаг 1: Выберите услуги (до 3)" }),
           categories.map((cat) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mb-3", children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { fontSize: "0.75rem", color: "#6b7280", textTransform: "uppercase", marginBottom: "6px" }, children: cat.name }),
@@ -8033,7 +8074,7 @@ function DayModal({ dateStr, masterSlug, onClose, onDataChanged }) {
   const [dayData, setDayData] = reactExports.useState(null);
   const [bookings, setBookings] = reactExports.useState([]);
   const [breaks, setBreaks] = reactExports.useState([]);
-  const [loading, setLoading] = reactExports.useState(true);
+  const [loading2, setLoading] = reactExports.useState(true);
   const [editingBookingId, setEditingBookingId] = reactExports.useState(null);
   const [showAddBooking, setShowAddBooking] = reactExports.useState(false);
   const [editingHours, setEditingHours] = reactExports.useState(false);
@@ -8234,7 +8275,7 @@ function DayModal({ dateStr, masterSlug, onClose, onDataChanged }) {
               }
             )
           ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "modal-body", children: loading ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-center py-3", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "spinner-border", style: { color: "#4053d3" } }) }) : /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "modal-body", children: loading2 ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-center py-3", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "spinner-border", style: { color: "#4053d3" } }) }) : /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mb-3", children: isDayOff ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-muted", children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "fas fa-bed me-2" }),
               "Выходной день"
@@ -8434,14 +8475,14 @@ function Calendar({ masterSlug }) {
   const [currentDate, setCurrentDate] = reactExports.useState(/* @__PURE__ */ new Date());
   const [calendarData, setCalendarData] = reactExports.useState(null);
   const [countsData, setCountsData] = reactExports.useState(null);
-  const [loading, setLoading] = reactExports.useState(true);
+  const [loading2, setLoading] = reactExports.useState(true);
   const [selectedDate, setSelectedDate] = reactExports.useState(null);
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
   const reloadData = reactExports.useCallback(() => {
     setLoading(true);
-    Promise.all([loadCalendar(), loadCounts()]).then(([calendar, counts]) => {
-      setCalendarData(calendar);
+    Promise.all([loadCalendar(), loadCounts()]).then(([calendar2, counts]) => {
+      setCalendarData(calendar2);
       setCountsData(counts);
       setLoading(false);
     }).catch((error) => {
@@ -8464,57 +8505,43 @@ function Calendar({ masterSlug }) {
   function handleDataChanged() {
     reloadData();
   }
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-center mb-3", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx(
-        "button",
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.calendar, children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.nav, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("button", { className: styles$1.navBtn, onClick: () => changeMonth(-1), children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+        "svg",
         {
-          className: "btn btn-sm btn-outline-primary calendar-nav-btn",
-          onClick: () => changeMonth(-1),
-          children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-            "svg",
-            {
-              width: "20",
-              height: "20",
-              viewBox: "0 0 24 24",
-              fill: "none",
-              stroke: "currentColor",
-              strokeWidth: "2.5",
-              strokeLinecap: "round",
-              strokeLinejoin: "round",
-              children: /* @__PURE__ */ jsxRuntimeExports.jsx("polyline", { points: "15 18 9 12 15 6" })
-            }
-          )
+          width: "20",
+          height: "20",
+          viewBox: "0 0 24 24",
+          fill: "none",
+          stroke: "currentColor",
+          strokeWidth: "2.5",
+          strokeLinecap: "round",
+          strokeLinejoin: "round",
+          children: /* @__PURE__ */ jsxRuntimeExports.jsx("polyline", { points: "15 18 9 12 15 6" })
         }
-      ),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "mx-3 fw-bold", children: [
+      ) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: styles$1.navTitle, children: [
         MONTH_NAMES[month],
         " ",
         year
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(
-        "button",
+      /* @__PURE__ */ jsxRuntimeExports.jsx("button", { className: styles$1.navBtn, onClick: () => changeMonth(1), children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+        "svg",
         {
-          className: "btn btn-sm btn-outline-primary calendar-nav-btn",
-          onClick: () => changeMonth(1),
-          children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-            "svg",
-            {
-              width: "20",
-              height: "20",
-              viewBox: "0 0 24 24",
-              fill: "none",
-              stroke: "currentColor",
-              strokeWidth: "2.5",
-              strokeLinecap: "round",
-              strokeLinejoin: "round",
-              children: /* @__PURE__ */ jsxRuntimeExports.jsx("polyline", { points: "9 6 15 12 9 18" })
-            }
-          )
+          width: "20",
+          height: "20",
+          viewBox: "0 0 24 24",
+          fill: "none",
+          stroke: "currentColor",
+          strokeWidth: "2.5",
+          strokeLinecap: "round",
+          strokeLinejoin: "round",
+          children: /* @__PURE__ */ jsxRuntimeExports.jsx("polyline", { points: "9 6 15 12 9 18" })
         }
-      )
+      ) })
     ] }),
-    loading ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-center py-3", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "spinner-border", style: { color: "#4053d3" } }) }) : /* @__PURE__ */ jsxRuntimeExports.jsx(
+    loading2 ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.loading, children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "spinner-border", style: { color: "#4053d3" } }) }) : /* @__PURE__ */ jsxRuntimeExports.jsx(
       MonthGrid,
       {
         year,
@@ -8582,7 +8609,7 @@ async function loadBookingDetails(bookingId) {
 function BookingDetailsModal({ bookingId, onClose }) {
   var _a, _b, _c, _d, _e, _f;
   const [data, setData] = reactExports.useState(null);
-  const [loading, setLoading] = reactExports.useState(true);
+  const [loading2, setLoading] = reactExports.useState(true);
   reactExports.useEffect(() => {
     setLoading(true);
     loadBookingDetails(bookingId).then((d) => {
@@ -8617,7 +8644,7 @@ function BookingDetailsModal({ bookingId, onClose }) {
           ] }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("button", { type: "button", className: "btn-close", onClick: onClose })
         ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "modal-body", children: loading ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-center py-3", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "spinner-border", style: { color: "#4053d3" } }) }) : !(data == null ? void 0 : data.success) ? /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-danger", children: "Не удалось загрузить данные" }) : /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "modal-body", children: loading2 ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-center py-3", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "spinner-border", style: { color: "#4053d3" } }) }) : !(data == null ? void 0 : data.success) ? /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-danger", children: "Не удалось загрузить данные" }) : /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mb-3", children: [
             /* @__PURE__ */ jsxRuntimeExports.jsxs("strong", { children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "fas fa-user me-2" }),
@@ -8706,12 +8733,68 @@ function BookingDetailsModal({ bookingId, onClose }) {
     }
   );
 }
+const card = "_card_c7nfg_11";
+const cardInner = "_cardInner_c7nfg_29";
+const cardHeader = "_cardHeader_c7nfg_41";
+const cardBody = "_cardBody_c7nfg_75";
+const loadingState = "_loadingState_c7nfg_85";
+const emptyState = "_emptyState_c7nfg_87";
+const tableWrapper = "_tableWrapper_c7nfg_101";
+const table = "_table_c7nfg_101";
+const actionsCell = "_actionsCell_c7nfg_167";
+const allButtonsRow = "_allButtonsRow_c7nfg_175";
+const iconBtn = "_iconBtn_c7nfg_191";
+const iconBtnDelete = "_iconBtnDelete_c7nfg_233";
+const contactWrapper = "_contactWrapper_c7nfg_245";
+const contactBtn = "_contactBtn_c7nfg_257";
+const contactMenu = "_contactMenu_c7nfg_309";
+const maxIcon = "_maxIcon_c7nfg_385";
+const confirmBtn = "_confirmBtn_c7nfg_415";
+const confirmed = "_confirmed_c7nfg_455";
+const cardFooter = "_cardFooter_c7nfg_473";
+const loadMoreBtn = "_loadMoreBtn_c7nfg_491";
+const footerInfoRow = "_footerInfoRow_c7nfg_535";
+const footerLeft = "_footerLeft_c7nfg_553";
+const footerRight = "_footerRight_c7nfg_555";
+const totalLabel = "_totalLabel_c7nfg_567";
+const totalNumber = "_totalNumber_c7nfg_579";
+const limitLabel = "_limitLabel_c7nfg_603";
+const limitSelect = "_limitSelect_c7nfg_617";
+const styles = {
+  card,
+  cardInner,
+  cardHeader,
+  cardBody,
+  loadingState,
+  emptyState,
+  tableWrapper,
+  table,
+  actionsCell,
+  allButtonsRow,
+  iconBtn,
+  iconBtnDelete,
+  contactWrapper,
+  contactBtn,
+  contactMenu,
+  maxIcon,
+  confirmBtn,
+  confirmed,
+  cardFooter,
+  loadMoreBtn,
+  footerInfoRow,
+  footerLeft,
+  footerRight,
+  totalLabel,
+  totalNumber,
+  limitLabel,
+  limitSelect
+};
 function UpcomingBookings({ masterSlug, masterMaxLink, onEdit, onDataChanged }) {
   const [bookings, setBookings] = reactExports.useState([]);
   const [total, setTotal] = reactExports.useState(0);
   const [page, setPage] = reactExports.useState(1);
   const [limit, setLimit] = reactExports.useState(3);
-  const [loading, setLoading] = reactExports.useState(true);
+  const [loading2, setLoading] = reactExports.useState(true);
   const [hasMore, setHasMore] = reactExports.useState(false);
   const [detailsBookingId, setDetailsBookingId] = reactExports.useState(null);
   const [contactMenuId, setContactMenuId] = reactExports.useState(null);
@@ -8814,13 +8897,13 @@ function UpcomingBookings({ masterSlug, masterMaxLink, onEdit, onDataChanged }) 
     e.stopPropagation();
     setContactMenuId((prev) => prev === bookingId ? null : bookingId);
   }
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "card mb-4 booking-card", children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "card-inner", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "card-header bg-white", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("h5", { className: "mb-0", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "fas fa-clock me-2", style: { color: "var(--primary)" } }),
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles.card, children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles.cardInner, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles.cardHeader, children: /* @__PURE__ */ jsxRuntimeExports.jsxs("h5", { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "fas fa-clock", style: { color: "var(--primary)" } }),
         "Ближайшие записи"
       ] }) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "card-body", children: loading && bookings.length === 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-center py-3", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "spinner-border", style: { color: "#4053d3" } }) }) : bookings.length === 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-muted text-center mb-0", children: "Нет предстоящих записей" }) : /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "table-responsive", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("table", { className: "table", id: "upcoming-bookings-table", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles.cardBody, children: loading2 && bookings.length === 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles.loadingState, children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "spinner-border", style: { color: "#4053d3" } }) }) : bookings.length === 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: styles.emptyState, children: "Нет предстоящих записей" }) : /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles.tableWrapper, children: /* @__PURE__ */ jsxRuntimeExports.jsxs("table", { className: styles.table, children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx("thead", { children: /* @__PURE__ */ jsxRuntimeExports.jsxs("tr", { children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx("th", { children: "Дата" }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("th", { children: "Время" }),
@@ -8833,15 +8916,15 @@ function UpcomingBookings({ masterSlug, masterMaxLink, onEdit, onDataChanged }) 
           {
             style: contactMenuId === b.id ? { position: "relative", zIndex: 100 } : void 0,
             children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("td", { "data-label": "Дата", children: b.date }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("td", { "data-label": "Время", children: b.time }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("td", { "data-label": "Клиент", children: b.client_name }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("td", { "data-label": "Услуги", children: b.service_name }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("td", { "data-label": "", className: "actions-cell", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "all-buttons-row", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("td", { children: b.date }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("td", { children: b.time }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("td", { children: b.client_name }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("td", { children: b.service_name }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("td", { className: styles.actionsCell, children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles.allButtonsRow, children: [
                 /* @__PURE__ */ jsxRuntimeExports.jsx(
                   "button",
                   {
-                    className: "btn btn-sm",
+                    className: styles.iconBtn,
                     onClick: () => setDetailsBookingId(b.id),
                     title: "Подробности",
                     children: /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "fas fa-info-circle" })
@@ -8850,7 +8933,7 @@ function UpcomingBookings({ masterSlug, masterMaxLink, onEdit, onDataChanged }) 
                 /* @__PURE__ */ jsxRuntimeExports.jsx(
                   "button",
                   {
-                    className: "btn btn-sm",
+                    className: styles.iconBtn,
                     onClick: () => onEdit(b.id),
                     title: "Редактировать",
                     children: /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "fas fa-edit" })
@@ -8859,17 +8942,17 @@ function UpcomingBookings({ masterSlug, masterMaxLink, onEdit, onDataChanged }) 
                 /* @__PURE__ */ jsxRuntimeExports.jsx(
                   "button",
                   {
-                    className: "btn btn-sm",
+                    className: `${styles.iconBtn} ${styles.iconBtnDelete}`,
                     onClick: () => handleDelete(b),
                     title: "Удалить",
                     children: /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "fas fa-trash" })
                   }
                 ),
-                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "contact-dropdown-wrapper", style: { position: "relative", display: "inline-block", zIndex: 10 }, children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles.contactWrapper, children: [
                   /* @__PURE__ */ jsxRuntimeExports.jsxs(
                     "button",
                     {
-                      className: "contact-dropdown-btn",
+                      className: styles.contactBtn,
                       onClick: (e) => toggleContactMenu(e, b.id),
                       children: [
                         /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "fas fa-phone-alt" }),
@@ -8878,7 +8961,7 @@ function UpcomingBookings({ masterSlug, masterMaxLink, onEdit, onDataChanged }) 
                       ]
                     }
                   ),
-                  contactMenuId === b.id && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "contact-dropdown-menu", style: { display: "block", zIndex: 1100 }, onClick: (e) => e.stopPropagation(), children: [
+                  contactMenuId === b.id && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles.contactMenu, onClick: (e) => e.stopPropagation(), children: [
                     /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { onClick: () => callClient(b.phone), children: [
                       /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "fas fa-phone" }),
                       " Позвонить"
@@ -8896,7 +8979,7 @@ function UpcomingBookings({ masterSlug, masterMaxLink, onEdit, onDataChanged }) 
                       " WhatsApp"
                     ] }),
                     /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { onClick: openMax, disabled: !masterMaxLink, children: [
-                      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "max-icon", children: "M" }),
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: styles.maxIcon, children: "M" }),
                       " MAX"
                     ] })
                   ] })
@@ -8904,7 +8987,7 @@ function UpcomingBookings({ masterSlug, masterMaxLink, onEdit, onDataChanged }) 
                 /* @__PURE__ */ jsxRuntimeExports.jsx(
                   "button",
                   {
-                    className: `confirm-btn ${b.confirmed_by_master ? "confirmed" : ""}`,
+                    className: `${styles.confirmBtn} ${b.confirmed_by_master ? styles.confirmed : ""}`,
                     onClick: () => handleToggleConfirm(b),
                     title: b.confirmed_by_master ? "Подтверждено" : "Подтвердить",
                     children: /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: `fas ${b.confirmed_by_master ? "fa-check-circle" : "fa-circle"}` })
@@ -8916,33 +8999,32 @@ function UpcomingBookings({ masterSlug, masterMaxLink, onEdit, onDataChanged }) 
           b.id
         )) })
       ] }) }) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "card-footer bg-white border-0 d-flex justify-content-between align-items-center pt-0 flex-wrap", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles.cardFooter, children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs(
           "button",
           {
-            className: "btn btn-sm btn-outline-primary",
-            style: { display: hasMore ? "inline-block" : "none" },
+            className: styles.loadMoreBtn,
+            style: { display: hasMore ? "flex" : "none" },
             onClick: handleLoadMore,
             children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "fas fa-chevron-down me-1" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "fas fa-chevron-down" }),
               "Показать еще"
             ]
           }
         ),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "footer-info-row", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "footer-right", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "total-label", children: "Всего записей" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "total-number", children: total })
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles.footerInfoRow, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles.footerRight, children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: styles.totalLabel, children: "Всего записей" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: styles.totalNumber, children: total })
           ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "footer-left", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("label", { className: "form-label me-1 mb-0 small", children: "Показывать:" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles.footerLeft, children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("label", { className: styles.limitLabel, children: "Показывать:" }),
             /* @__PURE__ */ jsxRuntimeExports.jsxs(
               "select",
               {
-                className: "form-select form-select-sm",
+                className: styles.limitSelect,
                 value: limit,
                 onChange: (e) => handleLimitChange(parseInt(e.target.value)),
-                style: { width: "auto" },
                 children: [
                   /* @__PURE__ */ jsxRuntimeExports.jsx("option", { value: "3", children: "3" }),
                   /* @__PURE__ */ jsxRuntimeExports.jsx("option", { value: "5", children: "5" }),
@@ -9136,7 +9218,7 @@ async function checkPushSubscription() {
 }
 function PushSettings() {
   const [subscribed, setSubscribed] = reactExports.useState(false);
-  const [loading, setLoading] = reactExports.useState(true);
+  const [loading2, setLoading] = reactExports.useState(true);
   const [busy, setBusy] = reactExports.useState(false);
   const supported = isPushSupported();
   const iosHint = isIOSWithoutPWA();
@@ -9189,7 +9271,7 @@ function PushSettings() {
           type: "button",
           className: "btn btn-sm btn-outline-danger",
           onClick: handleDisable,
-          disabled: busy || loading,
+          disabled: busy || loading2,
           children: busy ? "Отключение..." : "Отключить"
         }
       ) : /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -9198,7 +9280,7 @@ function PushSettings() {
           type: "button",
           className: "btn btn-sm btn-outline-pink",
           onClick: handleEnable,
-          disabled: busy || loading,
+          disabled: busy || loading2,
           children: busy ? "Включение..." : "Включить"
         }
       ) }) })

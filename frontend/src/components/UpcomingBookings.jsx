@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { loadBookings, confirmBooking, unconfirmBooking } from '../api/bookingsList';
 import { deleteBooking } from '../api/day';
 import BookingDetailsModal from './BookingDetailsModal';
+import styles from './UpcomingBookings.module.css';
 
 export default function UpcomingBookings({ masterSlug, masterMaxLink, onEdit, onDataChanged }) {
     const [bookings, setBookings] = useState([]);
@@ -47,12 +48,11 @@ export default function UpcomingBookings({ masterSlug, masterMaxLink, onEdit, on
     async function handleToggleConfirm(booking) {
         try {
             const fn = booking.confirmed_by_master ? unconfirmBooking : confirmBooking;
-            const data = await fn(booking.id);         
+            const data = await fn(booking.id);
             if (data.success) {
                 setBookings(prev => prev.map(b =>
                     b.id === booking.id ? { ...b, confirmed_by_master: !b.confirmed_by_master } : b
                 ));
-                // НЕ вызываем onDataChanged — подтверждение не влияет на календарь
             } else {
                 alert(data.error || 'Ошибка');
             }
@@ -67,7 +67,6 @@ export default function UpcomingBookings({ masterSlug, masterMaxLink, onEdit, on
         try {
             const data = await deleteBooking(booking.id);
             if (data.success) {
-                // Удаляем локально, не сбрасывая пагинацию
                 setBookings(prev => prev.filter(b => b.id !== booking.id));
                 setTotal(prev => prev - 1);
                 if (onDataChanged) onDataChanged();
@@ -124,29 +123,29 @@ export default function UpcomingBookings({ masterSlug, masterMaxLink, onEdit, on
     }
 
     function toggleContactMenu(e, bookingId) {
-        e.stopPropagation();  // не закрываем меню сразу
+        e.stopPropagation();
         setContactMenuId(prev => prev === bookingId ? null : bookingId);
     }
 
     return (
-        <div className="card mb-4 booking-card">
-            <div className="card-inner">
-                <div className="card-header bg-white">
-                    <h5 className="mb-0">
-                        <i className="fas fa-clock me-2" style={{ color: 'var(--primary)' }} />
+        <div className={styles.card}>
+            <div className={styles.cardInner}>
+                <div className={styles.cardHeader}>
+                    <h5>
+                        <i className="fas fa-clock" style={{ color: 'var(--primary)' }} />
                         Ближайшие записи
                     </h5>
                 </div>
-                <div className="card-body">
+                <div className={styles.cardBody}>
                     {loading && bookings.length === 0 ? (
-                        <div className="text-center py-3">
+                        <div className={styles.loadingState}>
                             <div className="spinner-border" style={{ color: '#4053d3' }} />
                         </div>
                     ) : bookings.length === 0 ? (
-                        <p className="text-muted text-center mb-0">Нет предстоящих записей</p>
+                        <p className={styles.emptyState}>Нет предстоящих записей</p>
                     ) : (
-                        <div className="table-responsive">
-                            <table className="table" id="upcoming-bookings-table">
+                        <div className={styles.tableWrapper}>
+                            <table className={styles.table}>
                                 <thead>
                                     <tr>
                                         <th>Дата</th>
@@ -162,36 +161,36 @@ export default function UpcomingBookings({ masterSlug, masterMaxLink, onEdit, on
                                             key={b.id}
                                             style={contactMenuId === b.id ? { position: 'relative', zIndex: 100 } : undefined}
                                         >
-                                            <td data-label="Дата">{b.date}</td>
-                                            <td data-label="Время">{b.time}</td>
-                                            <td data-label="Клиент">{b.client_name}</td>
-                                            <td data-label="Услуги">{b.service_name}</td>
-                                            <td data-label="" className="actions-cell">
-                                                <div className="all-buttons-row">
+                                            <td>{b.date}</td>
+                                            <td>{b.time}</td>
+                                            <td>{b.client_name}</td>
+                                            <td>{b.service_name}</td>
+                                            <td className={styles.actionsCell}>
+                                                <div className={styles.allButtonsRow}>
                                                     <button
-                                                        className="btn btn-sm"
+                                                        className={styles.iconBtn}
                                                         onClick={() => setDetailsBookingId(b.id)}
                                                         title="Подробности"
                                                     >
                                                         <i className="fas fa-info-circle" />
                                                     </button>
                                                     <button
-                                                        className="btn btn-sm"
+                                                        className={styles.iconBtn}
                                                         onClick={() => onEdit(b.id)}
                                                         title="Редактировать"
                                                     >
                                                         <i className="fas fa-edit" />
                                                     </button>
                                                     <button
-                                                        className="btn btn-sm"
+                                                        className={`${styles.iconBtn} ${styles.iconBtnDelete}`}
                                                         onClick={() => handleDelete(b)}
                                                         title="Удалить"
                                                     >
                                                         <i className="fas fa-trash" />
                                                     </button>
-                                                    <div className="contact-dropdown-wrapper" style={{ position: 'relative', display: 'inline-block', zIndex: 10 }}>
+                                                    <div className={styles.contactWrapper}>
                                                         <button
-                                                            className="contact-dropdown-btn"
+                                                            className={styles.contactBtn}
                                                             onClick={(e) => toggleContactMenu(e, b.id)}
                                                         >
                                                             <i className="fas fa-phone-alt" />
@@ -199,7 +198,7 @@ export default function UpcomingBookings({ masterSlug, masterMaxLink, onEdit, on
                                                             <i className="fas fa-chevron-down" />
                                                         </button>
                                                         {contactMenuId === b.id && (
-                                                            <div className="contact-dropdown-menu" style={{ display: 'block', zIndex: 1100 }} onClick={e => e.stopPropagation()}>
+                                                            <div className={styles.contactMenu} onClick={e => e.stopPropagation()}>
                                                                 <button onClick={() => callClient(b.phone)}>
                                                                     <i className="fas fa-phone" /> Позвонить
                                                                 </button>
@@ -213,13 +212,13 @@ export default function UpcomingBookings({ masterSlug, masterMaxLink, onEdit, on
                                                                     <i className="fab fa-whatsapp" /> WhatsApp
                                                                 </button>
                                                                 <button onClick={openMax} disabled={!masterMaxLink}>
-                                                                    <span className="max-icon">M</span> MAX
+                                                                    <span className={styles.maxIcon}>M</span> MAX
                                                                 </button>
                                                             </div>
                                                         )}
                                                     </div>
                                                     <button
-                                                        className={`confirm-btn ${b.confirmed_by_master ? 'confirmed' : ''}`}
+                                                        className={`${styles.confirmBtn} ${b.confirmed_by_master ? styles.confirmed : ''}`}
                                                         onClick={() => handleToggleConfirm(b)}
                                                         title={b.confirmed_by_master ? 'Подтверждено' : 'Подтвердить'}
                                                     >
@@ -234,28 +233,27 @@ export default function UpcomingBookings({ masterSlug, masterMaxLink, onEdit, on
                         </div>
                     )}
                 </div>
-                <div className="card-footer bg-white border-0 d-flex justify-content-between align-items-center pt-0 flex-wrap">
+                <div className={styles.cardFooter}>
                     <button
-                        className="btn btn-sm btn-outline-primary"
-                        style={{ display: hasMore ? 'inline-block' : 'none' }}
+                        className={styles.loadMoreBtn}
+                        style={{ display: hasMore ? 'flex' : 'none' }}
                         onClick={handleLoadMore}
                     >
-                        <i className="fas fa-chevron-down me-1" />
+                        <i className="fas fa-chevron-down" />
                         Показать еще
                     </button>
 
-                    <div className="footer-info-row">
-                        <div className="footer-right">
-                            <span className="total-label">Всего записей</span>
-                            <span className="total-number">{total}</span>
+                    <div className={styles.footerInfoRow}>
+                        <div className={styles.footerRight}>
+                            <span className={styles.totalLabel}>Всего записей</span>
+                            <span className={styles.totalNumber}>{total}</span>
                         </div>
-                        <div className="footer-left">
-                            <label className="form-label me-1 mb-0 small">Показывать:</label>
+                        <div className={styles.footerLeft}>
+                            <label className={styles.limitLabel}>Показывать:</label>
                             <select
-                                className="form-select form-select-sm"
+                                className={styles.limitSelect}
                                 value={limit}
                                 onChange={e => handleLimitChange(parseInt(e.target.value))}
-                                style={{ width: 'auto' }}
                             >
                                 <option value="3">3</option>
                                 <option value="5">5</option>

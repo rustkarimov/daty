@@ -1072,8 +1072,8 @@ body:has(#workingDayActions[style*="display: block"]) #addBookingButtonContainer
 
 
     .calendar-date.working {
-        background-color: transparent !important;
-        border-color: none !important;
+        background-color: transparent ;
+        border-color: none ;
     }
     /* Кнопка добавления записи */
     .add-booking-btn {
@@ -1091,14 +1091,14 @@ body:has(#workingDayActions[style*="display: block"]) #addBookingButtonContainer
 
     /* ---- Обнуляем десктопные стили ---- */
     .calendar-date {
-        position: relative !important;
-        background: transparent !important;
-        border: none !important;
-        border-radius: 0 !important;
-        padding: 0 !important;
-        min-height: 32px !important;
-        display: flex !important;
-        flex-direction: column !important;
+        position: relative ;
+        background: transparent ;
+        border: none ;
+        border-radius: 0 ;
+        padding: 0 ;
+        min-height: 32px ;
+        display: flex ;
+        flex-direction: column ;
         align-items: center !important;
         justify-content: center !important;
         cursor: pointer;
@@ -1128,12 +1128,12 @@ body:has(#workingDayActions[style*="display: block"]) #addBookingButtonContainer
     /* ---- Рабочий день: */
     .calendar-date.working .date-number {
         background-color: var(--primary-light);
-        color: #000000 !important;
+        color: #000000 ;
     }
     
     /* ---- Нерабочий день: просто цифра без кружка ---- */
     .calendar-date.non-working .date-number {
-        background-color: transparent !important;
+        background-color: transparent;
         /* color: var(--gray-400) !important; */
         color: black;
     }
@@ -1144,14 +1144,14 @@ body:has(#workingDayActions[style*="display: block"]) #addBookingButtonContainer
     }
 
     .calendar-date.today {
-        border: none !important;
-        box-shadow: none !important;
+        border: none ;
+        box-shadow: none ;
     }
     
     /* ---- Сегодня: фиолетовый кружок ---- */
     .calendar-date.today .date-number {
         /* background: #ede9fe !important; */
-        color: #000000 !important;
+        color: #000000 ;
         font-weight: 600;
         box-shadow: 0 0 0 1px var(--primary) !important;  /* фиолетовое кольцо */
     }

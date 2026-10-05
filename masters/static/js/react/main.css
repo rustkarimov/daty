@@ -1,0 +1,1039 @@
+/* ============================================================ */
+/* ========== CALENDAR (CSS Module) =========================== */
+/* ============================================================ */
+
+/* ---- Контейнер календаря (обёртка) ---- */
+._calendar_14dq7_11 {
+    width: 100%;
+}
+
+/* ============================================================ */
+/* ========== НАВИГАЦИЯ (СТРЕЛКИ + МЕСЯЦ) ===================== */
+/* ============================================================ */
+
+/* ---- Панель навигации (стрелки + месяц) ---- */
+._nav_14dq7_29 {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 16px;
+    gap: 12px;
+}
+
+/* ---- Кнопка-стрелка (← →) ---- */
+._navBtn_14dq7_47 {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border-radius: 50%;
+    border: 1px solid var(--gray-300);
+    background: white;
+    color: var(--gray-600);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* ---- Стрелка при наведении (синяя) ---- */
+._navBtn_14dq7_47:hover {
+    border-color: var(--primary);
+    background: var(--primary-light);
+    color: var(--primary);
+}
+
+/* ---- SVG-иконка внутри стрелки ---- */
+._navBtn_14dq7_47 svg {
+    display: block;
+    width: 18px;
+    height: 18px;
+}
+
+/* ---- Название месяца («Октябрь 2026») ---- */
+._navTitle_14dq7_107 {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--gray-800);
+    min-width: 140px;
+    text-align: center;
+}
+
+/* ============================================================ */
+/* ========== СЕТКА КАЛЕНДАРЯ ================================= */
+/* ============================================================ */
+
+/* ---- Строка дней недели (Пн-Вс) ---- */
+._weekdays_14dq7_133 {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+/* ---- Название дня недели (Пн, Вт, ...) ---- */
+._weekday_14dq7_133 {
+    font-weight: 800;
+    padding: 8px;
+    border-radius: 8px;
+    font-size: 15px;
+    text-align: center;
+    color: var(--gray-700);
+}
+
+/* ---- Сетка дней месяца ---- */
+._dates_14dq7_169 {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+}
+
+/* ============================================================ */
+/* ========== ЯЧЕЙКА ДНЯ ====================================== */
+/* ============================================================ */
+
+/* ---- Базовая ячейка дня ---- */
+._dateCell_14dq7_191 {
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    padding: 8px 4px;
+    text-align: center;
+    min-height: 65px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid #e5e7eb;
+    position: relative;
+}
+
+/* ---- Пустая ячейка (для сдвига начала месяца) ---- */
+._dateCell_14dq7_191._empty_14dq7_217 {
+    background-color: transparent;
+    border: 0;
+    cursor: default;
+}
+
+/* ---- Рабочий день (синий фон) ---- */
+._dateCell_14dq7_191._working_14dq7_231 {
+    background-color: var(--primary-light);
+}
+
+/* ---- Нерабочий день (серый, полупрозрачный) ---- */
+._dateCell_14dq7_191._nonWorking_14dq7_241 {
+    background-color: #e9ecef;
+    border-color: #ced4da;
+    opacity: 0.7;
+}
+
+/* ---- Прошедший день (полупрозрачный) ---- */
+._dateCell_14dq7_191._past_14dq7_255 {
+    opacity: 0.4;
+}
+
+/* ---- Сегодня (синяя рамка) ---- */
+._dateCell_14dq7_191._today_14dq7_265 {
+    border: 2px solid var(--primary);
+    box-shadow: 0 0 0 0.5px var(--primary);
+}
+
+/* ---- Цифра дня (1, 2, 3, ...) ---- */
+._dateNumber_14dq7_277 {
+    font-weight: 600;
+    color: black;
+}
+
+/* ---- Часы работы под цифрой (09:00 - 18:00) ---- */
+._dateTime_14dq7_289 {
+    font-size: 0.65rem;
+    margin-top: 5px;
+    color: #666;
+}
+
+/* ============================================================ */
+/* ========== ИКОНКИ В ЯЧЕЙКЕ ================================= */
+/* ============================================================ */
+
+/* ---- Контейнер иконок (бейдж записи + перерыв) ---- */
+._icons_14dq7_311 {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    display: flex;
+    flex-direction: row;
+    gap: 1px;
+    align-items: center;
+}
+
+/* ---- Бейдж с количеством записей ---- */
+._bookingBadge_14dq7_333 {
+    font-size: 0.7rem;
+    font-weight: 700;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 9px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    background: var(--primary);
+    color: white;
+}
+
+/* ---- Бейдж перерыва (зелёная иконка) ---- */
+._breakBadge_14dq7_363 {
+    font-size: 0.8rem;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: white;
+    padding: 1px;
+}
+
+/* ---- SVG-иконка внутри бейджа перерыва ---- */
+._breakBadge_14dq7_363 svg {
+    display: block;
+    width: 16px;
+    height: 16px;
+    stroke: rgb(58, 152, 57);
+    stroke-width: 2.5;
+    fill: none;
+}
+
+/* ============================================================ */
+/* ========== СОСТОЯНИЕ ЗАГРУЗКИ ============================== */
+/* ============================================================ */
+
+/* ---- Спиннер загрузки ---- */
+._loading_14dq7_415 {
+    text-align: center;
+    padding: 24px 0;
+}
+
+/* ============================================================ */
+/* ==================== АДАПТИВ =============================== */
+/* ============================================================ */
+
+/* ============================================================ */
+/* ========== 1200-1600 (БОЛЬШИЕ НОУТБУКИ) ==================== */
+/* ============================================================ */
+
+/* ---- Уменьшаем отступы в сетке ---- */
+@media (max-width: 1600px) {
+    ._dates_14dq7_169 {
+        gap: 6px;
+    }
+    
+    ._weekdays_14dq7_133 {
+        gap: 6px;
+    }
+}
+
+/* ============================================================ */
+/* ========== 992-1200 (НОУТБУКИ) ============================= */
+/* ============================================================ */
+
+/* ---- Уменьшаем ячейки ---- */
+@media (max-width: 1200px) {
+    ._dateCell_14dq7_191 {
+        min-height: 60px;
+        padding: 6px 3px;
+    }
+    
+    ._dateNumber_14dq7_277 {
+        font-size: 0.9rem;
+    }
+    
+    ._dateTime_14dq7_289 {
+        font-size: 0.6rem;
+    }
+    
+    ._weekday_14dq7_133 {
+        font-size: 13px;
+    }
+}
+
+/* ============================================================ */
+/* ========== 768-992 (ПЛАНШЕТЫ) ============================== */
+/* ============================================================ */
+
+/* ---- Ещё компактнее ---- */
+@media (max-width: 992px) {
+    ._dateCell_14dq7_191 {
+        min-height: 55px;
+        padding: 6px 3px;
+    }
+
+    ._navBtn_14dq7_47 {
+        width: 32px;
+        height: 32px;
+    }
+    
+    ._navBtn_14dq7_47 svg {
+        width: 16px;
+        height: 16px;
+    }
+}
+
+/* ============================================================ */
+/* ========== <768 (СМАРТФОНЫ) ================================ */
+/* ============================================================ */
+
+@media (max-width: 768px) {
+
+    /* ---- Меньше отступы в сетке ---- */
+    ._dates_14dq7_169 {
+        gap: 6px;
+    }
+    
+    ._weekdays_14dq7_133 {
+        gap: 3px;
+        margin-bottom: 6px;
+    }
+    
+    /* ---- Компактные дни недели ---- */
+    ._weekday_14dq7_133 {
+        font-weight: 700;
+        font-size: 0.6rem;
+        padding: 4px 0;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+    
+    /* ---- Ячейка дня (круглая, без фона) ---- */
+    ._dateCell_14dq7_191 {
+        position: relative !important;
+        background: transparent !important;
+        border: none !important;
+        border-radius: 0 !important;
+        padding: 0 !important;
+        min-height: 32px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        aspect-ratio: 1 / 1 !important;
+    }
+    
+    /* ---- Цифра дня (круг) ---- */
+    ._dateNumber_14dq7_277 {
+        font-size: 0.7rem;
+        font-weight: 500;
+        line-height: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        color: black;
+        margin: 0 auto;
+        min-width: 28px !important;      
+        max-width: 28px !important;      
+        flex-grow: 0 !important;        
+        aspect-ratio: 1 / 1 !important;  
+    }
+    
+    /* ---- Рабочий день — синий кружок ---- */
+    ._dateCell_14dq7_191._working_14dq7_231 ._dateNumber_14dq7_277 {
+        background-color: var(--primary-light);
+    }
+    
+    /* ---- Нерабочий день — без кружка ---- */
+    ._dateCell_14dq7_191._nonWorking_14dq7_241 ._dateNumber_14dq7_277 {
+        background-color: transparent !important;
+    }
+    
+    /* ---- Прошедшие — бледнее ---- */
+    ._dateCell_14dq7_191._past_14dq7_255 ._dateNumber_14dq7_277 {
+        opacity: 0.6;
+    }
+    
+    /* ---- Сегодня — без рамки у ячейки ---- */
+    ._dateCell_14dq7_191._today_14dq7_265 {
+        border: none;
+        box-shadow: none;
+    }
+    
+    /* ---- Сегодня — обводка у цифры ---- */
+    ._dateCell_14dq7_191._today_14dq7_265 ._dateNumber_14dq7_277 {
+        color: black;
+        font-weight: 600;
+        background: transparent;
+        outline: 1.5px solid var(--primary);  /* ← outline вместо box-shadow */
+        outline-offset: 0;
+
+    }
+    
+    /* ---- Иконки под цифрой (бейдж + перерыв) ---- */
+    ._icons_14dq7_311 {
+        position: relative;
+        top: 1px;
+        right: auto;
+        display: flex;
+        gap: 2px;
+        align-items: center;
+        justify-content: center;
+        margin-top: 2px;
+        min-height: 12px;
+        flex-direction: row;
+    }
+    
+    /* ---- Компактный бейдж записи ---- */
+    ._bookingBadge_14dq7_333 {
+        font-size: 0.55rem;
+        min-width: 13px;
+        height: 13px;
+        border-radius: 50%;
+        padding: 0 3px;
+    }
+    
+    /* ---- Компактная иконка перерыва ---- */
+    ._breakBadge_14dq7_363 svg {
+        width: 14px;
+        height: 14px;
+    }
+    
+    /* ---- Скрываем часы работы ---- */
+    ._dateTime_14dq7_289 {
+        display: none;
+    }
+    
+    /* ---- Компактные стрелки навигации ---- */
+    ._navBtn_14dq7_47 {
+        width: 25px;
+        height: 25px;
+    }
+    
+    ._navBtn_14dq7_47 svg {
+        width: 16px;
+        height: 16px;
+    }
+    
+    /* ---- Компактный заголовок месяца ---- */
+    ._navTitle_14dq7_107 {
+        font-size: 0.9rem;
+        min-width: 120px;
+    }
+}
+
+/* ============================================================ */
+/* ========== <480 (МАЛЕНЬКИЕ СМАРТФОНЫ) ====================== */
+/* ============================================================ */
+
+@media (max-width: 480px) {
+
+    /* ---- Ещё компактнее дни недели ---- */
+    ._weekday_14dq7_133 {
+        font-size: 0.5rem;
+        padding: 3px 0;
+    }
+    
+    /* ---- Больше вертикального отступа между рядами ---- */
+    ._dates_14dq7_169 {
+        gap: 6px;
+        row-gap: 16px;
+    }
+    
+    /* ---- Меньше цифра ---- */
+    ._dateNumber_14dq7_277 {
+        font-size: 0.65rem;
+    }
+    
+    /* ---- Иконки — компактнее ---- */
+    ._icons_14dq7_311 {
+        min-height: 10px;
+        gap: 1px;
+        margin-top: 1px;
+    }
+}/* ============================================================ */
+/* ========== UPCOMING BOOKINGS (CSS Module) ================== */
+/* ============================================================ */
+
+/* ---- Карточка ---- */
+._card_c7nfg_11 {
+    background: white;
+    border-radius: 30px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    margin-bottom: 24px;
+    width: 100%;
+    overflow: visible;
+}
+
+._cardInner_c7nfg_29 {
+    background: white;
+    border-radius: 30px;
+    overflow: visible;
+}
+
+._cardHeader_c7nfg_41 {
+    background: white;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--gray-200);
+    border-radius: 20px 20px 0 0;
+}
+
+._cardHeader_c7nfg_41 h5 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--gray-800);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+._cardBody_c7nfg_75 {
+    padding: 20px;
+}
+
+/* ---- Состояния ---- */
+._loadingState_c7nfg_85,
+._emptyState_c7nfg_87 {
+    text-align: center;
+    padding: 24px 0;
+    color: var(--gray-500);
+}
+
+/* ---- Таблица ---- */
+._tableWrapper_c7nfg_101 {
+    overflow: visible;
+}
+
+._table_c7nfg_101 {
+    width: 100%;
+    font-size: 0.9rem;
+    border-collapse: collapse;
+}
+
+._table_c7nfg_101 thead th {
+    font-weight: 600;
+    color: var(--gray-600);
+    border-bottom: 2px solid var(--gray-200);
+    padding: 10px 16px;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    text-align: left;
+    background: var(--gray-50);
+}
+
+._table_c7nfg_101 tbody td {
+    padding: 10px 16px;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--gray-100);
+}
+
+._table_c7nfg_101 tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* ---- Ячейка действий ---- */
+._actionsCell_c7nfg_167 {
+    white-space: nowrap;
+}
+
+._allButtonsRow_c7nfg_175 {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: nowrap;
+}
+
+/* ---- Кнопки-иконки ---- */
+._iconBtn_c7nfg_191 {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--gray-600);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+._iconBtn_c7nfg_191:hover {
+    background: var(--gray-100);
+    color: var(--gray-800);
+}
+
+._iconBtnDelete_c7nfg_233:hover {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+/* ---- Кнопка «Связаться» + меню ---- */
+._contactWrapper_c7nfg_245 {
+    position: relative;
+    display: inline-flex;
+    z-index: 200;
+}
+
+._contactBtn_c7nfg_257 {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    font-size: 0.7rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: var(--gray-700);
+    white-space: nowrap;
+}
+
+._contactBtn_c7nfg_257:hover {
+    background: var(--primary-light);
+    color: var(--primary);
+}
+
+._contactBtn_c7nfg_257 ._fa-chevron-down_c7nfg_299 {
+    font-size: 0.5rem;
+    margin-left: 2px;
+}
+
+._contactMenu_c7nfg_309 {
+    position: absolute;
+    top: 110%;
+    left: 0;
+    min-width: 180px;
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    padding: 6px 0;
+    z-index: 1200;
+    animation: _slideDown_c7nfg_1 0.2s ease;
+}
+
+._contactMenu_c7nfg_309 button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 14px;
+    border: none;
+    background: none;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    color: var(--gray-700);
+    text-align: left;
+}
+
+._contactMenu_c7nfg_309 button:hover {
+    background: var(--gray-50);
+}
+
+._contactMenu_c7nfg_309 button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+._maxIcon_c7nfg_385 {
+    font-weight: 700;
+    font-size: 0.75rem;
+    background: #e91e63;
+    color: white;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* ---- Галочка подтверждения ---- */
+._confirmBtn_c7nfg_415 {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--gray-400);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 1rem;
+}
+
+._confirmBtn_c7nfg_415:hover {
+    background: var(--gray-100);
+    color: var(--primary);
+}
+
+._confirmBtn_c7nfg_415._confirmed_c7nfg_455 {
+    color: #2e7d32;
+}
+
+._confirmBtn_c7nfg_415._confirmed_c7nfg_455:hover {
+    color: #1b5e20;
+}
+
+/* ---- Футер ---- */
+._cardFooter_c7nfg_473 {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px 20px 16px 20px;
+    background: white;
+    border-radius: 0 0 30px 30px;
+}
+
+._loadMoreBtn_c7nfg_491 {
+    width: 20%;
+    padding: 8px;
+    font-size: 0.85rem;
+    border-radius: 30px;
+    border: 1px solid var(--primary);
+    color: var(--primary);
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+._loadMoreBtn_c7nfg_491:hover {
+    background: var(--primary-gradient);
+    border-color: transparent;
+    color: white;
+}
+
+._footerInfoRow_c7nfg_535 {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding-top: 6px;
+    justify-content: flex-start;
+    gap: 30px;
+}
+
+._footerLeft_c7nfg_553,
+._footerRight_c7nfg_555 {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+._totalLabel_c7nfg_567 {
+    font-size: 0.75rem;
+    color: var(--gray-500);
+    font-weight: 400;
+}
+
+._totalNumber_c7nfg_579 {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--gray-700);
+    background: var(--gray-100);
+    padding: 0 12px;
+    border-radius: 16px;
+    line-height: 24px;
+    min-width: 28px;
+    text-align: center;
+}
+
+._limitLabel_c7nfg_603 {
+    font-size: 0.75rem;
+    color: var(--gray-500);
+    font-weight: 400;
+    margin: 0 4px 0 0;
+}
+
+._limitSelect_c7nfg_617 {
+    font-size: 0.75rem;
+    height: 28px;
+    padding: 2px 4px 2px 8px;
+    border-radius: 16px;
+    border: 1px solid var(--gray-200);
+    width: 50px;
+    background: white;
+    cursor: pointer;
+}
+
+/* ---- Анимация ---- */
+@keyframes _slideDown_c7nfg_1 {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ============================================================ */
+/* ==================== АДАПТИВ =============================== */
+/* ============================================================ */
+
+/* ---- 1600px+ (по умолчанию стили выше) ---- */
+
+/* ---- 1200-1600 (ноутбуки) ---- */
+@media (max-width: 1600px) {
+    ._loadMoreBtn_c7nfg_491 {
+        width: 30%;
+    }
+}
+
+/* ---- 992-1200 (маленькие ноутбуки) ---- */
+@media (max-width: 1200px) {
+    ._table_c7nfg_101 {
+        font-size: 0.85rem;
+    }
+    
+    ._table_c7nfg_101 thead th,
+    ._table_c7nfg_101 tbody td {
+        padding: 8px 12px;
+    }
+}
+
+/* ---- 768-992 (планшеты) ---- */
+@media (max-width: 992px) {
+    ._table_c7nfg_101 thead th,
+    ._table_c7nfg_101 tbody td {
+        padding: 8px 10px;
+        font-size: 0.8rem;
+    }
+    
+    ._iconBtn_c7nfg_191,
+    ._confirmBtn_c7nfg_415 {
+        width: 28px;
+        height: 28px;
+        font-size: 0.75rem;
+    }
+    
+    ._contactBtn_c7nfg_257 {
+        padding: 4px 8px;
+        height: 28px;
+        font-size: 0.65rem;
+    }
+    
+    ._loadMoreBtn_c7nfg_491 {
+        width: 40%;
+    }
+}
+
+/* ---- <768 (смартфоны) ---- */
+@media (max-width: 768px) {
+    ._card_c7nfg_11 {
+        border-radius: 12px;
+        margin-bottom: 8px;
+    }
+    
+    ._cardInner_c7nfg_29 {
+        border-radius: 12px;
+    }
+    
+    ._cardHeader_c7nfg_41 {
+        padding: 16px 16px 4px 16px;
+        border-bottom: none;
+        border-radius: 12px 12px 0 0;
+    }
+    
+    ._cardHeader_c7nfg_41 h5 {
+        font-weight: 700;
+    }
+    
+    ._cardHeader_c7nfg_41 h5 i {
+        display: none;
+    }
+    
+    ._cardBody_c7nfg_75 {
+        padding: 10px;
+    }
+    
+    /* Таблица → карточки */
+    ._table_c7nfg_101,
+    ._table_c7nfg_101 tbody,
+    ._table_c7nfg_101 tr,
+    ._table_c7nfg_101 td {
+        display: block;
+        width: 100%;
+    }
+    
+    ._table_c7nfg_101 thead {
+        display: none;
+    }
+    
+    ._table_c7nfg_101 tbody tr {
+        border-radius: 12px;
+        margin-bottom: 8px;
+        padding: 8px 10px;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+        border: 0.5px solid rgb(155, 155, 155);
+    }
+    
+    ._table_c7nfg_101 tbody td {
+        padding: 1px 0;
+        border: none;
+        font-size: 0.8rem;
+    }
+    
+    /* Дата + время — в одну строку */
+    ._table_c7nfg_101 tbody td:first-child,
+    ._table_c7nfg_101 tbody td:nth-child(2) {
+        display: inline-block;
+        width: auto;
+        font-size: 13px;
+    }
+    
+    ._table_c7nfg_101 tbody td:first-child {
+        font-weight: 600;
+        color: var(--primary);
+        margin-right: 8px;
+    }
+    
+    ._table_c7nfg_101 tbody td:nth-child(2) {
+        color: black;
+        font-weight: 600;
+    }
+    
+    /* Имя клиента */
+    ._table_c7nfg_101 tbody td:nth-child(3) {
+        font-weight: 500;
+        font-size: 0.85rem;
+        margin-top: 2px;
+        margin-bottom: 2px;
+    }
+    
+    /* Услуга */
+    ._table_c7nfg_101 tbody td:nth-child(4) {
+        color: var(--gray-500);
+        font-size: 0.7rem;
+        margin-bottom: 6px;
+        white-space: normal;
+        word-break: break-word;
+    }
+    
+    /* Действия */
+    ._table_c7nfg_101 tbody td:last-child {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        border-top: 1px solid var(--gray-200);
+        padding-top: 6px;
+        margin-top: 4px;
+    }
+    
+    ._actionsCell_c7nfg_167 {
+        white-space: normal;
+    }
+    
+    ._allButtonsRow_c7nfg_175 {
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+    
+    ._iconBtn_c7nfg_191,
+    ._confirmBtn_c7nfg_415 {
+        width: 32px;
+        height: 32px;
+        font-size: 0.75rem;
+    }
+    
+    ._contactBtn_c7nfg_257 {
+        padding: 4px 8px;
+        width: 32px;
+        justify-content: center;
+    }
+    
+    ._contactBtn_c7nfg_257 span {
+        display: none;
+    }
+    
+    ._contactMenu_c7nfg_309 {
+        left: 50%;
+        transform: translateX(-50%);
+        min-width: 160px;
+    }
+    
+    /* Футер */
+    ._cardFooter_c7nfg_473 {
+        padding: 6px 12px 12px 12px;
+        gap: 6px;
+    }
+    
+    ._loadMoreBtn_c7nfg_491 {
+        width: 100%;
+        font-size: 0.8rem;
+        padding: 8px;
+    }
+    
+    ._footerInfoRow_c7nfg_535 {
+        padding-top: 4px;
+        flex-wrap: wrap;
+        justify-content: space-between;
+    }
+    
+    ._totalLabel_c7nfg_567,
+    ._limitLabel_c7nfg_603 {
+        font-size: 0.7rem;
+    }
+    
+    ._totalNumber_c7nfg_579 {
+        font-size: 0.7rem;
+        line-height: 20px;
+        padding: 0 8px;
+        min-width: 20px;
+    }
+    
+    ._limitSelect_c7nfg_617 {
+        font-size: 0.7rem;
+        height: 25px;
+        width: 50px;
+        padding: 0 4px 0 6px;
+        font-weight: 900;
+    }
+}
+
+/* ---- <480 (маленькие смартфоны) ---- */
+@media (max-width: 480px) {
+    ._cardBody_c7nfg_75 {
+        padding: 8px;
+    }
+    
+    ._table_c7nfg_101 tbody tr {
+        padding: 6px 8px;
+    }
+    
+    ._table_c7nfg_101 tbody td:first-child,
+    ._table_c7nfg_101 tbody td:nth-child(2) {
+        font-size: 12px;
+    }
+    
+    ._table_c7nfg_101 tbody td:nth-child(3) {
+        font-size: 0.8rem;
+    }
+    
+    ._table_c7nfg_101 tbody td:nth-child(4) {
+        font-size: 0.65rem;
+    }
+    
+    ._iconBtn_c7nfg_191,
+    ._confirmBtn_c7nfg_415 {
+        width: 28px;
+        height: 28px;
+        font-size: 0.7rem;
+    }
+    
+    ._contactBtn_c7nfg_257 {
+        width: 28px;
+        height: 28px;
+    }
+}
