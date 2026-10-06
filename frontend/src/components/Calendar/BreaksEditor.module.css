@@ -1,0 +1,183 @@
+/* ============================================================ */
+/* ========== BREAKS EDITOR (CSS Module) ====================== */
+/* ============================================================ */
+
+/* ---- Контейнер ---- */
+.editor {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+    margin-bottom: 16px;
+}
+
+/* ---- Заголовок «Перерывы:» ---- */
+.title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--gray-800);
+    margin: 0 0 4px 0;
+}
+
+/* ---- Строка перерыва ---- */
+.breakRow {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0;
+    height: 36px;        
+    min-height: 36px;   
+    width: 100%;
+}
+
+/* ---- Метка «Перерыв:» / «Перерыв 1:» ---- */
+.label {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--gray-800);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+/* ---- Часы перерыва ---- */
+.value {
+    font-size: 0.95rem;
+    color: var(--gray-700);
+    white-space: nowrap;
+}
+
+/* ---- Поля ввода ---- */
+.input {
+    width: 90px;
+    height: 32px;
+    padding: 4px 8px;
+    font-size: 0.85rem;
+    border: 1px solid var(--gray-300);
+    border-radius: 8px;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+.input:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.separator {
+    color: var(--gray-500);
+    font-weight: 500;
+}
+
+.actions {
+    display: flex;
+    gap: 1px;  /* ← отдельный gap для иконок */
+}
+
+/* ---- Иконки-кнопки ---- */
+.iconBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: var(--gray-600);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.iconBtn:hover {
+    background: var(--gray-100);
+    color: var(--gray-800);
+}
+
+.iconBtnSuccess {
+    color: var(--success);
+}
+
+.iconBtnSuccess:hover {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.iconBtnSecondary {
+    color: var(--gray-500);
+}
+
+.iconBtnSecondary:hover {
+    background: var(--gray-100);
+    color: var(--gray-700);
+}
+
+.iconBtnDanger:hover {
+    background: #fef2f2;
+    color: var(--danger);
+}
+
+/* ---- Пустое состояние ---- */
+.emptyRow {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 36px;         /* ← та же высота */
+    min-height: 36px;
+    padding: 0;
+}
+
+.emptyText {
+    font-size: 0.95rem;
+    color: var(--gray-500);
+    margin: 0;
+}
+
+.dot {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--gray-500);
+    line-height: 1;
+    flex-shrink: 0;
+    margin-right: 4px;
+}
+
+/* ---- Адаптив ---- */
+@media (max-width: 768px) {
+    .title {
+        font-size: 0.85rem;
+    }
+    
+    .label {
+        font-size: 0.85rem;
+    }
+    
+    .value {
+        font-size: 0.85rem;
+    }
+    
+    .input {
+        width: 75px;
+        height: 28px;
+        font-size: 12px;
+        padding: 2px 6px;
+    }
+    
+    .iconBtn {
+        width: 26px;
+        height: 26px;
+        font-size: 0.75rem;
+    }
+    
+    .emptyText {
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .input {
+        width: 70px;
+    }
+}

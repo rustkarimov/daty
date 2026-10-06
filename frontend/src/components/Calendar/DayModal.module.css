@@ -1,0 +1,563 @@
+/* ============================================================ */
+/* ========== DAY MODAL (CSS Module) ========================== */
+/* ============================================================ */
+
+/* ---- Backdrop ---- */
+.backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1050;
+    overflow-y: auto;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 24px 16px;
+}
+
+/* ---- Окно модалки ---- */
+.modal {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid var(--gray-200);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    width: 100%;
+    max-width: 800px;
+    max-height: calc(100vh - 48px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: fadeInUp 0.3s ease;
+}
+
+/* ---- Заголовок ---- */
+.header {
+    padding: 16px 20px;
+    background: white;
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--gray-800);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.closeBtn {
+    background: transparent;
+    border: none;
+    font-size: 1.2rem;
+    color: var(--gray-500);
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    line-height: 1;
+}
+
+.closeBtn:hover {
+    background: var(--gray-100);
+    color: var(--gray-800);
+}
+
+/* ---- Тело ---- */
+.body {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+/* ---- Состояние загрузки ---- */
+.loading {
+    text-align: center;
+    padding: 24px 0;
+}
+
+/* ---- Инфо о дне ---- */
+.dayInfo {
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.dayInfoOff {
+    color: var(--gray-500);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dayInfoWork {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    width: 100%;
+}
+
+.dayInfoWork strong {
+    color: var(--gray-800);
+}
+
+.dayInfoLabel {
+    font-weight: 600;
+    color: var(--gray-800);
+}
+
+.dayInfoValue {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--gray-700);
+}
+
+/* ---- Редактирование часов ---- */
+.hoursEdit {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.hoursInput {
+    width: 110px;
+    height: 30px;
+    padding: 4px 8px;
+    font-size: 0.85rem;
+    border: 1px solid var(--gray-300);
+    border-radius: 8px;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+.hoursInput:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.hoursSeparator {
+    color: var(--gray-500);
+    font-weight: 500;
+}
+
+.iconBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--gray-600);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.iconBtn:hover {
+    background: var(--gray-100);
+    color: var(--gray-800);
+}
+
+.iconBtnSuccess {
+    color: var(--success);
+}
+
+.iconBtnSuccess:hover {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.iconBtnSecondary {
+    color: var(--gray-500);
+}
+
+.iconBtnSecondary:hover {
+    background: var(--gray-100);
+    color: var(--gray-700);
+}
+
+/* ---- Блок перерывов ---- */
+.breaksBlock {
+    margin-bottom: 16px;
+}
+
+/* ---- Кнопки управления ---- */
+.actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+}
+
+.btnSoftBlue {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 20px;
+    border-radius: 30px;
+    border: 1px solid #0f4daf;
+    background: transparent;
+    color: #0f4daf;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btnSoftBlue:hover {
+    background: #bfdbfe;
+    color: #021035;
+}
+
+.btnSuccess {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 20px;
+    border-radius: 30px;
+    border: 1px solid var(--success);
+    background: transparent;
+    color: var(--success);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btnSuccess:hover {
+    background: var(--success);
+    color: white;
+}
+
+.btnPink {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 20px;
+    border-radius: 30px;
+    border: none;
+    background: var(--primary);
+    color: white;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btnPink:hover {
+    background: var(--primary-dark);
+}
+
+/* ---- Разделитель ---- */
+.divider {
+    border: none;
+    border-top: 1px solid var(--gray-200);
+    margin: 16px 0;
+}
+
+/* ---- Заголовок списка записей ---- */
+.bookingsTitle {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--gray-800);
+    margin: 0 0 12px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* ---- Пустое состояние ---- */
+.emptyState {
+    text-align: center;
+    color: var(--gray-500);
+    margin: 0;
+}
+
+/* ---- Таблица записей ---- */
+.tableWrapper {
+    overflow: visible;
+}
+
+.table {
+    width: 100%;
+    font-size: 0.9rem;
+    border-collapse: collapse;
+}
+
+.table thead th {
+    font-weight: 600;
+    color: var(--gray-600);
+    border-bottom: 2px solid var(--gray-200);
+    padding: 8px 12px;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    text-align: left;
+    background: var(--gray-50);
+}
+
+.table tbody td {
+    padding: 10px 12px;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--gray-100);
+}
+
+.table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* ---- Действия в таблице ---- */
+.actionsCell {
+    white-space: nowrap;
+}
+
+.actionIcons {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.actionIconBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--gray-600);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.actionIconBtn:hover {
+    background: var(--gray-100);
+    color: var(--gray-800);
+}
+
+.actionIconBtnDelete:hover {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+/* ---- Футер ---- */
+.footer {
+    padding: 12px 20px;
+    background: var(--gray-50);
+    border-top: 1px solid var(--gray-200);
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.btnSecondary {
+    padding: 8px 20px;
+    border-radius: 30px;
+    border: none;
+    background: var(--gray-200);
+    color: var(--gray-700);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btnSecondary:hover {
+    background: var(--gray-300);
+    color: var(--gray-800);
+}
+
+/* ---- Анимация ---- */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ============================================================ */
+/* ==================== АДАПТИВ =============================== */
+/* ============================================================ */
+
+/* ---- 992-1200 (ноутбуки) ---- */
+@media (max-width: 1200px) {
+    .modal {
+        max-width: 700px;
+    }
+}
+
+/* ---- 768-992 (планшеты) ---- */
+@media (max-width: 992px) {
+    .modal {
+        max-width: 600px;
+    }
+    
+    .hoursInput {
+        width: 100px;
+    }
+}
+
+/* ---- <768 (смартфоны) ---- */
+@media (max-width: 768px) {
+    .backdrop {
+        padding: 0;
+        align-items: stretch;
+    }
+    
+    .modal {
+        max-width: 100%;
+        border-radius: 0;
+        max-height: none;
+        height: 100%;
+        border: none;
+        box-shadow: none;
+    }
+    
+    .header {
+        padding: 14px 16px;
+    }
+    
+    .title {
+        font-size: 0.95rem;
+    }
+    
+    .body {
+        padding: 16px;
+    }
+    
+    .footer {
+        padding: 10px 16px;
+        flex-direction: column;
+    }
+    
+    .footer .btnSecondary,
+    .footer .btnPink {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    /* Часы работы — на всю ширину */
+    .hoursEdit {
+        flex-wrap: wrap;
+    }
+    
+    .hoursInput {
+        width: 90px;
+        height: 28px;
+        font-size: 0.8rem;
+    }
+    
+    /* Кнопки действий — на всю ширину */
+    .actions {
+        flex-direction: column;
+    }
+    
+    .actions .btnSoftBlue,
+    .actions .btnSuccess,
+    .actions .btnPink {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    /* Таблица → карточки */
+    .table,
+    .table tbody,
+    .table tr,
+    .table td {
+        display: block;
+        width: 100%;
+    }
+    
+    .table thead {
+        display: none;
+    }
+    
+    .table tbody tr {
+        background: white;
+        border-radius: 12px;
+        padding: 10px 12px;
+        margin-bottom: 8px;
+        border: 1px solid var(--gray-200);
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+    }
+    
+    .table tbody td {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        padding: 3px 0;
+        border: none;
+        font-size: 0.8rem;
+        gap: 4px;
+        width: 100%;
+    }
+    
+    /* Время — жирным */
+    .table tbody td:first-child {
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: var(--gray-800);
+    }
+    
+    /* Телефон — серым */
+    .table tbody td:nth-child(4) {
+        color: var(--gray-500);
+        font-size: 0.75rem;
+    }
+    
+    /* Действия — отдельной строкой */
+    .table tbody td:last-child {
+        border-top: 1px solid var(--gray-200);
+        padding-top: 6px;
+        margin-top: 4px;
+        flex-wrap: wrap;
+        gap: 4px;
+        justify-content: flex-start;
+    }
+    
+    .actionIcons {
+        gap: 4px;
+    }
+}
+
+/* ---- <480 (маленькие смартфоны) ---- */
+@media (max-width: 480px) {
+    .header {
+        padding: 12px 14px;
+    }
+    
+    .title {
+        font-size: 0.9rem;
+    }
+    
+    .body {
+        padding: 12px;
+    }
+    
+    .hoursInput {
+        width: 80px;
+        height: 26px;
+        font-size: 0.75rem;
+    }
+}

@@ -9,8 +9,7 @@ import {
     makeDayWorking,
     deleteBooking,
 } from '../../api/day';
-
-
+import styles from './DayModal.module.css';
 
 const MONTH_NAMES = [
     'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
@@ -215,7 +214,6 @@ export default function DayModal({ dateStr, masterSlug, onClose, onDataChanged }
                 alert(data.error || 'Ошибка сохранения');
             } else {
                 setEditingHours(false);
-                // Перезагружаем данные дня, чтобы обновить часы и перерывы
                 const status = await loadDayStatus(dateStr);
                 setDayData(status);
                 setBreaks(status.breaks || []);
@@ -231,189 +229,171 @@ export default function DayModal({ dateStr, masterSlug, onClose, onDataChanged }
 
     return (
         <>
-            <div
-                id="dayModal"
-                className="modal fade show"
-                style={{
-                    display: 'block',
-                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                }}
-                onClick={handleBackdropClick}
-            >
-                <div className="modal-dialog modal-dialog-centered modal-lg">
-                    <div className="modal-content">
-                        <div className="modal-header">
-                            <h5 className="modal-title">
-                                <i className="far fa-calendar-alt me-2" style={{ color: 'var(--primary)' }} />
-                                {dateTitle}
-                            </h5>
-                            <button
-                                type="button"
-                                className="btn-close"
-                                onClick={onClose}
-                            />
-                        </div>
-                        <div className="modal-body">
-                            {loading ? (
-                                <div className="text-center py-3">
-                                    <div className="spinner-border" style={{ color: '#4053d3' }} />
-                                </div>
-                            ) : (
-                                <>
-                                    {/* Инфо о дне */}
-                                    <div className="mb-3">
-                                        {isDayOff ? (
-                                            <div className="text-muted">
-                                                <i className="fas fa-bed me-2" />
-                                                Выходной день
-                                            </div>
-                                        ) : editingHours ? (
-                                            <div className="d-flex align-items-center gap-2 flex-wrap">
-                                                <i className="fas fa-clock" style={{ color: 'var(--primary)' }} />
-                                                <input
-                                                    type="time"
-                                                    className="form-control form-control-sm"
-                                                    style={{ width: '110px' }}
-                                                    value={editHours.start}
-                                                    onChange={e => setEditHours({ ...editHours, start: e.target.value })}
-                                                />
-                                                <span>—</span>
-                                                <input
-                                                    type="time"
-                                                    className="form-control form-control-sm"
-                                                    style={{ width: '110px' }}
-                                                    value={editHours.end}
-                                                    onChange={e => setEditHours({ ...editHours, end: e.target.value })}
-                                                />
-                                                <button
-                                                    className="btn btn-sm btn-outline-success"
-                                                    onClick={saveHours}
-                                                    title="Сохранить"
-                                                >
-                                                    <i className="fas fa-check" />
-                                                </button>
-                                                <button
-                                                    className="btn btn-sm btn-outline-secondary"
-                                                    onClick={cancelEditingHours}
-                                                    title="Отмена"
-                                                >
-                                                    <i className="fas fa-times" />
-                                                </button>
-                                            </div>
-                                        ) : (
-                                            <div className="d-flex align-items-center gap-2">
-                                                <i className="fas fa-clock" style={{ color: 'var(--primary)' }} />
-                                                <strong>Работаю:</strong>{' '}
-                                                {dayData?.extra_start || dayData?.schedule_start} -{' '}
-                                                {dayData?.extra_end || dayData?.schedule_end}
-                                                <button
-                                                    className="btn btn-sm"
-                                                    onClick={startEditingHours}
-                                                    title="Изменить часы работы"
-                                                >
-                                                    <i className="fas fa-edit" />
-                                                </button>
-                                            </div>
-                                        )}
-                                    </div>
+            <div className={styles.backdrop} onClick={handleBackdropClick}>
+                <div className={styles.modal} onClick={e => e.stopPropagation()}>
+                    <div className={styles.header}>
+                        <h5 className={styles.title}>
+                            <i className="far fa-calendar-alt" style={{ color: 'var(--primary)' }} />
+                            {dateTitle}
+                        </h5>
+                        <button
+                            type="button"
+                            className={styles.closeBtn}
+                            onClick={onClose}
+                            aria-label="Закрыть"
+                        >
+                            ✕
+                        </button>
+                    </div>
 
-                                    {/* Перерывы */}
-                                    {!isDayOff && (
-                                        <div className="mb-3">
-                                            <BreaksEditor breaks={breaks} onChange={saveBreaks} />
+                    <div className={styles.body}>
+                        {loading ? (
+                            <div className={styles.loading}>
+                                <div className="spinner-border" style={{ color: '#4053d3' }} />
+                            </div>
+                        ) : (
+                            <>
+                                {/* Инфо о дне */}
+                                <div className={styles.dayInfo}>
+                                    {isDayOff ? (
+                                        <div className={styles.dayInfoOff}>
+                                            <i className="fas fa-bed" />
+                                            Выходной день
+                                        </div>
+                                    ) : (
+                                        <div className={styles.dayInfoWork}>
+                                            <div className={styles.dayInfoLabel}>
+                                                <strong>Работаю:</strong>
+                                            </div>
+                                            <div className={styles.dayInfoValue}>
+                                                {editingHours ? (
+                                                    <>
+                                                        <input
+                                                            type="time"
+                                                            className={styles.hoursInput}
+                                                            value={editHours.start}
+                                                            onChange={e => setEditHours({ ...editHours, start: e.target.value })}
+                                                        />
+                                                        <span className={styles.hoursSeparator}>—</span>
+                                                        <input
+                                                            type="time"
+                                                            className={styles.hoursInput}
+                                                            value={editHours.end}
+                                                            onChange={e => setEditHours({ ...editHours, end: e.target.value })}
+                                                        />
+                                                        <button className={`${styles.iconBtn} ${styles.iconBtnSuccess}`} onClick={saveHours} title="Сохранить">
+                                                            <i className="fas fa-check" />
+                                                        </button>
+                                                        <button className={`${styles.iconBtn} ${styles.iconBtnSecondary}`} onClick={cancelEditingHours} title="Отмена">
+                                                            <i className="fas fa-times" />
+                                                        </button>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        {dayData?.extra_start || dayData?.schedule_start} -{' '}
+                                                        {dayData?.extra_end || dayData?.schedule_end}
+                                                        <button className={styles.iconBtn} onClick={startEditingHours}>
+                                                            <i className="fas fa-edit" />
+                                                        </button>
+                                                    </>
+                                                )}
+                                            </div>
                                         </div>
                                     )}
+                                </div>
 
-                                    {/* Кнопки управления */}
-                                    <div className="d-flex gap-2 mb-3 flex-wrap">
-                                        {isDayOff ? (
-                                            <button
-                                                className="btn btn-outline-success"
-                                                onClick={handleMakeDayWorking}
-                                            >
-                                                <i className="fas fa-calendar-check me-2" />
-                                                Сделать рабочим днём
-                                            </button>
-                                        ) : (
-                                            <button
-                                                className="btn btn-outline-soft-blue"
-                                                onClick={handleMakeDayOff}
-                                            >
-                                                <i className="fas fa-calendar-times me-2" />
-                                                Сделать выходным
-                                            </button>
-                                        )}
-                                        <button className="btn btn-pink" onClick={handleOpenAddBooking}>
-                                            Добавить запись
-                                        </button>
+                                {/* Перерывы */}
+                                {!isDayOff && (
+                                    <div className={styles.breaksBlock}>
+                                        <BreaksEditor breaks={breaks} onChange={saveBreaks} />
                                     </div>
+                                )}
 
-                                    <hr />
-
-                                    {/* Записи */}
-                                    <h6 className="mb-3">
-                                        <i className="fas fa-list me-2" />
-                                        Записи на этот день ({bookings.length})
-                                    </h6>
-                                    {bookings.length === 0 ? (
-                                        <p className="text-muted text-center mb-0">Нет записей</p>
+                                {/* Кнопки управления */}
+                                <div className={styles.actions}>
+                                    {isDayOff ? (
+                                        <button className={styles.btnSuccess} onClick={handleMakeDayWorking}>
+                                            <i className="fas fa-calendar-check" />
+                                            Сделать рабочим днём
+                                        </button>
                                     ) : (
-                                        <div className="table-responsive">
-                                            <table className="table table-sm">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Время</th>
-                                                        <th>Клиент</th>
-                                                        <th>Услуга</th>
-                                                        <th>Телефон</th>
-                                                        <th>Действия</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {bookings.map(b => (
-                                                        <tr key={b.id}>
-                                                            <td>{b.time}</td>
-                                                            <td>{b.client_name}</td>
-                                                            <td>
-                                                                {b.category_name ? `${b.category_name}. ` : ''}
-                                                                {b.service_name}
-                                                            </td>
-                                                            <td>{b.phone || '—'}</td>
-                                                            <td className="action-icons">
+                                        <button className={styles.btnSoftBlue} onClick={handleMakeDayOff}>
+                                            <i className="fas fa-calendar-times" />
+                                            Сделать выходным
+                                        </button>
+                                    )}
+                                    <button className={styles.btnPink} onClick={handleOpenAddBooking}>
+                                        Добавить запись
+                                    </button>
+                                </div>
+
+                                <hr className={styles.divider} />
+
+                                {/* Записи */}
+                                <h6 className={styles.bookingsTitle}>
+                                    <i className="fas fa-list" />
+                                    Записи на этот день ({bookings.length})
+                                </h6>
+                                {bookings.length === 0 ? (
+                                    <p className={styles.emptyState}>Нет записей</p>
+                                ) : (
+                                    <div className={styles.tableWrapper}>
+                                        <table className={styles.table}>
+                                            <thead>
+                                                <tr>
+                                                    <th>Время</th>
+                                                    <th>Клиент</th>
+                                                    <th>Услуга</th>
+                                                    <th>Телефон</th>
+                                                    <th>Действия</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {bookings.map(b => (
+                                                    <tr key={b.id}>
+                                                        <td>{b.time}</td>
+                                                        <td>{b.client_name}</td>
+                                                        <td>
+                                                            {b.category_name ? `${b.category_name}. ` : ''}
+                                                            {b.service_name}
+                                                        </td>
+                                                        <td>{b.phone || '—'}</td>
+                                                        <td className={styles.actionsCell}>
+                                                            <div className={styles.actionIcons}>
                                                                 <button
-                                                                    className="btn btn-sm"
+                                                                    className={styles.actionIconBtn}
                                                                     onClick={() => handleEditBooking(b.id)}
                                                                     title="Редактировать"
                                                                 >
                                                                     <i className="fas fa-edit" />
                                                                 </button>
                                                                 <button
-                                                                    className="btn btn-sm"
+                                                                    className={`${styles.actionIconBtn} ${styles.actionIconBtnDelete}`}
                                                                     onClick={() => handleDeleteBooking(b.id, b.client_name, b.time)}
                                                                     title="Удалить"
                                                                 >
                                                                     <i className="fas fa-trash" />
                                                                 </button>
-                                                            </td>
-                                                        </tr>
-                                                    ))}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    )}
-                                </>
-                            )}
-                        </div>
-                        <div className="modal-footer">
-                            <button className="btn btn-secondary" onClick={onClose}>
-                                Закрыть
-                            </button>
-                        </div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
+                            </>
+                        )}
+                    </div>
+
+                    <div className={styles.footer}>
+                        <button className={styles.btnSecondary} onClick={onClose}>
+                            Закрыть
+                        </button>
                     </div>
                 </div>
             </div>
 
-            {/* Модалка редактирования записи — вынесена за пределы #dayModal */}
             {editingBookingId && (
                 <EditBookingModal
                     bookingId={editingBookingId}
