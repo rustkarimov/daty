@@ -1,0 +1,146 @@
+/* ============================================================ */
+/* ========== PUSH SETTINGS (CSS Module) ====================== */
+/* ============================================================ */
+
+/* ---- Карточка ---- */
+.card {
+    background: white;
+    border-radius: 20px;
+    border: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    margin-bottom: 24px;
+    width: 100%;
+}
+
+.cardBody {
+    padding: 20px;
+}
+
+/* ---- Верхняя строка: заголовок + кнопка ---- */
+.row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--gray-800);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.title i {
+    color: var(--primary);
+}
+
+.subtitle {
+    color: var(--gray-500);
+    font-size: 0.8rem;
+    margin-top: 4px;
+}
+
+/* ---- Кнопки ---- */
+.btnEnable,
+.btnDisable {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 16px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.btnEnable {
+    border: 1px solid var(--primary);
+    color: var(--primary);
+    background: transparent;
+}
+
+.btnEnable:hover:not(:disabled) {
+    background: var(--primary);
+    color: white;
+}
+
+.btnDisable {
+    border: 1px solid var(--danger);
+    color: var(--danger);
+    background: transparent;
+}
+
+.btnDisable:hover:not(:disabled) {
+    background: var(--danger);
+    color: white;
+}
+
+.btnEnable:disabled,
+.btnDisable:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* ---- Нижний блок с пояснениями ---- */
+.hints {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--gray-200);
+    font-size: 0.8rem;
+    color: var(--gray-500);
+}
+
+.hint {
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.hint i {
+    color: var(--primary);
+    flex-shrink: 0;
+}
+
+.hintError {
+    color: #dc2626;
+}
+
+.hintError i {
+    color: #dc2626;
+}
+
+/* ============================================================ */
+/* ==================== АДАПТИВ =============================== */
+/* ============================================================ */
+
+@media (max-width: 768px) {
+    .card {
+        border-radius: 12px;
+        margin-bottom: 8px;
+    }
+
+    .cardBody {
+        padding: 16px;
+    }
+
+    .title {
+        font-size: 0.9rem;
+    }
+
+    .subtitle {
+        font-size: 0.75rem;
+    }
+
+    .btnEnable,
+    .btnDisable {
+        padding: 6px 14px;
+        font-size: 0.8rem;
+    }
+}

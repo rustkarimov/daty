@@ -1,0 +1,267 @@
+/* ============================================================ */
+/* ========== BOOKING DETAILS MODAL (CSS Module) ============== */
+/* ============================================================ */
+
+.backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 1080;
+    overflow-y: auto;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 24px 16px;
+}
+
+.modal {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid var(--gray-200);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 600px;
+    max-height: calc(100vh - 48px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: fadeInUp 0.3s ease;
+}
+
+.header {
+    padding: 16px 20px;
+    background: white;
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--gray-800);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.closeBtn {
+    background: transparent;
+    border: none;
+    font-size: 1.2rem;
+    color: var(--gray-500);
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    line-height: 1;
+}
+
+.closeBtn:hover {
+    background: var(--gray-100);
+    color: var(--gray-800);
+}
+
+.body {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.loading {
+    text-align: center;
+    padding: 24px 0;
+}
+
+/* ---- Секции ---- */
+.section {
+    margin-bottom: 16px;
+}
+
+.section:last-child {
+    margin-bottom: 0;
+}
+
+.sectionTitle {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin: 0 0 4px 0;
+}
+
+.sectionTitle i {
+    color: var(--primary);
+    font-size: 0.85rem;
+}
+
+.sectionValue {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--gray-800);
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* ---- Услуги ---- */
+.servicesList {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.serviceItem {
+    padding: 6px 10px;
+    background: var(--gray-50);
+    border-radius: 8px;
+    border: 1px solid var(--gray-100);
+    font-size: 0.85rem;
+    color: var(--gray-700);
+}
+
+.serviceItem .category {
+    color: var(--gray-500);
+    font-size: 0.75rem;
+}
+
+/* ---- История визитов ---- */
+.historyBox {
+    margin-top: 8px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.historyItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+    font-size: 0.8rem;
+    border-bottom: 1px solid var(--gray-100);
+}
+
+.historyItem:last-child {
+    border-bottom: none;
+}
+
+.historyDate {
+    color: var(--gray-700);
+    flex-shrink: 0;
+}
+
+.historyTime {
+    color: var(--gray-500);
+    flex-shrink: 0;
+}
+
+.historyService {
+    color: var(--gray-700);
+    text-align: right;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ---- Разделитель ---- */
+.divider {
+    border: none;
+    border-top: 1px solid var(--gray-200);
+    margin: 16px 0;
+}
+
+/* ---- Футер ---- */
+.footer {
+    padding: 12px 20px;
+    background: var(--gray-50);
+    border-top: 1px solid var(--gray-200);
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.btnSecondary {
+    padding: 8px 20px;
+    border-radius: 30px;
+    border: none;
+    background: var(--gray-200);
+    color: var(--gray-700);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btnSecondary:hover {
+    background: var(--gray-300);
+    color: var(--gray-800);
+}
+
+/* ---- Анимация ---- */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ============================================================ */
+/* ==================== АДАПТИВ =============================== */
+/* ============================================================ */
+
+@media (max-width: 768px) {
+    .backdrop {
+        padding: 0;
+        align-items: stretch;
+    }
+    
+    .modal {
+        max-width: 100%;
+        border-radius: 0;
+        max-height: none;
+        height: 100%;
+        border: none;
+        box-shadow: none;
+    }
+    
+    .header {
+        padding: 14px 16px;
+    }
+    
+    .title {
+        font-size: 0.95rem;
+    }
+    
+    .body {
+        padding: 16px;
+    }
+    
+    .footer {
+        padding: 10px 16px;
+        flex-direction: column;
+    }
+    
+    .footer .btnSecondary {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .statsNumber {
+        font-size: 1rem;
+    }
+    
+    .statsLabel {
+        font-size: 0.65rem;
+    }
+}

@@ -53,6 +53,8 @@ export default function UpcomingBookings({ masterSlug, masterMaxLink, onEdit, on
                 setBookings(prev => prev.map(b =>
                     b.id === booking.id ? { ...b, confirmed_by_master: !b.confirmed_by_master } : b
                 ));
+                const msg = booking.confirmed_by_master ? 'Подтверждение снято' : 'Запись подтверждена';
+                if (onDataChanged) onDataChanged(msg);
             } else {
                 alert(data.error || 'Ошибка');
             }
@@ -69,7 +71,7 @@ export default function UpcomingBookings({ masterSlug, masterMaxLink, onEdit, on
             if (data.success) {
                 setBookings(prev => prev.filter(b => b.id !== booking.id));
                 setTotal(prev => prev - 1);
-                if (onDataChanged) onDataChanged();
+                if (onDataChanged) onDataChanged('Запись удалена');
             } else {
                 alert(data.error || 'Ошибка удаления');
             }

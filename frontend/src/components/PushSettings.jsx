@@ -6,6 +6,7 @@ import {
     unsubscribeFromPush,
     checkPushSubscription,
 } from '../utils/pushUtils';
+import styles from './PushSettings.module.css';
 
 export default function PushSettings() {
     const [subscribed, setSubscribed] = useState(false);
@@ -56,15 +57,15 @@ export default function PushSettings() {
     }
 
     return (
-        <div className="card mb-4">
-            <div className="card-body">
-                <div className="d-flex justify-content-between align-items-start flex-wrap gap-2">
+        <div className={styles.card}>
+            <div className={styles.cardBody}>
+                <div className={styles.row}>
                     <div>
-                        <strong style={{ fontSize: '0.95rem' }}>
-                            <i className="fas fa-bell me-2" style={{ color: 'var(--primary)' }} />
+                        <strong className={styles.title}>
+                            <i className="fas fa-bell" />
                             Push-уведомления
                         </strong>
-                        <div className="text-muted" style={{ fontSize: '0.8rem', marginTop: '4px' }}>
+                        <div className={styles.subtitle}>
                             Получать уведомления о новых записях
                         </div>
                     </div>
@@ -74,7 +75,7 @@ export default function PushSettings() {
                                 {subscribed ? (
                                     <button
                                         type="button"
-                                        className="btn btn-sm btn-outline-danger"
+                                        className={styles.btnDisable}
                                         onClick={handleDisable}
                                         disabled={busy || loading}
                                     >
@@ -83,7 +84,7 @@ export default function PushSettings() {
                                 ) : (
                                     <button
                                         type="button"
-                                        className="btn btn-sm btn-outline-pink"
+                                        className={styles.btnEnable}
                                         onClick={handleEnable}
                                         disabled={busy || loading}
                                     >
@@ -96,24 +97,26 @@ export default function PushSettings() {
                 </div>
 
                 {/* Пояснения */}
-                <div className="mt-3 pt-3" style={{ borderTop: '1px solid var(--gray-200)', fontSize: '0.8rem', color: 'var(--gray-500)' }}>
-                    <div style={{ marginBottom: '4px' }}>
-                        <i className="fas fa-info-circle me-1" style={{ color: 'var(--primary)' }} />
+                <div className={styles.hints}>
+                    <div className={styles.hint}>
+                        <i className="fas fa-info-circle" />
                         Уведомления приходят, даже если приложение закрыто.
                     </div>
-                    <div style={{ marginBottom: '4px' }}>
-                        <i className="fas fa-lock me-1" style={{ color: 'var(--primary)' }} />
+                    <div className={styles.hint}>
+                        <i className="fas fa-lock" />
                         Только о ваших записях. Без рекламы.
                     </div>
                     {iosHint && (
-                        <div>
-                            <i className="fas fa-mobile-alt me-1" style={{ color: 'var(--primary)' }} />
-                            <strong>На iPhone:</strong> откройте сайт в Safari → «Поделиться» → «На экран Домой» → включите там.
+                        <div className={styles.hint}>
+                            <i className="fas fa-mobile-alt" />
+                            <span>
+                                <strong>На iPhone:</strong> откройте сайт в Safari → «Поделиться» → «На экран Домой» → включите там.
+                            </span>
                         </div>
                     )}
                     {!supported && !iosHint && (
-                        <div style={{ color: '#dc2626' }}>
-                            <i className="fas fa-exclamation-triangle me-1" />
+                        <div className={`${styles.hint} ${styles.hintError}`}>
+                            <i className="fas fa-exclamation-triangle" />
                             Ваш браузер не поддерживает уведомления.
                         </div>
                     )}

@@ -60,7 +60,7 @@ export default function DayModal({ dateStr, masterSlug, onClose, onDataChanged }
         makeDayOff(dateStr)
             .then(data => {
                 if (data.success) {
-                    if (onDataChanged) onDataChanged();
+                    if (onDataChanged) onDataChanged('День сделан выходным');
                     onClose();
                 } else {
                     alert(data.error || 'Ошибка');
@@ -77,7 +77,7 @@ export default function DayModal({ dateStr, masterSlug, onClose, onDataChanged }
         makeDayWorking(dateStr)
             .then(data => {
                 if (data.success) {
-                    if (onDataChanged) onDataChanged();
+                    if (onDataChanged) onDataChanged('День сделан рабочим');
                     onClose();
                 } else {
                     alert(data.error || 'Ошибка');
@@ -128,7 +128,7 @@ export default function DayModal({ dateStr, masterSlug, onClose, onDataChanged }
             if (data.success) {
                 const bookingsData = await loadBookingsByDate(dateStr);
                 setBookings(bookingsData.bookings || []);
-                if (onDataChanged) onDataChanged();
+                if (onDataChanged) onDataChanged('Запись удалена');
             } else {
                 alert(data.error || 'Ошибка удаления');
             }
@@ -150,7 +150,7 @@ export default function DayModal({ dateStr, masterSlug, onClose, onDataChanged }
         try {
             const bookingsData = await loadBookingsByDate(dateStr);
             setBookings(bookingsData.bookings || []);
-            if (onDataChanged) onDataChanged();
+            if (onDataChanged) onDataChanged('Запись обновлена');
         } catch (error) {
             console.error('Ошибка перезагрузки записей:', error);
         }
@@ -168,7 +168,7 @@ export default function DayModal({ dateStr, masterSlug, onClose, onDataChanged }
         try {
             const bookingsData = await loadBookingsByDate(dateStr);
             setBookings(bookingsData.bookings || []);
-            if (onDataChanged) onDataChanged();
+            if (onDataChanged) onDataChanged('Запись добавлена');
         } catch (error) {
             console.error('Ошибка перезагрузки записей:', error);
         }

@@ -1,0 +1,526 @@
+/* ============================================================ */
+/* ========== BOOKING MODAL — SHARED STYLES =================== */
+/* Используется в AddBookingModal и EditBookingModal ========== */
+/* ============================================================ */
+
+/* ---- Backdrop ---- */
+.backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 1080;
+    overflow-y: auto;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 24px 16px;
+}
+
+/* ---- Окно модалки ---- */
+.modal {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid var(--gray-200);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 700px;
+    max-height: calc(100vh - 48px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: fadeInUp 0.3s ease;
+}
+
+/* ---- Заголовок ---- */
+.header {
+    padding: 16px 20px;
+    background: white;
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--gray-800);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.closeBtn {
+    background: transparent;
+    border: none;
+    font-size: 1.2rem;
+    color: var(--gray-500);
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    line-height: 1;
+}
+
+.closeBtn:hover {
+    background: var(--gray-100);
+    color: var(--gray-800);
+}
+
+/* ---- Тело ---- */
+.body {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+/* ---- Состояние загрузки ---- */
+.loading {
+    text-align: center;
+    padding: 24px 0;
+}
+
+/* ---- Метка секции ---- */
+.sectionLabel {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--gray-800);
+    margin: 0 0 8px 0;
+    display: block;
+}
+
+.sectionLabelTop {
+    margin-top: 16px;
+}
+
+/* ---- Метка категории ---- */
+.categoryLabel {
+    font-size: 0.75rem;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-bottom: 6px;
+}
+
+/* ---- Сетка карточек услуг ---- */
+.grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+/* ---- Карточка услуги ---- */
+.serviceCard {
+    flex: 0 0 calc(50% - 4px);
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid var(--gray-400);
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.serviceCard:hover {
+    border-color: var(--primary-light);
+    background: var(--primary-lighter);
+}
+
+.serviceCardSelected {
+    border: 1px solid var(--primary);
+    background-color: var(--primary-light);
+}
+
+/* ---- Крестик у выбранной услуги (только в AddBookingModal) ---- */
+.serviceCloseBtn {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: white;
+    color: #dc2626;
+    border: 1px solid #dc2626;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    z-index: 10;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    padding: 0;
+}
+
+.serviceCloseBtn:hover {
+    background: #f8d6d6;
+    color: #dc2626;
+    border-color: #dc2626;
+}
+
+.serviceCardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.serviceCardName {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--gray-800);
+}
+
+.serviceCardPrice {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--primary);
+    flex-shrink: 0;
+}
+
+.serviceCardMeta {
+    margin-top: 2px;
+    font-size: 0.7rem;
+    color: var(--gray-500);
+}
+
+/* ---- Сетка дат ---- */
+.dateGrid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--gray-200);
+}
+
+.dateCard {
+    flex: 0 0 calc(25% - 6px);
+    padding: 6px 4px;
+    border-radius: 8px;
+    border: 1px solid var(--gray-200);
+    background: white;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.dateCard:hover {
+    border-color: var(--primary-light);
+    background: var(--primary-lighter);
+}
+
+.dateCardSelected {
+    border: 1px solid var(--primary);
+    background-color: var(--primary-light);
+}
+
+.dateCardWeekday {
+    font-size: 0.65rem;
+    color: var(--gray-500);
+    line-height: 1;
+}
+
+.dateCardDay {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--gray-800);
+    margin-top: 2px;
+}
+
+/* ---- Сетка слотов ---- */
+.slotGrid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+    margin-top: 4px;
+    padding-top: 16px;
+    border-top: 1px solid var(--gray-200);
+}
+
+.slotCard {
+    flex: 0 0 calc(16.666% - 7px);
+    padding: 4px;
+    border-radius: 8px;
+    border: 1px solid var(--gray-200);
+    background: white;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--gray-700);
+}
+
+.slotCard:hover {
+    border-color: var(--primary-light);
+    background: var(--primary-lighter);
+}
+
+.slotCardSelected {
+    border: 1px solid var(--primary);
+    background-color: var(--primary-light);
+}
+
+/* ---- Пустое состояние ---- */
+.emptyText {
+    font-size: 0.85rem;
+    color: var(--gray-500);
+    margin: 0;
+}
+
+/* ---- Сводка ---- */
+.summaryBox {
+    background: var(--primary-lighter);
+    border-radius: 12px;
+    padding: 12px 16px;
+    border: 1px solid var(--primary-light);
+    margin-bottom: 12px;
+}
+
+.summaryTitle {
+    font-size: 0.75rem;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.summaryRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+.summaryRow:last-of-type {
+    border-bottom: none;
+}
+
+.summaryRowMeta {
+    color: var(--gray-500);
+    font-size: 0.8rem;
+}
+
+.summaryTotal {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 10px;
+    margin-top: 6px;
+    border-top: 2px solid rgba(64, 83, 211, 0.15);
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.summaryTotalValue {
+    color: var(--primary);
+}
+
+.summaryMeta {
+    display: flex;
+    gap: 16px;
+    margin-top: 10px;
+    font-size: 0.8rem;
+    color: var(--gray-500);
+}
+
+.summaryMetaItem {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* ---- Поля формы ---- */
+.formInput,
+.formTextarea {
+    width: 100%;
+    border-radius: 10px;
+    border: 1px solid var(--gray-300);
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    transition: border-color 0.2s ease;
+    background: white;
+    box-sizing: border-box;
+    margin-bottom: 8px;
+}
+
+.formInput {
+    height: 40px;
+}
+
+.formInput::placeholder {
+    color: var(--gray-400);
+    opacity: 1;
+}
+
+.formTextarea {
+    min-height: 60px;
+    resize: vertical;
+    font-family: inherit;
+}
+
+.formTextarea::placeholder {
+    color: var(--gray-400);
+    opacity: 1;
+}
+
+.formInput:focus,
+.formTextarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(64, 83, 211, 0.08);
+}
+
+/* ---- Футер ---- */
+.footer {
+    padding: 12px 20px;
+    background: var(--gray-50);
+    border-top: 1px solid var(--gray-200);
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.btnSecondary {
+    padding: 8px 20px;
+    border-radius: 30px;
+    border: none;
+    background: var(--gray-200);
+    color: var(--gray-700);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btnSecondary:hover {
+    background: var(--gray-300);
+    color: var(--gray-800);
+}
+
+.btnSecondary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btnPink {
+    padding: 8px 20px;
+    border-radius: 30px;
+    border: none;
+    background: var(--primary);
+    color: white;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btnPink:hover {
+    background: var(--primary-dark);
+}
+
+.btnPink:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* ---- Анимация ---- */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ============================================================ */
+/* ==================== АДАПТИВ =============================== */
+/* ============================================================ */
+
+@media (max-width: 768px) {
+    .backdrop {
+        padding: 0;
+        align-items: stretch;
+    }
+    
+    .modal {
+        max-width: 100%;
+        border-radius: 0;
+        max-height: none;
+        height: 100%;
+        border: none;
+        box-shadow: none;
+    }
+    
+    .header {
+        padding: 14px 16px;
+    }
+    
+    .title {
+        font-size: 0.95rem;
+    }
+    
+    .body {
+        padding: 16px;
+    }
+    
+    .footer {
+        padding: 10px 16px;
+        flex-direction: column;
+    }
+    
+    .footer .btnSecondary,
+    .footer .btnPink {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .serviceCard {
+        flex: 0 0 100%;
+    }
+    
+    .dateCard {
+        flex: 0 0 calc(33.333% - 6px);
+    }
+    
+    .slotCard {
+        flex: 0 0 calc(33.333% - 6px);
+        font-size: 0.75rem;
+    }
+    
+    .formInput,
+    .formTextarea {
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .header {
+        padding: 12px 14px;
+    }
+    
+    .title {
+        font-size: 0.9rem;
+    }
+    
+    .body {
+        padding: 12px;
+    }
+}

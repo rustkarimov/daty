@@ -264,7 +264,7 @@ def get_booking_details(request, booking_id):
         client_bookings = Booking.objects.filter(
             master=master,
             status='confirmed'
-        ).select_related('service')
+        ).select_related('service', 'service__category')
         
         # Группируем по этому телефону
         visits = []
@@ -296,7 +296,8 @@ def get_booking_details(request, booking_id):
                 visits.append({
                     'date': b.date.strftime('%d.%m.%Y'),
                     'time': b.time.strftime('%H:%M'),
-                    'service': b.service.name
+                    'service': b.service.name,
+                    'category': b.service.category.name if b.service.category else None,
                 })
         
         # Сортируем визиты по дате (сначала новые)

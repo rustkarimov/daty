@@ -9,7 +9,7 @@ const MONTH_NAMES = [
     'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
 ];
 
-export default function Calendar({ masterSlug }) {
+export default function Calendar({ masterSlug, onExternalChange }) {
     const [currentDate, setCurrentDate] = useState(new Date());
     const [calendarData, setCalendarData] = useState(null);
     const [countsData, setCountsData] = useState(null);
@@ -49,8 +49,9 @@ export default function Calendar({ masterSlug }) {
         setSelectedDate(null);
     }
 
-    function handleDataChanged() {
+    function handleDataChanged(message) {
         reloadData();
+        if (onExternalChange) onExternalChange(message);
     }
 
     return (

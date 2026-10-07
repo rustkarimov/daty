@@ -1,17 +1,33 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     loadMasterCategories,
     loadAvailableDates,
-    loadAvailableSlots,
 } from '../../api/booking';
 import { loadBookingForEdit, updateBooking } from '../../api/day';
 import { phoneMask } from '../../utils/phoneMask';
+import shared from './BookingModalShared.module.css';
+
+const MONTH_NAMES = [
+    'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+    'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'
+];
+const WEEKDAY_NAMES = [
+    'воскресенье', 'понедельник', 'вторник', 'среда',
+    'четверг', 'пятница', 'суббота'
+];
+
+function formatDate(dateStr) {
+    if (!dateStr) return '';
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const dObj = new Date(y, m - 1, d);
+    return `${dObj.getDate()} ${MONTH_NAMES[dObj.getMonth()]} (${WEEKDAY_NAMES[dObj.getDay()]})`;
+}
 
 export default function EditBookingModal({ bookingId, masterSlug, onClose, onSaved }) {
     const [form, setForm] = useState(null);
     const [categories, setCategories] = useState([]);
     const [uncategorized, setUncategorized] = useState([]);
-    const [selectedService, setSelectedService] = useState(null); // {id, name, duration, price}
+    const [selectedService, setSelectedService] = useState(null);
     const [availableDates, setAvailableDates] = useState([]);
     const [availableSlots, setAvailableSlots] = useState([]);
     const [selectedDate, setSelectedDate] = useState('');
@@ -23,8 +39,12 @@ export default function EditBookingModal({ bookingId, masterSlug, onClose, onSav
     const [loadingDates, setLoadingDates] = useState(false);
     const [loadingSlots, setLoadingSlots] = useState(false);
     const [saving, setSaving] = useState(false);
+    const slotsRef = useRef(null);
+    const summaryRef = useRef(null);
+    const datesRef = useRef(null);
+    const bodyRef = useRef(null);
+    const shouldScrollToDates = useRef(false);
 
-    // Загрузка данных записи
     useEffect(() => {
         setLoading(true);
         loadBookingForEdit(bookingId)
@@ -43,7 +63,6 @@ export default function EditBookingModal({ bookingId, masterSlug, onClose, onSav
             });
     }, [bookingId]);
 
-    // Загрузка списка услуг
     useEffect(() => {
         loadMasterCategories(masterSlug)
             .then(data => {
@@ -55,22 +74,18 @@ export default function EditBookingModal({ bookingId, masterSlug, onClose, onSav
             });
     }, [masterSlug]);
 
-    // Устанавливаем выбранную услугу, когда загружены и запись, и услуги
     useEffect(() => {
         if (!form || categories.length === 0) return;
-        if (selectedService) return; // уже выбрана
+        if (selectedService) return;
 
         const allServices = [
             ...categories.flatMap(c => c.services.map(s => ({ ...s, category_name: c.name }))),
             ...uncategorized.map(s => ({ ...s, category_name: null })),
         ];
         const found = allServices.find(s => s.id === form.service_id);
-        if (found) {
-            setSelectedService(found);
-        }
+        if (found) setSelectedService(found);
     }, [form, categories, uncategorized, selectedService]);
 
-    // Загрузка дат при изменении услуги
     useEffect(() => {
         if (!selectedService) return;
 
@@ -86,12 +101,26 @@ export default function EditBookingModal({ bookingId, masterSlug, onClose, onSav
             });
     }, [selectedService, masterSlug]);
 
-    // Загрузка слотов при изменении даты
+    // Скролл к датам после их отрисовки
+    useEffect(() => {
+        if (!shouldScrollToDates.current) return;
+        if (loadingDates) return;
+        if (availableDates.length === 0) return;
+        if (!datesRef.current || !bodyRef.current) return;
+
+        shouldScrollToDates.current = false;
+
+        const bodyEl = bodyRef.current;
+        const datesEl = datesRef.current;
+        const targetTop = datesEl.offsetTop - bodyEl.offsetTop - 8;
+
+        bodyEl.scrollTo({ top: targetTop, behavior: 'smooth' });
+    }, [availableDates, loadingDates]);
+
     useEffect(() => {
         if (!selectedService || !selectedDate) return;
 
         setLoadingSlots(true);
-        // Для редактирования передаём exclude_booking_id, чтобы текущая запись не блокировала свой же слот
         fetch(`/api/${masterSlug}/slots/?total_duration=${selectedService.duration}&date=${selectedDate}&exclude_booking_id=${bookingId}&original_booking_id=${bookingId}`)
             .then(r => r.json())
             .then(data => {
@@ -112,6 +141,28 @@ export default function EditBookingModal({ bookingId, masterSlug, onClose, onSav
 
     function selectService(service) {
         setSelectedService(service);
+        setSelectedDate('');
+        setSelectedTime('');
+        shouldScrollToDates.current = true;
+    }
+
+    function handleDateClick(date) {
+        setSelectedDate(date);
+        setSelectedTime('');
+        setTimeout(() => {
+            if (slotsRef.current) {
+                slotsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }, 300);
+    }
+
+    function handleTimeClick(time) {
+        setSelectedTime(time);
+        setTimeout(() => {
+            if (summaryRef.current) {
+                summaryRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }, 300);
     }
 
     function isServiceSelected(serviceId) {
@@ -166,246 +217,196 @@ export default function EditBookingModal({ bookingId, masterSlug, onClose, onSav
         }
     }
 
+    function renderServiceCard(s, categoryName) {
+        const selected = isServiceSelected(s.id);
+        return (
+            <div
+                key={s.id}
+                className={`${shared.serviceCard} ${selected ? shared.serviceCardSelected : ''}`}
+                onClick={() => selectService({ ...s, category_name: categoryName })}
+            >
+                <div className={shared.serviceCardHeader}>
+                    <div className={shared.serviceCardName}>{s.name}</div>
+                    <span className={shared.serviceCardPrice}>{s.price} ₽</span>
+                </div>
+                <div className={shared.serviceCardMeta}>
+                    <i className="far fa-clock me-1" />
+                    {s.duration} мин
+                </div>
+            </div>
+        );
+    }
+
     return (
-        <div
-            className="modal fade show"
-            style={{
-                display: 'block',
-                backgroundColor: 'rgba(0, 0, 0, 0.6)',
-                zIndex: 1080,
-                overflowY: 'auto',
-            }}
-            onClick={handleBackdropClick}
-        >
-            <div className="modal-dialog modal-dialog-centered modal-lg">
-                <div className="modal-content">
-                    <div className="modal-header">
-                        <h5 className="modal-title">
-                            <i className="fas fa-edit me-2" style={{ color: 'var(--primary)' }} />
-                            Редактирование записи
-                        </h5>
-                        <button type="button" className="btn-close" onClick={onClose} />
-                    </div>
-                    <div className="modal-body">
-                        {loading ? (
-                            <div className="text-center py-3">
-                                <div className="spinner-border" style={{ color: '#4053d3' }} />
-                            </div>
-                        ) : !form ? (
-                            <p className="text-danger">Не удалось загрузить данные</p>
-                        ) : (
-                            <>
-                                {/* Шаг 1: Услуга */}
-                                <label className="form-label mb-2" style={{ fontWeight: 600 }}>
-                                    Услуга
-                                </label>
+        <div className={shared.backdrop} onClick={handleBackdropClick}>
+            <div className={shared.modal} onClick={e => e.stopPropagation()}>
+                <div className={shared.header}>
+                    <h5 className={shared.title}>
+                        <i className="fas fa-edit" style={{ color: 'var(--primary)' }} />
+                        Редактирование записи
+                    </h5>
+                    <button
+                        type="button"
+                        className={shared.closeBtn}
+                        onClick={onClose}
+                        aria-label="Закрыть"
+                    >
+                        ✕
+                    </button>
+                </div>
 
-                                {categories.map(cat => (
-                                    <div key={cat.id} className="mb-3">
-                                        <div style={{ fontSize: '0.75rem', color: '#6b7280', textTransform: 'uppercase', marginBottom: '6px' }}>
-                                            {cat.name}
+                <div className={shared.body} ref={bodyRef}>
+                    {loading ? (
+                        <div className={shared.loading}>
+                            <div className="spinner-border" style={{ color: '#4053d3' }} />
+                        </div>
+                    ) : !form ? (
+                        <p className="text-danger">Не удалось загрузить данные</p>
+                    ) : (
+                        <>
+                            <label className={shared.sectionLabel}>Услуга</label>
+
+                            {categories.map(cat => (
+                                <div key={cat.id} style={{ marginBottom: '12px' }}>
+                                    <div className={shared.categoryLabel}>{cat.name}</div>
+                                    <div className={shared.grid}>
+                                        {cat.services.map(s => renderServiceCard(s, cat.name))}
+                                    </div>
+                                </div>
+                            ))}
+
+                            {uncategorized.length > 0 && (
+                                <div style={{ marginBottom: '12px' }}>
+                                    <div className={shared.categoryLabel}>Без категории</div>
+                                    <div className={shared.grid}>
+                                        {uncategorized.map(s => renderServiceCard(s, null))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {selectedService && (
+                                <>
+                                    <label className={`${shared.sectionLabel} ${shared.sectionLabelTop}`}>
+                                        Дата и время
+                                    </label>
+
+                                    {loadingDates ? (
+                                        <div className={shared.loading}>
+                                            <div className="spinner-border spinner-border-sm" style={{ color: '#4053d3' }} />
                                         </div>
-                                        <div className="row g-2">
-                                            {cat.services.map(s => (
-                                                <div key={s.id} className="col-md-6">
-                                                    <div
-                                                        className={`public-service-card ${isServiceSelected(s.id) ? 'selected border-pink' : ''}`}
-                                                        onClick={() => selectService({ ...s, category_name: cat.name })}
-                                                        style={{ cursor: 'pointer' }}
-                                                    >
-                                                        <div className="d-flex justify-content-between align-items-start">
-                                                            <div className="fw-bold" style={{ fontSize: '0.85rem' }}>
-                                                                {s.name}
-                                                            </div>
-                                                            <span className="fw-bold" style={{ color: 'var(--primary)', fontSize: '0.8rem' }}>
-                                                                {s.price} ₽
-                                                            </span>
-                                                        </div>
-                                                        <div className="text-muted" style={{ fontSize: '0.7rem', marginTop: '2px' }}>
-                                                            <i className="far fa-clock me-1" />
-                                                            {s.duration} мин
-                                                        </div>
-                                                    </div>
+                                    ) : (
+                                        <div className={shared.dateGrid} ref={datesRef}>
+                                            {availableDates.map(d => (
+                                                <div
+                                                    key={d.date}
+                                                    className={`${shared.dateCard} ${selectedDate === d.date ? shared.dateCardSelected : ''}`}
+                                                    onClick={() => handleDateClick(d.date)}
+                                                >
+                                                    <div className={shared.dateCardWeekday}>{d.day_of_week}</div>
+                                                    <div className={shared.dateCardDay}>{d.display}</div>
                                                 </div>
                                             ))}
                                         </div>
-                                    </div>
-                                ))}
+                                    )}
 
-                                {uncategorized.length > 0 && (
-                                    <div className="mb-3">
-                                        <div style={{ fontSize: '0.75rem', color: '#6b7280', textTransform: 'uppercase', marginBottom: '6px' }}>
-                                            Без категории
-                                        </div>
-                                        <div className="row g-2">
-                                            {uncategorized.map(s => (
-                                                <div key={s.id} className="col-md-6">
-                                                    <div
-                                                        className={`public-service-card ${isServiceSelected(s.id) ? 'selected border-pink' : ''}`}
-                                                        onClick={() => selectService({ ...s, category_name: null })}
-                                                        style={{ cursor: 'pointer' }}
-                                                    >
-                                                        <div className="d-flex justify-content-between align-items-start">
-                                                            <div className="fw-bold" style={{ fontSize: '0.85rem' }}>{s.name}</div>
-                                                            <span className="fw-bold" style={{ color: 'var(--primary)', fontSize: '0.8rem' }}>
-                                                                {s.price} ₽
-                                                            </span>
-                                                        </div>
-                                                        <div className="text-muted" style={{ fontSize: '0.7rem', marginTop: '2px' }}>
-                                                            <i className="far fa-clock me-1" />
-                                                            {s.duration} мин
-                                                        </div>
-                                                    </div>
+                                    {selectedDate && (
+                                        <div ref={slotsRef}>
+                                            {loadingSlots ? (
+                                                <div className={shared.loading}>
+                                                    <div className="spinner-border spinner-border-sm" style={{ color: '#4053d3' }} />
                                                 </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Шаг 2: Дата и время */}
-                                {selectedService && (
-                                    <>
-                                        <label className="form-label mb-2 mt-3" style={{ fontWeight: 600 }}>
-                                            Дата и время
-                                        </label>
-
-                                        {loadingDates ? (
-                                            <div className="text-center py-2">
-                                                <div className="spinner-border spinner-border-sm" style={{ color: '#4053d3' }} />
-                                            </div>
-                                        ) : (
-                                            <div className="row g-2 mb-3" style={{ maxHeight: '200px', overflowY: 'auto' }}>
-                                                {availableDates.map(d => (
-                                                    <div key={d.date} className="col-4 col-md-3">
+                                            ) : availableSlots.length === 0 ? (
+                                                <p className={shared.emptyText}>Нет свободных слотов</p>
+                                            ) : (
+                                                <div className={shared.slotGrid}>
+                                                    {availableSlots.map(slot => (
                                                         <div
-                                                            className={`date-card text-center ${selectedDate === d.date ? 'border-pink' : ''}`}
-                                                            onClick={() => setSelectedDate(d.date)}
-                                                            style={{ cursor: 'pointer', padding: '6px', border: '1px solid #e5e7eb', borderRadius: '8px' }}
+                                                            key={slot.start}
+                                                            className={`${shared.slotCard} ${selectedTime === slot.start ? shared.slotCardSelected : ''}`}
+                                                            onClick={() => handleTimeClick(slot.start)}
                                                         >
-                                                            <div className="small text-muted" style={{ fontSize: '0.65rem' }}>
-                                                                {d.day_of_week}
-                                                            </div>
-                                                            <div className="fw-bold" style={{ fontSize: '0.8rem' }}>
-                                                                {d.display}
-                                                            </div>
+                                                            {slot.start}
                                                         </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
-
-                                        {selectedDate && (
-                                            <>
-                                                {loadingSlots ? (
-                                                    <div className="text-center py-2">
-                                                        <div className="spinner-border spinner-border-sm" style={{ color: '#4053d3' }} />
-                                                    </div>
-                                                ) : (
-                                                    <div className="row g-2 mb-3">
-                                                        {availableSlots.length === 0 ? (
-                                                            <p className="text-muted" style={{ fontSize: '0.85rem' }}>
-                                                                Нет свободных слотов
-                                                            </p>
-                                                        ) : (
-                                                            availableSlots.map(slot => (
-                                                                <div key={slot.start} className="col-3 col-md-2">
-                                                                    <div
-                                                                        className={`slot-card text-center ${selectedTime === slot.start ? 'border-pink' : ''}`}
-                                                                        onClick={() => setSelectedTime(slot.start)}
-                                                                        style={{ cursor: 'pointer', padding: '4px', border: '1px solid #e5e7eb', borderRadius: '8px', fontSize: '0.8rem' }}
-                                                                    >
-                                                                        {slot.start}
-                                                                    </div>
-                                                                </div>
-                                                            ))
-                                                        )}
-                                                    </div>
-                                                )}
-                                            </>
-                                        )}
-                                    </>
-                                )}
-
-                                {/* Шаг 3: Данные клиента */}
-                                {selectedTime && (
-                                    <>
-                                        <div className="booking-summary mb-3" style={{
-                                            background: '#f9fafb',
-                                            borderRadius: '12px',
-                                            padding: '12px 16px',
-                                            border: '1px solid #e5e7eb'
-                                        }}>
-                                            <div style={{ fontSize: '0.75rem', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.3px', marginBottom: '8px' }}>
-                                                <i className="fas fa-list me-1" />
-                                                Услуга
-                                            </div>
-                                            {selectedService && (
-                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem' }}>
-                                                    <span>{selectedService.name}</span>
-                                                    <span style={{ color: '#6b7280', fontSize: '0.8rem' }}>
-                                                        {selectedService.duration} мин · {selectedService.price} ₽
-                                                    </span>
+                                                    ))}
                                                 </div>
                                             )}
-                                            <div style={{ display: 'flex', gap: '16px', marginTop: '10px', fontSize: '0.8rem', color: '#6b7280' }}>
-                                                <span>
-                                                    <i className="far fa-calendar-alt me-1" />
-                                                    {selectedDate}
-                                                </span>
-                                                <span>
-                                                    <i className="far fa-clock me-1" />
-                                                    {selectedTime}
+                                        </div>
+                                    )}
+                                </>
+                            )}
+
+                            {selectedTime && (
+                                <>
+                                    <div className={shared.summaryBox} ref={summaryRef}>
+                                        <div className={shared.summaryTitle}>
+                                            <i className="fas fa-list" />
+                                            Услуга
+                                        </div>
+                                        {selectedService && (
+                                            <div className={shared.summaryRow}>
+                                                <span>{selectedService.name}</span>
+                                                <span className={shared.summaryRowMeta}>
+                                                    {selectedService.duration} мин · {selectedService.price} ₽
                                                 </span>
                                             </div>
+                                        )}
+                                        <div className={shared.summaryMeta}>
+                                            <span className={shared.summaryMetaItem}>
+                                                <i className="far fa-calendar-alt" />
+                                                {formatDate(selectedDate)}
+                                            </span>
+                                            <span className={shared.summaryMetaItem}>
+                                                <i className="far fa-clock" />
+                                                {selectedTime}
+                                            </span>
                                         </div>
+                                    </div>
 
-                                        <label className="form-label mb-2" style={{ fontWeight: 600 }}>
-                                            Данные клиента
-                                        </label>
-                                        <div className="mb-2">
-                                            <input
-                                                type="text"
-                                                className="form-control"
-                                                placeholder="Имя клиента"
-                                                value={clientName}
-                                                onChange={e => setClientName(e.target.value)}
-                                            />
-                                        </div>
-                                        <div className="mb-2">
-                                            <input
-                                                type="tel"
-                                                className="form-control"
-                                                placeholder="7 999 123-45-67"
-                                                value={clientPhone}
-                                                onChange={e => setClientPhone(phoneMask(e.target.value))}
-                                            />
-                                        </div>
-                                        <div className="mb-2">
-                                            <textarea
-                                                className="form-control"
-                                                rows="2"
-                                                placeholder="Комментарий (необязательно)"
-                                                value={comment}
-                                                onChange={e => setComment(e.target.value)}
-                                            />
-                                        </div>
-                                    </>
-                                )}
-                            </>
-                        )}
-                    </div>
-                    <div className="modal-footer">
-                        <button className="btn btn-secondary" onClick={onClose} disabled={saving}>
-                            Отмена
-                        </button>
-                        <button
-                            className="btn btn-pink"
-                            onClick={handleSave}
-                            disabled={saving || !selectedService || !selectedTime || !clientName}
-                        >
-                            {saving ? 'Сохранение...' : 'Сохранить'}
-                        </button>
-                    </div>
+                                    <label className={shared.sectionLabel}>Данные клиента</label>
+                                    <input
+                                        type="text"
+                                        className={shared.formInput}
+                                        placeholder="Имя клиента"
+                                        value={clientName}
+                                        onChange={e => setClientName(e.target.value)}
+                                    />
+                                    <input
+                                        type="tel"
+                                        className={shared.formInput}
+                                        placeholder="7 999 123-45-67"
+                                        value={clientPhone}
+                                        onChange={e => setClientPhone(phoneMask(e.target.value))}
+                                    />
+                                    <textarea
+                                        className={shared.formTextarea}
+                                        rows="2"
+                                        placeholder="Комментарий (необязательно)"
+                                        value={comment}
+                                        onChange={e => setComment(e.target.value)}
+                                    />
+                                </>
+                            )}
+                        </>
+                    )}
+                </div>
+
+                <div className={shared.footer}>
+                    <button
+                        type="button"
+                        className={shared.btnSecondary}
+                        onClick={onClose}
+                        disabled={saving}
+                    >
+                        Отмена
+                    </button>
+                    <button
+                        type="button"
+                        className={shared.btnPink}
+                        onClick={handleSave}
+                        disabled={saving || !selectedService || !selectedTime || !clientName}
+                    >
+                        {saving ? 'Сохранение...' : 'Сохранить'}
+                    </button>
                 </div>
             </div>
         </div>
