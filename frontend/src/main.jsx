@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import Dashboard from './components/Dashboard';
 import PushSettings from './components/PushSettings';
+import ServicesPage from './components/Services/ServicesPage';
 import { ModalProvider } from './components/modals';
 
 // Дашборд
@@ -22,6 +23,16 @@ if (pushEl) {
     ReactDOM.createRoot(pushEl).render(
         <ModalProvider>
             <PushSettings />
+        </ModalProvider>
+    );
+}
+
+// Страница «Услуги»
+const servicesEl = document.getElementById('react-services');
+if (servicesEl) {
+    ReactDOM.createRoot(servicesEl).render(
+        <ModalProvider>
+            <ServicesPage />
         </ModalProvider>
     );
 }

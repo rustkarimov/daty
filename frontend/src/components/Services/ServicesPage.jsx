@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import ServicesList from './ServicesList';
 import CategoryModal from './CategoryModal';
-// import ServiceModal from './ServiceModal';
+import ServiceModal from './ServiceModal';
 import useModal from '../../hooks/useModal';
 import { loadCategories } from '../../api/services';
 import styles from './ServicesPage.module.css';
