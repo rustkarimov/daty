@@ -3,7 +3,7 @@
 /* ============================================================ */
 
 /* ---- Контейнер календаря (обёртка) ---- */
-._calendar_1yjlr_11 {
+._calendar_1mdni_11 {
     width: 100%;
 }
 
@@ -12,7 +12,7 @@
 /* ============================================================ */
 
 /* ---- Панель навигации (стрелки + месяц) ---- */
-._nav_1yjlr_29 {
+._nav_1mdni_29 {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -21,7 +21,7 @@
 }
 
 /* ---- Кнопка-стрелка (← →) ---- */
-._navBtn_1yjlr_47 {
+._navBtn_1mdni_47 {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -37,21 +37,21 @@
 }
 
 /* ---- Стрелка при наведении (синяя) ---- */
-._navBtn_1yjlr_47:hover {
+._navBtn_1mdni_47:hover {
     border-color: var(--primary);
     background: var(--primary-light);
     color: var(--primary);
 }
 
 /* ---- SVG-иконка внутри стрелки ---- */
-._navBtn_1yjlr_47 svg {
+._navBtn_1mdni_47 svg {
     display: block;
     width: 18px;
     height: 18px;
 }
 
 /* ---- Название месяца («Октябрь 2026») ---- */
-._navTitle_1yjlr_107 {
+._navTitle_1mdni_107 {
     font-weight: 700;
     font-size: 1rem;
     color: var(--gray-800);
@@ -64,7 +64,7 @@
 /* ============================================================ */
 
 /* ---- Строка дней недели (Пн-Вс) ---- */
-._weekdays_1yjlr_133 {
+._weekdays_1mdni_133 {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 8px;
@@ -72,7 +72,7 @@
 }
 
 /* ---- Название дня недели (Пн, Вт, ...) ---- */
-._weekday_1yjlr_133 {
+._weekday_1mdni_133 {
     font-weight: 800;
     padding: 8px;
     border-radius: 8px;
@@ -82,7 +82,7 @@
 }
 
 /* ---- Сетка дней месяца ---- */
-._dates_1yjlr_169 {
+._dates_1mdni_169 {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 8px;
@@ -93,7 +93,7 @@
 /* ============================================================ */
 
 /* ---- Базовая ячейка дня ---- */
-._dateCell_1yjlr_191 {
+._dateCell_1mdni_191 {
     background-color: #f8f9fa;
     border-radius: 10px;
     padding: 8px 4px;
@@ -106,43 +106,43 @@
 }
 
 /* ---- Пустая ячейка (для сдвига начала месяца) ---- */
-._dateCell_1yjlr_191._empty_1yjlr_217 {
+._dateCell_1mdni_191._empty_1mdni_217 {
     background-color: transparent;
     border: 0;
     cursor: default;
 }
 
 /* ---- Рабочий день (синий фон) ---- */
-._dateCell_1yjlr_191._working_1yjlr_231 {
+._dateCell_1mdni_191._working_1mdni_231 {
     background-color: var(--primary-light);
 }
 
 /* ---- Нерабочий день (серый, полупрозрачный) ---- */
-._dateCell_1yjlr_191._nonWorking_1yjlr_241 {
+._dateCell_1mdni_191._nonWorking_1mdni_241 {
     background-color: #e9ecef;
     border-color: #ced4da;
     opacity: 0.7;
 }
 
 /* ---- Прошедший день (полупрозрачный) ---- */
-._dateCell_1yjlr_191._past_1yjlr_255 {
+._dateCell_1mdni_191._past_1mdni_255 {
     opacity: 0.4;
 }
 
 /* ---- Сегодня (синяя рамка) ---- */
-._dateCell_1yjlr_191._today_1yjlr_265 {
+._dateCell_1mdni_191._today_1mdni_265 {
     border: 2px solid var(--primary);
     box-shadow: 0 0 0 0.5px var(--primary);
 }
 
 /* ---- Цифра дня (1, 2, 3, ...) ---- */
-._dateNumber_1yjlr_277 {
+._dateNumber_1mdni_277 {
     font-weight: 600;
     color: black;
 }
 
 /* ---- Часы работы под цифрой (09:00 - 18:00) ---- */
-._dateTime_1yjlr_289 {
+._dateTime_1mdni_289 {
     font-size: 0.65rem;
     margin-top: 5px;
     color: #666;
@@ -153,7 +153,7 @@
 /* ============================================================ */
 
 /* ---- Контейнер иконок (бейдж записи + перерыв) ---- */
-._icons_1yjlr_311 {
+._icons_1mdni_311 {
     position: absolute;
     top: 4px;
     right: 4px;
@@ -164,7 +164,7 @@
 }
 
 /* ---- Бейдж с количеством записей ---- */
-._bookingBadge_1yjlr_333 {
+._bookingBadge_1mdni_333 {
     font-size: 0.7rem;
     font-weight: 700;
     min-width: 16px;
@@ -179,7 +179,7 @@
 }
 
 /* ---- Бейдж перерыва (зелёная иконка) ---- */
-._breakBadge_1yjlr_363 {
+._breakBadge_1mdni_363 {
     font-size: 0.8rem;
     line-height: 1;
     display: inline-flex;
@@ -191,7 +191,7 @@
 }
 
 /* ---- SVG-иконка внутри бейджа перерыва ---- */
-._breakBadge_1yjlr_363 svg {
+._breakBadge_1mdni_363 svg {
     display: block;
     width: 16px;
     height: 16px;
@@ -205,7 +205,7 @@
 /* ============================================================ */
 
 /* ---- Спиннер загрузки ---- */
-._loading_1yjlr_415 {
+._loading_1mdni_415 {
     text-align: center;
     padding: 24px 0;
 }
@@ -220,11 +220,11 @@
 
 /* ---- Уменьшаем отступы в сетке ---- */
 @media (max-width: 1600px) {
-    ._dates_1yjlr_169 {
+    ._dates_1mdni_169 {
         gap: 6px;
     }
     
-    ._weekdays_1yjlr_133 {
+    ._weekdays_1mdni_133 {
         gap: 6px;
     }
 }
@@ -233,23 +233,42 @@
 /* ========== 992-1200 (НОУТБУКИ) ============================= */
 /* ============================================================ */
 
-/* ---- Уменьшаем ячейки ---- */
+
 @media (max-width: 1200px) {
-    ._dateCell_1yjlr_191 {
+    ._dateCell_1mdni_191 {
         min-height: 60px;
         padding: 6px 3px;
     }
     
-    ._dateNumber_1yjlr_277 {
+    ._dateNumber_1mdni_277 {
         font-size: 0.9rem;
     }
     
-    ._dateTime_1yjlr_289 {
+    ._dateTime_1mdni_289 {
         font-size: 0.6rem;
     }
     
-    ._weekday_1yjlr_133 {
+    ._weekday_1mdni_133 {
         font-size: 13px;
+    }
+
+    /* Иконки в столбик — чтобы не накладывались */
+    ._icons_1mdni_311 {
+        flex-direction: column;
+        gap: 2px;
+        top: 2px;
+        right: 2px;
+    }
+
+    ._bookingBadge_1mdni_333 {
+        font-size: 0.6rem;
+        min-width: 14px;
+        height: 14px;
+    }
+
+    ._breakBadge_1mdni_363 svg {
+        width: 12px;
+        height: 12px;
     }
 }
 
@@ -259,19 +278,26 @@
 
 /* ---- Ещё компактнее ---- */
 @media (max-width: 992px) {
-    ._dateCell_1yjlr_191 {
+    ._dateCell_1mdni_191 {
         min-height: 55px;
         padding: 6px 3px;
     }
 
-    ._navBtn_1yjlr_47 {
+    ._navBtn_1mdni_47 {
         width: 32px;
         height: 32px;
     }
     
-    ._navBtn_1yjlr_47 svg {
+    ._navBtn_1mdni_47 svg {
         width: 16px;
         height: 16px;
+    }
+
+    ._icons_1mdni_311 {
+        flex-direction: column;
+        gap: 2px;
+        top: 2px;
+        right: 2px;
     }
 }
 
@@ -282,17 +308,17 @@
 @media (max-width: 768px) {
 
     /* ---- Меньше отступы в сетке ---- */
-    ._dates_1yjlr_169 {
+    ._dates_1mdni_169 {
         gap: 6px;
     }
     
-    ._weekdays_1yjlr_133 {
+    ._weekdays_1mdni_133 {
         gap: 3px;
         margin-bottom: 6px;
     }
     
     /* ---- Компактные дни недели ---- */
-    ._weekday_1yjlr_133 {
+    ._weekday_1mdni_133 {
         font-weight: 700;
         font-size: 0.6rem;
         padding: 4px 0;
@@ -301,7 +327,7 @@
     }
     
     /* ---- Ячейка дня (круглая, без фона) ---- */
-    ._dateCell_1yjlr_191 {
+    ._dateCell_1mdni_191 {
         position: relative !important;
         background: transparent !important;
         border: none !important;
@@ -319,7 +345,7 @@
     }
     
     /* ---- Цифра дня (круг) ---- */
-    ._dateNumber_1yjlr_277 {
+    ._dateNumber_1mdni_277 {
         font-size: 0.7rem;
         font-weight: 500;
         line-height: 1;
@@ -336,7 +362,7 @@
     }
 
         /* ---- Цифра дня (круг) ---- */
-    ._dateNumber_1yjlr_277 {
+    ._dateNumber_1mdni_277 {
         font-size: 0.7rem;
         font-weight: 500;
         line-height: 1;
@@ -353,28 +379,28 @@
     }
     
     /* ---- Рабочий день — синий кружок ---- */
-    ._dateCell_1yjlr_191._working_1yjlr_231 ._dateNumber_1yjlr_277 {
+    ._dateCell_1mdni_191._working_1mdni_231 ._dateNumber_1mdni_277 {
         background-color: var(--primary-light);
     }
     
     /* ---- Нерабочий день — без кружка ---- */
-    ._dateCell_1yjlr_191._nonWorking_1yjlr_241 ._dateNumber_1yjlr_277 {
+    ._dateCell_1mdni_191._nonWorking_1mdni_241 ._dateNumber_1mdni_277 {
         background-color: transparent !important;
     }
     
     /* ---- Прошедшие — бледнее ---- */
-    ._dateCell_1yjlr_191._past_1yjlr_255 ._dateNumber_1yjlr_277 {
+    ._dateCell_1mdni_191._past_1mdni_255 ._dateNumber_1mdni_277 {
         opacity: 0.6;
     }
     
     /* ---- Сегодня — без рамки у ячейки ---- */
-    ._dateCell_1yjlr_191._today_1yjlr_265 {
+    ._dateCell_1mdni_191._today_1mdni_265 {
         border: none;
         box-shadow: none;
     }
     
     /* ---- Сегодня — обводка у цифры ---- */
-    ._dateCell_1yjlr_191._today_1yjlr_265 ._dateNumber_1yjlr_277 {
+    ._dateCell_1mdni_191._today_1mdni_265 ._dateNumber_1mdni_277 {
         color: black;
         font-weight: 600;
         background: transparent;
@@ -384,7 +410,7 @@
     }
     
     /* ---- Иконки под цифрой (бейдж + перерыв) ---- */
-    ._icons_1yjlr_311 {
+    ._icons_1mdni_311 {
         position: relative;
         top: 1px;
         right: auto;
@@ -398,7 +424,7 @@
     }
     
     /* ---- Компактный бейдж записи ---- */
-    ._bookingBadge_1yjlr_333 {
+    ._bookingBadge_1mdni_333 {
         font-size: 0.55rem;
         min-width: 13px;
         height: 13px;
@@ -407,29 +433,29 @@
     }
     
     /* ---- Компактная иконка перерыва ---- */
-    ._breakBadge_1yjlr_363 svg {
+    ._breakBadge_1mdni_363 svg {
         width: 14px;
         height: 14px;
     }
     
     /* ---- Скрываем часы работы ---- */
-    ._dateTime_1yjlr_289 {
+    ._dateTime_1mdni_289 {
         display: none;
     }
     
     /* ---- Компактные стрелки навигации ---- */
-    ._navBtn_1yjlr_47 {
+    ._navBtn_1mdni_47 {
         width: 25px;
         height: 25px;
     }
     
-    ._navBtn_1yjlr_47 svg {
+    ._navBtn_1mdni_47 svg {
         width: 16px;
         height: 16px;
     }
     
     /* ---- Компактный заголовок месяца ---- */
-    ._navTitle_1yjlr_107 {
+    ._navTitle_1mdni_107 {
         font-size: 0.9rem;
         min-width: 120px;
     }
@@ -442,24 +468,24 @@
 @media (max-width: 480px) {
 
         /* ---- Ещё компактнее дни недели ---- */
-    ._weekday_1yjlr_133 {
+    ._weekday_1mdni_133 {
         font-size: 0.5rem;
         padding: 0;
     }
     
     /* ---- Больше вертикального отступа между рядами ---- */
-    ._dates_1yjlr_169 {
+    ._dates_1mdni_169 {
         gap: 6px;
         row-gap: 16px;
     }
     
     /* ---- Меньше цифра ---- */
-    ._dateNumber_1yjlr_277 {
+    ._dateNumber_1mdni_277 {
         font-size: 0.65rem;
     }
     
     /* ---- Иконки — компактнее ---- */
-    ._icons_1yjlr_311 {
+    ._icons_1mdni_311 {
         min-height: 10px;
         gap: 1px;
         margin-top: 1px;
@@ -2296,7 +2322,7 @@
 /* ============================================================ */
 
 /* ---- Карточка ---- */
-._card_c7nfg_11 {
+._card_q42oh_11 {
     background: white;
     border-radius: 30px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
@@ -2305,20 +2331,20 @@
     overflow: visible;
 }
 
-._cardInner_c7nfg_29 {
+._cardInner_q42oh_29 {
     background: white;
     border-radius: 30px;
     overflow: visible;
 }
 
-._cardHeader_c7nfg_41 {
+._cardHeader_q42oh_41 {
     background: white;
     padding: 16px 20px;
     border-bottom: 1px solid var(--gray-200);
     border-radius: 20px 20px 0 0;
 }
 
-._cardHeader_c7nfg_41 h5 {
+._cardHeader_q42oh_41 h5 {
     margin: 0;
     font-size: 1rem;
     font-weight: 600;
@@ -2328,30 +2354,33 @@
     gap: 8px;
 }
 
-._cardBody_c7nfg_75 {
+._cardBody_q42oh_75 {
     padding: 20px;
 }
 
 /* ---- Состояния ---- */
-._loadingState_c7nfg_85,
-._emptyState_c7nfg_87 {
+._loadingState_q42oh_85,
+._emptyState_q42oh_87 {
     text-align: center;
     padding: 24px 0;
     color: var(--gray-500);
 }
 
 /* ---- Таблица ---- */
-._tableWrapper_c7nfg_101 {
-    overflow: visible;
+._tableWrapper_q42oh_101 {
+    overflow-x: auto;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch;
 }
 
-._table_c7nfg_101 {
+._table_q42oh_101 {
     width: 100%;
+    min-width: 620px;
     font-size: 0.9rem;
     border-collapse: collapse;
 }
 
-._table_c7nfg_101 thead th {
+._table_q42oh_101 thead th {
     font-weight: 600;
     color: var(--gray-600);
     border-bottom: 2px solid var(--gray-200);
@@ -2363,22 +2392,22 @@
     background: var(--gray-50);
 }
 
-._table_c7nfg_101 tbody td {
+._table_q42oh_101 tbody td {
     padding: 10px 16px;
     vertical-align: middle;
     border-bottom: 1px solid var(--gray-100);
 }
 
-._table_c7nfg_101 tbody tr:last-child td {
+._table_q42oh_101 tbody tr:last-child td {
     border-bottom: none;
 }
 
 /* ---- Ячейка действий ---- */
-._actionsCell_c7nfg_167 {
+._actionsCell_q42oh_173 {
     white-space: nowrap;
 }
 
-._allButtonsRow_c7nfg_175 {
+._allButtonsRow_q42oh_181 {
     display: flex;
     align-items: center;
     gap: 4px;
@@ -2386,7 +2415,7 @@
 }
 
 /* ---- Кнопки-иконки ---- */
-._iconBtn_c7nfg_191 {
+._iconBtn_q42oh_197 {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -2402,24 +2431,24 @@
     transition: all 0.2s ease;
 }
 
-._iconBtn_c7nfg_191:hover {
+._iconBtn_q42oh_197:hover {
     background: var(--gray-100);
     color: var(--gray-800);
 }
 
-._iconBtnDelete_c7nfg_233:hover {
+._iconBtnDelete_q42oh_239:hover {
     background: #fef2f2;
     color: #dc2626;
 }
 
 /* ---- Кнопка «Связаться» + меню ---- */
-._contactWrapper_c7nfg_245 {
+._contactWrapper_q42oh_251 {
     position: relative;
     display: inline-flex;
     z-index: 200;
 }
 
-._contactBtn_c7nfg_257 {
+._contactBtn_q42oh_263 {
     display: inline-flex;
     align-items: center;
     gap: 4px;
@@ -2435,17 +2464,17 @@
     white-space: nowrap;
 }
 
-._contactBtn_c7nfg_257:hover {
+._contactBtn_q42oh_263:hover {
     background: var(--primary-light);
     color: var(--primary);
 }
 
-._contactBtn_c7nfg_257 ._fa-chevron-down_c7nfg_299 {
+._contactBtn_q42oh_263 ._fa-chevron-down_q42oh_305 {
     font-size: 0.5rem;
     margin-left: 2px;
 }
 
-._contactMenu_c7nfg_309 {
+._contactMenu_q42oh_315 {
     position: absolute;
     top: 110%;
     left: 0;
@@ -2456,10 +2485,10 @@
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
     padding: 6px 0;
     z-index: 1200;
-    animation: _slideDown_c7nfg_1 0.2s ease;
+    animation: _slideDown_q42oh_1 0.2s ease;
 }
 
-._contactMenu_c7nfg_309 button {
+._contactMenu_q42oh_315 button {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -2474,16 +2503,16 @@
     text-align: left;
 }
 
-._contactMenu_c7nfg_309 button:hover {
+._contactMenu_q42oh_315 button:hover {
     background: var(--gray-50);
 }
 
-._contactMenu_c7nfg_309 button:disabled {
+._contactMenu_q42oh_315 button:disabled {
     opacity: 0.4;
     cursor: not-allowed;
 }
 
-._maxIcon_c7nfg_385 {
+._maxIcon_q42oh_391 {
     font-weight: 700;
     font-size: 0.75rem;
     background: #e91e63;
@@ -2498,7 +2527,7 @@
 }
 
 /* ---- Галочка подтверждения ---- */
-._confirmBtn_c7nfg_415 {
+._confirmBtn_q42oh_421 {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -2513,21 +2542,21 @@
     font-size: 1rem;
 }
 
-._confirmBtn_c7nfg_415:hover {
+._confirmBtn_q42oh_421:hover {
     background: var(--gray-100);
     color: var(--primary);
 }
 
-._confirmBtn_c7nfg_415._confirmed_c7nfg_455 {
+._confirmBtn_q42oh_421._confirmed_q42oh_461 {
     color: #2e7d32;
 }
 
-._confirmBtn_c7nfg_415._confirmed_c7nfg_455:hover {
+._confirmBtn_q42oh_421._confirmed_q42oh_461:hover {
     color: #1b5e20;
 }
 
 /* ---- Футер ---- */
-._cardFooter_c7nfg_473 {
+._cardFooter_q42oh_479 {
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -2536,7 +2565,7 @@
     border-radius: 0 0 30px 30px;
 }
 
-._loadMoreBtn_c7nfg_491 {
+._loadMoreBtn_q42oh_497 {
     width: 20%;
     padding: 8px;
     font-size: 0.85rem;
@@ -2552,13 +2581,13 @@
     transition: all 0.2s ease;
 }
 
-._loadMoreBtn_c7nfg_491:hover {
+._loadMoreBtn_q42oh_497:hover {
     background: var(--primary-gradient);
     border-color: transparent;
     color: white;
 }
 
-._footerInfoRow_c7nfg_535 {
+._footerInfoRow_q42oh_541 {
     display: flex;
     align-items: center;
     width: 100%;
@@ -2567,20 +2596,20 @@
     gap: 30px;
 }
 
-._footerLeft_c7nfg_553,
-._footerRight_c7nfg_555 {
+._footerLeft_q42oh_559,
+._footerRight_q42oh_561 {
     display: flex;
     align-items: center;
     gap: 4px;
 }
 
-._totalLabel_c7nfg_567 {
+._totalLabel_q42oh_573 {
     font-size: 0.75rem;
     color: var(--gray-500);
     font-weight: 400;
 }
 
-._totalNumber_c7nfg_579 {
+._totalNumber_q42oh_585 {
     font-size: 0.75rem;
     font-weight: 600;
     color: var(--gray-700);
@@ -2592,14 +2621,14 @@
     text-align: center;
 }
 
-._limitLabel_c7nfg_603 {
+._limitLabel_q42oh_609 {
     font-size: 0.75rem;
     color: var(--gray-500);
     font-weight: 400;
     margin: 0 4px 0 0;
 }
 
-._limitSelect_c7nfg_617 {
+._limitSelect_q42oh_623 {
     font-size: 0.75rem;
     height: 28px;
     padding: 2px 4px 2px 8px;
@@ -2611,7 +2640,7 @@
 }
 
 /* ---- Анимация ---- */
-@keyframes _slideDown_c7nfg_1 {
+@keyframes _slideDown_q42oh_1 {
     from {
         opacity: 0;
         transform: translateY(-8px);
@@ -2630,92 +2659,92 @@
 
 /* ---- 1200-1600 (ноутбуки) ---- */
 @media (max-width: 1600px) {
-    ._loadMoreBtn_c7nfg_491 {
+    ._loadMoreBtn_q42oh_497 {
         width: 30%;
     }
 }
 
 /* ---- 992-1200 (маленькие ноутбуки) ---- */
 @media (max-width: 1200px) {
-    ._table_c7nfg_101 {
+    ._table_q42oh_101 {
         font-size: 0.85rem;
     }
     
-    ._table_c7nfg_101 thead th,
-    ._table_c7nfg_101 tbody td {
+    ._table_q42oh_101 thead th,
+    ._table_q42oh_101 tbody td {
         padding: 8px 12px;
     }
 }
 
 /* ---- 768-992 (планшеты) ---- */
 @media (max-width: 992px) {
-    ._table_c7nfg_101 thead th,
-    ._table_c7nfg_101 tbody td {
+    ._table_q42oh_101 thead th,
+    ._table_q42oh_101 tbody td {
         padding: 8px 10px;
         font-size: 0.8rem;
     }
     
-    ._iconBtn_c7nfg_191,
-    ._confirmBtn_c7nfg_415 {
+    ._iconBtn_q42oh_197,
+    ._confirmBtn_q42oh_421 {
         width: 28px;
         height: 28px;
         font-size: 0.75rem;
     }
     
-    ._contactBtn_c7nfg_257 {
+    ._contactBtn_q42oh_263 {
         padding: 4px 8px;
         height: 28px;
         font-size: 0.65rem;
     }
     
-    ._loadMoreBtn_c7nfg_491 {
+    ._loadMoreBtn_q42oh_497 {
         width: 40%;
     }
 }
 
 /* ---- <768 (смартфоны) ---- */
 @media (max-width: 768px) {
-    ._card_c7nfg_11 {
+    ._card_q42oh_11 {
         border-radius: 12px;
         margin-bottom: 8px;
     }
     
-    ._cardInner_c7nfg_29 {
+    ._cardInner_q42oh_29 {
         border-radius: 12px;
     }
     
-    ._cardHeader_c7nfg_41 {
+    ._cardHeader_q42oh_41 {
         padding: 16px 16px 4px 16px;
         border-bottom: none;
         border-radius: 12px 12px 0 0;
     }
     
-    ._cardHeader_c7nfg_41 h5 {
+    ._cardHeader_q42oh_41 h5 {
         font-weight: 700;
     }
     
-    ._cardHeader_c7nfg_41 h5 i {
+    ._cardHeader_q42oh_41 h5 i {
         display: none;
     }
     
-    ._cardBody_c7nfg_75 {
+    ._cardBody_q42oh_75 {
         padding: 10px;
     }
     
     /* Таблица → карточки */
-    ._table_c7nfg_101,
-    ._table_c7nfg_101 tbody,
-    ._table_c7nfg_101 tr,
-    ._table_c7nfg_101 td {
+    ._table_q42oh_101,
+    ._table_q42oh_101 tbody,
+    ._table_q42oh_101 tr,
+    ._table_q42oh_101 td {
         display: block;
         width: 100%;
     }
     
-    ._table_c7nfg_101 thead {
+    ._table_q42oh_101 thead {
         display: none;
     }
     
-    ._table_c7nfg_101 tbody tr {
+    ._table_q42oh_101 tbody tr {
         border-radius: 12px;
         margin-bottom: 8px;
         padding: 8px 10px;
@@ -2723,33 +2752,33 @@
         border: 0.5px solid rgb(155, 155, 155);
     }
     
-    ._table_c7nfg_101 tbody td {
+    ._table_q42oh_101 tbody td {
         padding: 1px 0;
         border: none;
         font-size: 0.8rem;
     }
     
     /* Дата + время — в одну строку */
-    ._table_c7nfg_101 tbody td:first-child,
-    ._table_c7nfg_101 tbody td:nth-child(2) {
+    ._table_q42oh_101 tbody td:first-child,
+    ._table_q42oh_101 tbody td:nth-child(2) {
         display: inline-block;
         width: auto;
         font-size: 13px;
     }
     
-    ._table_c7nfg_101 tbody td:first-child {
+    ._table_q42oh_101 tbody td:first-child {
         font-weight: 600;
         color: var(--primary);
         margin-right: 8px;
     }
     
-    ._table_c7nfg_101 tbody td:nth-child(2) {
+    ._table_q42oh_101 tbody td:nth-child(2) {
         color: black;
         font-weight: 600;
     }
     
     /* Имя клиента */
-    ._table_c7nfg_101 tbody td:nth-child(3) {
+    ._table_q42oh_101 tbody td:nth-child(3) {
         font-weight: 500;
         font-size: 0.85rem;
         margin-top: 2px;
@@ -2757,7 +2786,7 @@
     }
     
     /* Услуга */
-    ._table_c7nfg_101 tbody td:nth-child(4) {
+    ._table_q42oh_101 tbody td:nth-child(4) {
         color: var(--gray-500);
         font-size: 0.7rem;
         margin-bottom: 6px;
@@ -2766,7 +2795,7 @@
     }
     
     /* Действия */
-    ._table_c7nfg_101 tbody td:last-child {
+    ._table_q42oh_101 tbody td:last-child {
         display: flex;
         justify-content: flex-start;
         align-items: center;
@@ -2775,69 +2804,69 @@
         margin-top: 4px;
     }
     
-    ._actionsCell_c7nfg_167 {
+    ._actionsCell_q42oh_173 {
         white-space: normal;
     }
     
-    ._allButtonsRow_c7nfg_175 {
+    ._allButtonsRow_q42oh_181 {
         flex-wrap: wrap;
         gap: 4px;
     }
     
-    ._iconBtn_c7nfg_191,
-    ._confirmBtn_c7nfg_415 {
+    ._iconBtn_q42oh_197,
+    ._confirmBtn_q42oh_421 {
         width: 32px;
         height: 32px;
         font-size: 0.75rem;
     }
     
-    ._contactBtn_c7nfg_257 {
+    ._contactBtn_q42oh_263 {
         padding: 4px 8px;
         width: 32px;
         justify-content: center;
     }
     
-    ._contactBtn_c7nfg_257 span {
+    ._contactBtn_q42oh_263 span {
         display: none;
     }
     
-    ._contactMenu_c7nfg_309 {
+    ._contactMenu_q42oh_315 {
         left: 50%;
         transform: translateX(-50%);
         min-width: 160px;
     }
     
     /* Футер */
-    ._cardFooter_c7nfg_473 {
+    ._cardFooter_q42oh_479 {
         padding: 6px 12px 12px 12px;
         gap: 6px;
     }
     
-    ._loadMoreBtn_c7nfg_491 {
+    ._loadMoreBtn_q42oh_497 {
         width: 100%;
         font-size: 0.8rem;
         padding: 8px;
     }
     
-    ._footerInfoRow_c7nfg_535 {
+    ._footerInfoRow_q42oh_541 {
         padding-top: 4px;
         flex-wrap: wrap;
         justify-content: space-between;
     }
     
-    ._totalLabel_c7nfg_567,
-    ._limitLabel_c7nfg_603 {
+    ._totalLabel_q42oh_573,
+    ._limitLabel_q42oh_609 {
         font-size: 0.7rem;
     }
     
-    ._totalNumber_c7nfg_579 {
+    ._totalNumber_q42oh_585 {
         font-size: 0.7rem;
         line-height: 20px;
         padding: 0 8px;
         min-width: 20px;
     }
     
-    ._limitSelect_c7nfg_617 {
+    ._limitSelect_q42oh_623 {
         font-size: 0.7rem;
         height: 25px;
         width: 50px;
@@ -2848,35 +2877,35 @@
 
 /* ---- <480 (маленькие смартфоны) ---- */
 @media (max-width: 480px) {
-    ._cardBody_c7nfg_75 {
+    ._cardBody_q42oh_75 {
         padding: 8px;
     }
     
-    ._table_c7nfg_101 tbody tr {
+    ._table_q42oh_101 tbody tr {
         padding: 6px 8px;
     }
     
-    ._table_c7nfg_101 tbody td:first-child,
-    ._table_c7nfg_101 tbody td:nth-child(2) {
+    ._table_q42oh_101 tbody td:first-child,
+    ._table_q42oh_101 tbody td:nth-child(2) {
         font-size: 12px;
     }
     
-    ._table_c7nfg_101 tbody td:nth-child(3) {
+    ._table_q42oh_101 tbody td:nth-child(3) {
         font-size: 0.8rem;
     }
     
-    ._table_c7nfg_101 tbody td:nth-child(4) {
+    ._table_q42oh_101 tbody td:nth-child(4) {
         font-size: 0.65rem;
     }
     
-    ._iconBtn_c7nfg_191,
-    ._confirmBtn_c7nfg_415 {
+    ._iconBtn_q42oh_197,
+    ._confirmBtn_q42oh_421 {
         width: 28px;
         height: 28px;
         font-size: 0.7rem;
     }
     
-    ._contactBtn_c7nfg_257 {
+    ._contactBtn_q42oh_263 {
         width: 28px;
         height: 28px;
     }

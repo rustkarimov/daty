@@ -49,11 +49,14 @@
 
 /* ---- Таблица ---- */
 .tableWrapper {
-    overflow: visible;
+    overflow-x: auto;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch;
 }
 
 .table {
     width: 100%;
+    min-width: 620px;
     font-size: 0.9rem;
     border-collapse: collapse;
 }

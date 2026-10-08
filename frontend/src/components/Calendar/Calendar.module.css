@@ -233,7 +233,7 @@
 /* ========== 992-1200 (НОУТБУКИ) ============================= */
 /* ============================================================ */
 
-/* ---- Уменьшаем ячейки ---- */
+
 @media (max-width: 1200px) {
     .dateCell {
         min-height: 60px;
@@ -250,6 +250,25 @@
     
     .weekday {
         font-size: 13px;
+    }
+
+    /* Иконки в столбик — чтобы не накладывались */
+    .icons {
+        flex-direction: column;
+        gap: 2px;
+        top: 2px;
+        right: 2px;
+    }
+
+    .bookingBadge {
+        font-size: 0.6rem;
+        min-width: 14px;
+        height: 14px;
+    }
+
+    .breakBadge svg {
+        width: 12px;
+        height: 12px;
     }
 }
 
@@ -272,6 +291,13 @@
     .navBtn svg {
         width: 16px;
         height: 16px;
+    }
+
+    .icons {
+        flex-direction: column;
+        gap: 2px;
+        top: 2px;
+        right: 2px;
     }
 }
 

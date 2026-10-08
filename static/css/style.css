@@ -5810,3 +5810,102 @@ body {
         transform: rotate(360deg);
     }
 }
+
+
+
+/* ============================================================ */
+/* ========== ПЛАНШЕТЫ (768px - 1200px) ======================= */
+/* ============================================================ */
+
+@media (min-width: 769px) and (max-width: 1200px) {
+
+    /* ---- Сайдбар — уже ---- */
+    .sidebar {
+        width: 220px;
+        margin: 12px 0 12px 12px;
+    }
+
+    .sidebar-nav {
+        padding: 16px 12px;
+    }
+
+    .nav-item {
+        padding: 10px 12px;
+        font-size: 0.9rem;
+        gap: 10px;
+    }
+
+    .nav-item i {
+        font-size: 1rem;
+        width: 20px;
+    }
+
+    /* ---- Шапка — компактнее ---- */
+    .top-bar {
+        margin: 12px 12px 0 12px;
+        padding: 10px 16px;
+        gap: 12px;
+    }
+
+    .top-bar-left {
+        gap: 12px;
+    }
+
+    .top-bar-right {
+        gap: 10px;
+    }
+
+    /* ---- Логотип — не в две строки ---- */
+    .logo-daty {
+        font-size: 28px;
+        letter-spacing: -3px;
+        white-space: nowrap;
+    }
+
+    .logo-daty .dot {
+        width: 8px;
+        height: 8px;
+    }
+
+    /* ---- Правые кнопки — компактнее, не обрезаются ---- */
+    .wallet,
+    .notification-bell,
+    .support-link,
+    .add-booking-header-btn {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+        gap: 6px;
+    }
+
+    /* ---- Текст поддержки и кнопки — скрываем, оставляем иконки ---- */
+    .support-link .support-text,
+    .add-booking-header-btn span {
+        display: none;
+    }
+
+    .support-link,
+    .add-booking-header-btn {
+        padding: 6px 10px;
+    }
+
+    /* ---- Кошелёк — оставляем, но компактнее ---- */
+    .wallet {
+        padding: 6px 10px;
+        font-size: 0.8rem;
+    }
+
+    /* ---- Имя пользователя — скрываем ---- */
+    .user-name {
+        display: none;
+    }
+
+    .user-avatar {
+        padding: 4px 8px 4px 6px;
+        gap: 6px;
+    }
+
+    /* ---- Контент — компактнее ---- */
+    .content-wrapper {
+        padding: 16px;
+    }
+}
