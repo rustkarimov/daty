@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import useModal from '../../hooks/useModal';
 import styles from './BreaksEditor.module.css';
 
 export default function BreaksEditor({ breaks, onChange }) {
     const [editingIndex, setEditingIndex] = useState(null);
     const [editValues, setEditValues] = useState({ start: '', end: '' });
     const [newBreak, setNewBreak] = useState(null);
+    const { showAlert, showConfirm } = useModal();
 
     function handleEditClick(index) {
         setEditingIndex(index);
@@ -16,11 +18,11 @@ export default function BreaksEditor({ breaks, onChange }) {
 
     function handleSaveEdit() {
         if (!editValues.start || !editValues.end) {
-            alert('Заполните оба поля');
+            showAlert('Заполните оба поля', 'warning');
             return;
         }
         if (editValues.start >= editValues.end) {
-            alert('Время начала должно быть раньше времени окончания');
+            showAlert('Время начала должно быть раньше времени окончания', 'warning');
             return;
         }
 
@@ -34,8 +36,9 @@ export default function BreaksEditor({ breaks, onChange }) {
         setEditingIndex(null);
     }
 
-    function handleDelete(index) {
-        if (!confirm('Удалить этот перерыв?')) return;
+    async function handleDelete(index) {
+        const ok = await showConfirm('Удалить этот перерыв?', { type: 'danger' });
+        if (!ok) return;
         const newBreaks = breaks.filter((_, i) => i !== index);
         onChange(newBreaks);
     }
@@ -46,11 +49,11 @@ export default function BreaksEditor({ breaks, onChange }) {
 
     function handleSaveNew() {
         if (!newBreak.start || !newBreak.end) {
-            alert('Заполните оба поля');
+            showAlert('Заполните оба поля', 'warning');
             return;
         }
         if (newBreak.start >= newBreak.end) {
-            alert('Время начала должно быть раньше времени окончания');
+            showAlert('Время начала должно быть раньше времени окончания', 'warning');
             return;
         }
         const newBreaks = [...breaks, newBreak];
@@ -66,7 +69,6 @@ export default function BreaksEditor({ breaks, onChange }) {
         <div className={styles.editor}>
             <div className={styles.title}>Перерывы:</div>
 
-            {/* Существующие перерывы */}
             {breaks.map((br, index) => (
                 <div key={index} className={styles.breakRow}>
                     <span className={styles.dot}>•</span>
@@ -87,6 +89,7 @@ export default function BreaksEditor({ breaks, onChange }) {
                                 onChange={e => setEditValues({ ...editValues, end: e.target.value })}
                             />
                             <button
+                                type="button"
                                 className={`${styles.iconBtn} ${styles.iconBtnSuccess}`}
                                 onClick={handleSaveEdit}
                                 title="Сохранить"
@@ -94,6 +97,7 @@ export default function BreaksEditor({ breaks, onChange }) {
                                 <i className="fas fa-check" />
                             </button>
                             <button
+                                type="button"
                                 className={`${styles.iconBtn} ${styles.iconBtnSecondary}`}
                                 onClick={handleCancelEdit}
                                 title="Отмена"
@@ -106,6 +110,7 @@ export default function BreaksEditor({ breaks, onChange }) {
                             <span className={styles.value}>{br.start} — {br.end}</span>
                             <div className={styles.actions}>
                                 <button
+                                    type="button"
                                     className={styles.iconBtn}
                                     onClick={() => handleEditClick(index)}
                                     title="Редактировать"
@@ -113,29 +118,29 @@ export default function BreaksEditor({ breaks, onChange }) {
                                     <i className="fas fa-edit" />
                                 </button>
                                 <button
+                                    type="button"
                                     className={`${styles.iconBtn} ${styles.iconBtnDanger}`}
                                     onClick={() => handleDelete(index)}
                                     title="Удалить"
                                 >
                                     <i className="fas fa-trash" />
                                 </button>
-                                {/* ➕ — только на последнем перерыве */}
                                 {index === breaks.length - 1 && !newBreak && (
                                     <button
+                                        type="button"
                                         className={styles.iconBtn}
                                         onClick={handleAdd}
                                         title="Добавить перерыв"
                                     >
                                         <i className="fas fa-plus" />
                                     </button>
-                            )}
+                                )}
                             </div>
                         </>
                     )}
                 </div>
             ))}
 
-            {/* Новый перерыв (в режиме редактирования) */}
             {newBreak && (
                 <div className={styles.breakRow}>
                     <span className={styles.dot}>•</span>
@@ -153,6 +158,7 @@ export default function BreaksEditor({ breaks, onChange }) {
                         onChange={e => setNewBreak({ ...newBreak, end: e.target.value })}
                     />
                     <button
+                        type="button"
                         className={`${styles.iconBtn} ${styles.iconBtnSuccess}`}
                         onClick={handleSaveNew}
                         title="Сохранить"
@@ -160,6 +166,7 @@ export default function BreaksEditor({ breaks, onChange }) {
                         <i className="fas fa-check" />
                     </button>
                     <button
+                        type="button"
                         className={`${styles.iconBtn} ${styles.iconBtnSecondary}`}
                         onClick={handleCancelNew}
                         title="Отмена"
@@ -169,12 +176,12 @@ export default function BreaksEditor({ breaks, onChange }) {
                 </div>
             )}
 
-            {/* Нет перерывов — пустое состояние + ➕ */}
             {breaks.length === 0 && !newBreak && (
                 <div className={styles.emptyRow}>
                     <span className={styles.dot}>•</span>
                     <span className={styles.emptyText}>Нет перерывов</span>
                     <button
+                        type="button"
                         className={styles.iconBtn}
                         onClick={handleAdd}
                         title="Добавить перерыв"

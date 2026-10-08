@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import Calendar from './Calendar/Calendar';
 import UpcomingBookings from './UpcomingBookings';
 import EditBookingModal from './Calendar/EditBookingModal';
-import AlertModal from './AlertModal';
+import useModal from '../hooks/useModal';
 
 export default function Dashboard({ masterSlug, masterMaxLink }) {
     const [editingBookingId, setEditingBookingId] = useState(null);
     const [refreshKey, setRefreshKey] = useState(0);
-    const [alert, setAlert] = useState(null); // { message, title, type }
+    const { showAlert } = useModal();
 
     function handleEditBooking(bookingId) {
         setEditingBookingId(bookingId);
@@ -20,12 +20,8 @@ export default function Dashboard({ masterSlug, masterMaxLink }) {
     function handleDataChanged(message, type = 'success') {
         setRefreshKey(prev => prev + 1);
         if (message) {
-            setAlert({ message, type });
+            showAlert(message, type);
         }
-    }
-
-    function closeAlert() {
-        setAlert(null);
     }
 
     return (
@@ -56,15 +52,6 @@ export default function Dashboard({ masterSlug, masterMaxLink }) {
                     masterSlug={masterSlug}
                     onClose={handleCloseEdit}
                     onSaved={() => handleDataChanged('Запись обновлена')}
-                />
-            )}
-
-            {alert && (
-                <AlertModal
-                    message={alert.message}
-                    title={alert.title}
-                    type={alert.type}
-                    onClose={closeAlert}
                 />
             )}
         </>

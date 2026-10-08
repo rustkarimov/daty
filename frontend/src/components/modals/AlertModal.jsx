@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import styles from './AlertModal.module.css';
 
 const ICONS = {
@@ -15,7 +15,9 @@ const DEFAULT_TITLES = {
     info: 'Уведомление',
 };
 
-export default function AlertModal({ message, title, type = 'success', onClose }) {
+export default function AlertModal({ message, title, type = 'info', onClose }) {
+    const okBtnRef = useRef(null);
+
     useEffect(() => {
         function handleEsc(e) {
             if (e.key === 'Escape') onClose();
@@ -23,6 +25,11 @@ export default function AlertModal({ message, title, type = 'success', onClose }
         document.addEventListener('keydown', handleEsc);
         return () => document.removeEventListener('keydown', handleEsc);
     }, [onClose]);
+
+    useEffect(() => {
+        // Автофокус на кнопке OK
+        if (okBtnRef.current) okBtnRef.current.focus();
+    }, []);
 
     function handleBackdropClick(e) {
         if (e.target === e.currentTarget) {
@@ -56,7 +63,12 @@ export default function AlertModal({ message, title, type = 'success', onClose }
                 </div>
 
                 <div className={styles.footer}>
-                    <button type="button" className={styles.btnPrimary} onClick={onClose}>
+                    <button
+                        type="button"
+                        className={styles.btnPrimary}
+                        onClick={onClose}
+                        ref={okBtnRef}
+                    >
                         OK
                     </button>
                 </div>

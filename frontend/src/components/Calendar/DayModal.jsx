@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import BreaksEditor from './BreaksEditor';
 import EditBookingModal from './EditBookingModal';
 import AddBookingModal from './AddBookingModal';
+import useModal from '../../hooks/useModal';
 import {
     loadDayStatus,
     loadBookingsByDate,
@@ -30,6 +31,7 @@ export default function DayModal({ dateStr, masterSlug, onClose, onDataChanged }
     const [showAddBooking, setShowAddBooking] = useState(false);
     const [editingHours, setEditingHours] = useState(false);
     const [editHours, setEditHours] = useState({ start: '', end: '' });
+    const { showAlert, showConfirm } = useModal();
 
     const dateObj = new Date(dateStr);
     const dateTitle = `${dateObj.getDate()} ${MONTH_NAMES[dateObj.getMonth()]} (${WEEKDAY_NAMES[dateObj.getDay()]})`;
@@ -55,37 +57,39 @@ export default function DayModal({ dateStr, masterSlug, onClose, onDataChanged }
         }
     }
 
-    function handleMakeDayOff() {
-        if (!confirm('Сделать этот день выходным?')) return;
+    async function handleMakeDayOff() {
+        const ok = await showConfirm('Сделать этот день выходным?');
+        if (!ok) return;
         makeDayOff(dateStr)
             .then(data => {
                 if (data.success) {
                     if (onDataChanged) onDataChanged('День сделан выходным');
                     onClose();
                 } else {
-                    alert(data.error || 'Ошибка');
+                    showAlert(data.error || 'Ошибка', 'error');
                 }
             })
             .catch(error => {
                 console.error('Ошибка:', error);
-                alert('Ошибка соединения');
+                showAlert('Ошибка соединения', 'error');
             });
     }
 
-    function handleMakeDayWorking() {
-        if (!confirm('Сделать этот день рабочим? Будут установлены часы 09:00-18:00.')) return;
+    async function handleMakeDayWorking() {
+        const ok = await showConfirm('Сделать этот день рабочим? Будут установлены часы 09:00-18:00.');
+        if (!ok) return;
         makeDayWorking(dateStr)
             .then(data => {
                 if (data.success) {
                     if (onDataChanged) onDataChanged('День сделан рабочим');
                     onClose();
                 } else {
-                    alert(data.error || 'Ошибка');
+                    showAlert(data.error || 'Ошибка', 'error');
                 }
             })
             .catch(error => {
                 console.error('Ошибка:', error);
-                alert('Ошибка соединения');
+                showAlert('Ошибка соединения', 'error');
             });
     }
 
@@ -109,19 +113,23 @@ export default function DayModal({ dateStr, masterSlug, onClose, onDataChanged }
             });
             const data = await r.json();
             if (!data.success) {
-                alert(data.error || 'Ошибка сохранения');
+                showAlert(data.error || 'Ошибка сохранения', 'error');
             } else {
                 setBreaks(newBreaks.filter(b => b.start && b.end));
                 if (onDataChanged) onDataChanged();
             }
         } catch (error) {
             console.error('Ошибка:', error);
-            alert('Ошибка соединения');
+            showAlert('Ошибка соединения', 'error');
         }
     }
 
     async function handleDeleteBooking(bookingId, clientName, time) {
-        if (!confirm(`Удалить запись клиента "${clientName}" на ${time}?`)) return;
+        const ok = await showConfirm(
+            `Удалить запись клиента "${clientName}" на ${time}?`,
+            { type: 'danger' }
+        );
+        if (!ok) return;
 
         try {
             const data = await deleteBooking(bookingId);
@@ -130,11 +138,11 @@ export default function DayModal({ dateStr, masterSlug, onClose, onDataChanged }
                 setBookings(bookingsData.bookings || []);
                 if (onDataChanged) onDataChanged('Запись удалена');
             } else {
-                alert(data.error || 'Ошибка удаления');
+                showAlert(data.error || 'Ошибка удаления', 'error');
             }
         } catch (error) {
             console.error('Ошибка:', error);
-            alert('Ошибка соединения');
+            showAlert('Ошибка соединения', 'error');
         }
     }
 
@@ -187,11 +195,11 @@ export default function DayModal({ dateStr, masterSlug, onClose, onDataChanged }
 
     async function saveHours() {
         if (!editHours.start || !editHours.end) {
-            alert('Заполните начало и конец работы');
+            showAlert('Заполните начало и конец работы', 'warning');
             return;
         }
         if (editHours.start >= editHours.end) {
-            alert('Начало не может быть позже окончания');
+            showAlert('Начало не может быть позже окончания', 'warning');
             return;
         }
 
@@ -211,7 +219,7 @@ export default function DayModal({ dateStr, masterSlug, onClose, onDataChanged }
             });
             const data = await r.json();
             if (!data.success) {
-                alert(data.error || 'Ошибка сохранения');
+                showAlert(data.error || 'Ошибка сохранения', 'error');
             } else {
                 setEditingHours(false);
                 const status = await loadDayStatus(dateStr);
@@ -221,7 +229,7 @@ export default function DayModal({ dateStr, masterSlug, onClose, onDataChanged }
             }
         } catch (error) {
             console.error('Ошибка:', error);
-            alert('Ошибка соединения');
+            showAlert('Ошибка соединения', 'error');
         }
     }
 
@@ -253,7 +261,6 @@ export default function DayModal({ dateStr, masterSlug, onClose, onDataChanged }
                             </div>
                         ) : (
                             <>
-                                {/* Инфо о дне */}
                                 <div className={styles.dayInfo}>
                                     {isDayOff ? (
                                         <div className={styles.dayInfoOff}>
@@ -281,10 +288,10 @@ export default function DayModal({ dateStr, masterSlug, onClose, onDataChanged }
                                                             value={editHours.end}
                                                             onChange={e => setEditHours({ ...editHours, end: e.target.value })}
                                                         />
-                                                        <button className={`${styles.iconBtn} ${styles.iconBtnSuccess}`} onClick={saveHours} title="Сохранить">
+                                                        <button type="button" className={`${styles.iconBtn} ${styles.iconBtnSuccess}`} onClick={saveHours} title="Сохранить">
                                                             <i className="fas fa-check" />
                                                         </button>
-                                                        <button className={`${styles.iconBtn} ${styles.iconBtnSecondary}`} onClick={cancelEditingHours} title="Отмена">
+                                                        <button type="button" className={`${styles.iconBtn} ${styles.iconBtnSecondary}`} onClick={cancelEditingHours} title="Отмена">
                                                             <i className="fas fa-times" />
                                                         </button>
                                                     </>
@@ -292,7 +299,7 @@ export default function DayModal({ dateStr, masterSlug, onClose, onDataChanged }
                                                     <>
                                                         {dayData?.extra_start || dayData?.schedule_start} -{' '}
                                                         {dayData?.extra_end || dayData?.schedule_end}
-                                                        <button className={styles.iconBtn} onClick={startEditingHours}>
+                                                        <button type="button" className={styles.iconBtn} onClick={startEditingHours}>
                                                             <i className="fas fa-edit" />
                                                         </button>
                                                     </>
@@ -302,34 +309,31 @@ export default function DayModal({ dateStr, masterSlug, onClose, onDataChanged }
                                     )}
                                 </div>
 
-                                {/* Перерывы */}
                                 {!isDayOff && (
                                     <div className={styles.breaksBlock}>
                                         <BreaksEditor breaks={breaks} onChange={saveBreaks} />
                                     </div>
                                 )}
 
-                                {/* Кнопки управления */}
                                 <div className={styles.actions}>
                                     {isDayOff ? (
-                                        <button className={styles.btnSuccess} onClick={handleMakeDayWorking}>
+                                        <button type="button" className={styles.btnSuccess} onClick={handleMakeDayWorking}>
                                             <i className="fas fa-calendar-check" />
                                             Сделать рабочим днём
                                         </button>
                                     ) : (
-                                        <button className={styles.btnSoftBlue} onClick={handleMakeDayOff}>
+                                        <button type="button" className={styles.btnSoftBlue} onClick={handleMakeDayOff}>
                                             <i className="fas fa-calendar-times" />
                                             Сделать выходным
                                         </button>
                                     )}
-                                    <button className={styles.btnPink} onClick={handleOpenAddBooking}>
+                                    <button type="button" className={styles.btnPink} onClick={handleOpenAddBooking}>
                                         Добавить запись
                                     </button>
                                 </div>
 
                                 <hr className={styles.divider} />
 
-                                {/* Записи */}
                                 <h6 className={styles.bookingsTitle}>
                                     <i className="fas fa-list" />
                                     Записи на этот день ({bookings.length})
@@ -361,6 +365,7 @@ export default function DayModal({ dateStr, masterSlug, onClose, onDataChanged }
                                                         <td className={styles.actionsCell}>
                                                             <div className={styles.actionIcons}>
                                                                 <button
+                                                                    type="button"
                                                                     className={styles.actionIconBtn}
                                                                     onClick={() => handleEditBooking(b.id)}
                                                                     title="Редактировать"
@@ -368,6 +373,7 @@ export default function DayModal({ dateStr, masterSlug, onClose, onDataChanged }
                                                                     <i className="fas fa-edit" />
                                                                 </button>
                                                                 <button
+                                                                    type="button"
                                                                     className={`${styles.actionIconBtn} ${styles.actionIconBtnDelete}`}
                                                                     onClick={() => handleDeleteBooking(b.id, b.client_name, b.time)}
                                                                     title="Удалить"
@@ -387,7 +393,7 @@ export default function DayModal({ dateStr, masterSlug, onClose, onDataChanged }
                     </div>
 
                     <div className={styles.footer}>
-                        <button className={styles.btnSecondary} onClick={onClose}>
+                        <button type="button" className={styles.btnSecondary} onClick={onClose}>
                             Закрыть
                         </button>
                     </div>

@@ -535,6 +535,22 @@ def api_add_day_off(request):
         if DayOff.objects.filter(master=master, date=target_date).exists():
             return api_error('Этот день уже отмечен как выходной', status=409)
         
+        # Проверяем, есть ли на этот день записи
+        bookings_on_date = Booking.objects.filter(
+            master=master,
+            date=target_date,
+            status='confirmed'
+        )
+        bookings_count = bookings_on_date.count()
+        
+        if bookings_count > 0:
+            return api_error(
+                f'На этот день есть {bookings_count} '
+                f'{_pluralize_bookings(bookings_count)}. '
+                f'Сначала перенесите или отмените их.',
+                status=409
+            )
+        
         # Создаём выходной
         DayOff.objects.create(
             master=master,
@@ -589,3 +605,17 @@ def api_delete_day_off_by_date(request):
         return api_error(f'Неверный формат даты: {e}', status=400)
     except Exception as e:
         return api_error('Ошибка при удалении выходного дня', status=500)
+
+    
+
+def _pluralize_bookings(n):
+    """Склонение слова 'запись' по числу."""
+    n = abs(n) % 100
+    n1 = n % 10
+    if 10 < n < 20:
+        return 'записей'
+    if 1 < n1 < 5:
+        return 'записи'
+    if n1 == 1:
+        return 'запись'
+    return 'записей'

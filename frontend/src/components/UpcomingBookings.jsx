@@ -3,6 +3,7 @@ import { loadBookings, confirmBooking, unconfirmBooking } from '../api/bookingsL
 import { deleteBooking } from '../api/day';
 import BookingDetailsModal from './BookingDetailsModal';
 import styles from './UpcomingBookings.module.css';
+import useModal from '../hooks/useModal';
 
 export default function UpcomingBookings({ masterSlug, masterMaxLink, onEdit, onDataChanged }) {
     const [bookings, setBookings] = useState([]);
@@ -13,6 +14,7 @@ export default function UpcomingBookings({ masterSlug, masterMaxLink, onEdit, on
     const [hasMore, setHasMore] = useState(false);
     const [detailsBookingId, setDetailsBookingId] = useState(null);
     const [contactMenuId, setContactMenuId] = useState(null);
+    const { showAlert, showConfirm } = useModal();
 
     useEffect(() => {
         loadData(1, false);
@@ -56,16 +58,20 @@ export default function UpcomingBookings({ masterSlug, masterMaxLink, onEdit, on
                 const msg = booking.confirmed_by_master ? 'Подтверждение снято' : 'Запись подтверждена';
                 if (onDataChanged) onDataChanged(msg);
             } else {
-                alert(data.error || 'Ошибка');
+                showAlert(data.error || 'Ошибка', 'error');
             }
         } catch (error) {
             console.error(error);
-            alert('Ошибка соединения');
+            showAlert('Ошибка соединения', 'error');
         }
     }
 
     async function handleDelete(booking) {
-        if (!confirm(`Удалить запись клиента "${booking.client_name}" на ${booking.time}?`)) return;
+        const ok = await showConfirm(
+            `Удалить запись клиента "${booking.client_name}" на ${booking.time}?`,
+            { type: 'danger' }
+        );
+        if (!ok) return;
         try {
             const data = await deleteBooking(booking.id);
             if (data.success) {
@@ -73,11 +79,11 @@ export default function UpcomingBookings({ masterSlug, masterMaxLink, onEdit, on
                 setTotal(prev => prev - 1);
                 if (onDataChanged) onDataChanged('Запись удалена');
             } else {
-                alert(data.error || 'Ошибка удаления');
+                showAlert(data.error || 'Ошибка удаления', 'error');
             }
         } catch (error) {
             console.error(error);
-            alert('Ошибка соединения');
+            showAlert('Ошибка соединения', 'error');
         }
     }
 
@@ -111,14 +117,14 @@ export default function UpcomingBookings({ masterSlug, masterMaxLink, onEdit, on
         window.location.href = tgLink;
         setTimeout(() => {
             if (document.hasFocus()) {
-                alert('💬 Telegram не установлен или не открылся.\nСвяжитесь с клиентом по телефону.');
+                showAlert('💬 Telegram не установлен или не открылся.\nСвяжитесь с клиентом по телефону.', 'info');
             }
         }, 2000);
     }
 
     function openMax() {
         if (!masterMaxLink) {
-            alert('⚠️ Ссылка на MAX не настроена.\nДобавьте её в настройках профиля.');
+            showAlert('⚠️ Ссылка на MAX не настроена.\nДобавьте её в настройках профиля.', 'warning');
             return;
         }
         window.open(masterMaxLink, '_blank');

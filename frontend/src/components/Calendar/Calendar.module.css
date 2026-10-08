@@ -307,13 +307,15 @@
         border: none !important;
         border-radius: 0 !important;
         padding: 0 !important;
-        min-height: 32px;
+        min-height: 0;
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
+        justify-content: flex-start;
         width: 100%;
-        aspect-ratio: 1 / 1 !important;
+        aspect-ratio: auto !important;
+        min-width: 0;
+        overflow: visible;
     }
     
     /* ---- Цифра дня (круг) ---- */
@@ -324,15 +326,30 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 28px;
-        height: 28px;
+        width: 100%;
+        max-width: 28px;
+        height: auto;
+        aspect-ratio: 1 / 1;
         border-radius: 50%;
         color: black;
         margin: 0 auto;
-        min-width: 28px !important;      
-        max-width: 28px !important;      
-        flex-grow: 0 !important;        
-        aspect-ratio: 1 / 1 !important;  
+    }
+
+        /* ---- Цифра дня (круг) ---- */
+    .dateNumber {
+        font-size: 0.7rem;
+        font-weight: 500;
+        line-height: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        max-width: 28px;
+        height: auto;
+        aspect-ratio: 1 / 1;
+        border-radius: 50%;
+        color: black;
+        margin: 0 auto;
     }
     
     /* ---- Рабочий день — синий кружок ---- */
@@ -424,10 +441,10 @@
 
 @media (max-width: 480px) {
 
-    /* ---- Ещё компактнее дни недели ---- */
+        /* ---- Ещё компактнее дни недели ---- */
     .weekday {
         font-size: 0.5rem;
-        padding: 3px 0;
+        padding: 0;
     }
     
     /* ---- Больше вертикального отступа между рядами ---- */

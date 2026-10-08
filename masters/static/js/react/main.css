@@ -3,7 +3,7 @@
 /* ============================================================ */
 
 /* ---- Контейнер календаря (обёртка) ---- */
-._calendar_1ror6_6 {
+._calendar_1yjlr_11 {
     width: 100%;
 }
 
@@ -12,7 +12,7 @@
 /* ============================================================ */
 
 /* ---- Панель навигации (стрелки + месяц) ---- */
-._nav_1ror6_15 {
+._nav_1yjlr_29 {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -21,7 +21,7 @@
 }
 
 /* ---- Кнопка-стрелка (← →) ---- */
-._navBtn_1ror6_24 {
+._navBtn_1yjlr_47 {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -37,21 +37,21 @@
 }
 
 /* ---- Стрелка при наведении (синяя) ---- */
-._navBtn_1ror6_24:hover {
+._navBtn_1yjlr_47:hover {
     border-color: var(--primary);
     background: var(--primary-light);
     color: var(--primary);
 }
 
 /* ---- SVG-иконка внутри стрелки ---- */
-._navBtn_1ror6_24 svg {
+._navBtn_1yjlr_47 svg {
     display: block;
     width: 18px;
     height: 18px;
 }
 
 /* ---- Название месяца («Октябрь 2026») ---- */
-._navTitle_1ror6_54 {
+._navTitle_1yjlr_107 {
     font-weight: 700;
     font-size: 1rem;
     color: var(--gray-800);
@@ -64,7 +64,7 @@
 /* ============================================================ */
 
 /* ---- Строка дней недели (Пн-Вс) ---- */
-._weekdays_1ror6_67 {
+._weekdays_1yjlr_133 {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 8px;
@@ -72,7 +72,7 @@
 }
 
 /* ---- Название дня недели (Пн, Вт, ...) ---- */
-._weekday_1ror6_67 {
+._weekday_1yjlr_133 {
     font-weight: 800;
     padding: 8px;
     border-radius: 8px;
@@ -82,7 +82,7 @@
 }
 
 /* ---- Сетка дней месяца ---- */
-._dates_1ror6_85 {
+._dates_1yjlr_169 {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 8px;
@@ -93,7 +93,7 @@
 /* ============================================================ */
 
 /* ---- Базовая ячейка дня ---- */
-._dateCell_1ror6_96 {
+._dateCell_1yjlr_191 {
     background-color: #f8f9fa;
     border-radius: 10px;
     padding: 8px 4px;
@@ -106,43 +106,43 @@
 }
 
 /* ---- Пустая ячейка (для сдвига начала месяца) ---- */
-._dateCell_1ror6_96._empty_1ror6_109 {
+._dateCell_1yjlr_191._empty_1yjlr_217 {
     background-color: transparent;
     border: 0;
     cursor: default;
 }
 
 /* ---- Рабочий день (синий фон) ---- */
-._dateCell_1ror6_96._working_1ror6_116 {
+._dateCell_1yjlr_191._working_1yjlr_231 {
     background-color: var(--primary-light);
 }
 
 /* ---- Нерабочий день (серый, полупрозрачный) ---- */
-._dateCell_1ror6_96._nonWorking_1ror6_121 {
+._dateCell_1yjlr_191._nonWorking_1yjlr_241 {
     background-color: #e9ecef;
     border-color: #ced4da;
     opacity: 0.7;
 }
 
 /* ---- Прошедший день (полупрозрачный) ---- */
-._dateCell_1ror6_96._past_1ror6_128 {
+._dateCell_1yjlr_191._past_1yjlr_255 {
     opacity: 0.4;
 }
 
 /* ---- Сегодня (синяя рамка) ---- */
-._dateCell_1ror6_96._today_1ror6_133 {
+._dateCell_1yjlr_191._today_1yjlr_265 {
     border: 2px solid var(--primary);
     box-shadow: 0 0 0 0.5px var(--primary);
 }
 
 /* ---- Цифра дня (1, 2, 3, ...) ---- */
-._dateNumber_1ror6_139 {
+._dateNumber_1yjlr_277 {
     font-weight: 600;
     color: black;
 }
 
 /* ---- Часы работы под цифрой (09:00 - 18:00) ---- */
-._dateTime_1ror6_145 {
+._dateTime_1yjlr_289 {
     font-size: 0.65rem;
     margin-top: 5px;
     color: #666;
@@ -153,7 +153,7 @@
 /* ============================================================ */
 
 /* ---- Контейнер иконок (бейдж записи + перерыв) ---- */
-._icons_1ror6_156 {
+._icons_1yjlr_311 {
     position: absolute;
     top: 4px;
     right: 4px;
@@ -164,7 +164,7 @@
 }
 
 /* ---- Бейдж с количеством записей ---- */
-._bookingBadge_1ror6_167 {
+._bookingBadge_1yjlr_333 {
     font-size: 0.7rem;
     font-weight: 700;
     min-width: 16px;
@@ -179,7 +179,7 @@
 }
 
 /* ---- Бейдж перерыва (зелёная иконка) ---- */
-._breakBadge_1ror6_182 {
+._breakBadge_1yjlr_363 {
     font-size: 0.8rem;
     line-height: 1;
     display: inline-flex;
@@ -191,7 +191,7 @@
 }
 
 /* ---- SVG-иконка внутри бейджа перерыва ---- */
-._breakBadge_1ror6_182 svg {
+._breakBadge_1yjlr_363 svg {
     display: block;
     width: 16px;
     height: 16px;
@@ -205,7 +205,7 @@
 /* ============================================================ */
 
 /* ---- Спиннер загрузки ---- */
-._loading_1ror6_208 {
+._loading_1yjlr_415 {
     text-align: center;
     padding: 24px 0;
 }
@@ -220,11 +220,11 @@
 
 /* ---- Уменьшаем отступы в сетке ---- */
 @media (max-width: 1600px) {
-    ._dates_1ror6_85 {
+    ._dates_1yjlr_169 {
         gap: 6px;
     }
     
-    ._weekdays_1ror6_67 {
+    ._weekdays_1yjlr_133 {
         gap: 6px;
     }
 }
@@ -235,20 +235,20 @@
 
 /* ---- Уменьшаем ячейки ---- */
 @media (max-width: 1200px) {
-    ._dateCell_1ror6_96 {
+    ._dateCell_1yjlr_191 {
         min-height: 60px;
         padding: 6px 3px;
     }
     
-    ._dateNumber_1ror6_139 {
+    ._dateNumber_1yjlr_277 {
         font-size: 0.9rem;
     }
     
-    ._dateTime_1ror6_145 {
+    ._dateTime_1yjlr_289 {
         font-size: 0.6rem;
     }
     
-    ._weekday_1ror6_67 {
+    ._weekday_1yjlr_133 {
         font-size: 13px;
     }
 }
@@ -259,17 +259,17 @@
 
 /* ---- Ещё компактнее ---- */
 @media (max-width: 992px) {
-    ._dateCell_1ror6_96 {
+    ._dateCell_1yjlr_191 {
         min-height: 55px;
         padding: 6px 3px;
     }
 
-    ._navBtn_1ror6_24 {
+    ._navBtn_1yjlr_47 {
         width: 32px;
         height: 32px;
     }
     
-    ._navBtn_1ror6_24 svg {
+    ._navBtn_1yjlr_47 svg {
         width: 16px;
         height: 16px;
     }
@@ -282,17 +282,17 @@
 @media (max-width: 768px) {
 
     /* ---- Меньше отступы в сетке ---- */
-    ._dates_1ror6_85 {
+    ._dates_1yjlr_169 {
         gap: 6px;
     }
     
-    ._weekdays_1ror6_67 {
+    ._weekdays_1yjlr_133 {
         gap: 3px;
         margin-bottom: 6px;
     }
     
     /* ---- Компактные дни недели ---- */
-    ._weekday_1ror6_67 {
+    ._weekday_1yjlr_133 {
         font-weight: 700;
         font-size: 0.6rem;
         padding: 4px 0;
@@ -301,63 +301,80 @@
     }
     
     /* ---- Ячейка дня (круглая, без фона) ---- */
-    ._dateCell_1ror6_96 {
+    ._dateCell_1yjlr_191 {
         position: relative !important;
         background: transparent !important;
         border: none !important;
         border-radius: 0 !important;
         padding: 0 !important;
-        min-height: 32px;
+        min-height: 0;
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
+        justify-content: flex-start;
         width: 100%;
-        aspect-ratio: 1 / 1 !important;
+        aspect-ratio: auto !important;
+        min-width: 0;
+        overflow: visible;
     }
     
     /* ---- Цифра дня (круг) ---- */
-    ._dateNumber_1ror6_139 {
+    ._dateNumber_1yjlr_277 {
         font-size: 0.7rem;
         font-weight: 500;
         line-height: 1;
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 28px;
-        height: 28px;
+        width: 100%;
+        max-width: 28px;
+        height: auto;
+        aspect-ratio: 1 / 1;
         border-radius: 50%;
         color: black;
         margin: 0 auto;
-        min-width: 28px !important;      
-        max-width: 28px !important;      
-        flex-grow: 0 !important;        
-        aspect-ratio: 1 / 1 !important;  
+    }
+
+        /* ---- Цифра дня (круг) ---- */
+    ._dateNumber_1yjlr_277 {
+        font-size: 0.7rem;
+        font-weight: 500;
+        line-height: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        max-width: 28px;
+        height: auto;
+        aspect-ratio: 1 / 1;
+        border-radius: 50%;
+        color: black;
+        margin: 0 auto;
     }
     
     /* ---- Рабочий день — синий кружок ---- */
-    ._dateCell_1ror6_96._working_1ror6_116 ._dateNumber_1ror6_139 {
+    ._dateCell_1yjlr_191._working_1yjlr_231 ._dateNumber_1yjlr_277 {
         background-color: var(--primary-light);
     }
     
     /* ---- Нерабочий день — без кружка ---- */
-    ._dateCell_1ror6_96._nonWorking_1ror6_121 ._dateNumber_1ror6_139 {
+    ._dateCell_1yjlr_191._nonWorking_1yjlr_241 ._dateNumber_1yjlr_277 {
         background-color: transparent !important;
     }
     
     /* ---- Прошедшие — бледнее ---- */
-    ._dateCell_1ror6_96._past_1ror6_128 ._dateNumber_1ror6_139 {
+    ._dateCell_1yjlr_191._past_1yjlr_255 ._dateNumber_1yjlr_277 {
         opacity: 0.6;
     }
     
     /* ---- Сегодня — без рамки у ячейки ---- */
-    ._dateCell_1ror6_96._today_1ror6_133 {
+    ._dateCell_1yjlr_191._today_1yjlr_265 {
         border: none;
         box-shadow: none;
     }
     
     /* ---- Сегодня — обводка у цифры ---- */
-    ._dateCell_1ror6_96._today_1ror6_133 ._dateNumber_1ror6_139 {
+    ._dateCell_1yjlr_191._today_1yjlr_265 ._dateNumber_1yjlr_277 {
         color: black;
         font-weight: 600;
         background: transparent;
@@ -367,7 +384,7 @@
     }
     
     /* ---- Иконки под цифрой (бейдж + перерыв) ---- */
-    ._icons_1ror6_156 {
+    ._icons_1yjlr_311 {
         position: relative;
         top: 1px;
         right: auto;
@@ -381,7 +398,7 @@
     }
     
     /* ---- Компактный бейдж записи ---- */
-    ._bookingBadge_1ror6_167 {
+    ._bookingBadge_1yjlr_333 {
         font-size: 0.55rem;
         min-width: 13px;
         height: 13px;
@@ -390,29 +407,29 @@
     }
     
     /* ---- Компактная иконка перерыва ---- */
-    ._breakBadge_1ror6_182 svg {
+    ._breakBadge_1yjlr_363 svg {
         width: 14px;
         height: 14px;
     }
     
     /* ---- Скрываем часы работы ---- */
-    ._dateTime_1ror6_145 {
+    ._dateTime_1yjlr_289 {
         display: none;
     }
     
     /* ---- Компактные стрелки навигации ---- */
-    ._navBtn_1ror6_24 {
+    ._navBtn_1yjlr_47 {
         width: 25px;
         height: 25px;
     }
     
-    ._navBtn_1ror6_24 svg {
+    ._navBtn_1yjlr_47 svg {
         width: 16px;
         height: 16px;
     }
     
     /* ---- Компактный заголовок месяца ---- */
-    ._navTitle_1ror6_54 {
+    ._navTitle_1yjlr_107 {
         font-size: 0.9rem;
         min-width: 120px;
     }
@@ -424,35 +441,327 @@
 
 @media (max-width: 480px) {
 
-    /* ---- Ещё компактнее дни недели ---- */
-    ._weekday_1ror6_67 {
+        /* ---- Ещё компактнее дни недели ---- */
+    ._weekday_1yjlr_133 {
         font-size: 0.5rem;
-        padding: 3px 0;
+        padding: 0;
     }
     
     /* ---- Больше вертикального отступа между рядами ---- */
-    ._dates_1ror6_85 {
+    ._dates_1yjlr_169 {
         gap: 6px;
         row-gap: 16px;
     }
     
     /* ---- Меньше цифра ---- */
-    ._dateNumber_1ror6_139 {
+    ._dateNumber_1yjlr_277 {
         font-size: 0.65rem;
     }
     
     /* ---- Иконки — компактнее ---- */
-    ._icons_1ror6_156 {
+    ._icons_1yjlr_311 {
         min-height: 10px;
         gap: 1px;
         margin-top: 1px;
+    }
+}/* ============================================================ */
+/* ========== ALERT MODAL (CSS Module) ======================== */
+/* ============================================================ */
+
+._backdrop_1uwbg_9 {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1090;              /* выше EditBookingModal (1080) */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+}
+
+._modal_1uwbg_31 {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid var(--gray-200);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: _fadeInUp_1uwbg_1 0.3s ease;
+}
+
+._header_1uwbg_57 {
+    padding: 16px 20px;
+    background: white;
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+._title_1uwbg_75 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--gray-800);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+._title_1uwbg_75 i {
+    color: var(--primary);
+    font-size: 1rem;
+}
+
+._closeBtn_1uwbg_105 {
+    background: transparent;
+    border: none;
+    font-size: 1.1rem;
+    color: var(--gray-500);
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    line-height: 1;
+}
+
+._closeBtn_1uwbg_105:hover {
+    background: var(--gray-100);
+    color: var(--gray-800);
+}
+
+._body_1uwbg_139 {
+    padding: 20px;
+    font-size: 0.95rem;
+    color: var(--gray-700);
+    line-height: 1.5;
+    text-align: center;
+}
+
+._footer_1uwbg_155 {
+    padding: 12px 20px;
+    background: var(--gray-50);
+    border-top: 1px solid var(--gray-200);
+    display: flex;
+    justify-content: center;
+}
+
+._btnPrimary_1uwbg_171 {
+    padding: 8px 32px;
+    border-radius: 30px;
+    border: none;
+    background: var(--primary);
+    color: white;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 120px;
+}
+
+._btnPrimary_1uwbg_171:hover {
+    background: var(--primary-dark);
+}
+
+/* ---- Типы ---- */
+._success_1uwbg_207 ._title_1uwbg_75 i {
+    color: var(--success);
+}
+
+._error_1uwbg_215 ._title_1uwbg_75 i {
+    color: var(--danger);
+}
+
+._warning_1uwbg_223 ._title_1uwbg_75 i {
+    color: var(--warning);
+}
+
+@keyframes _fadeInUp_1uwbg_1 {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 768px) {
+    ._backdrop_1uwbg_9 {
+        padding: 16px;
+    }
+    
+    ._modal_1uwbg_31 {
+        max-width: 100%;
+    }
+    
+    ._body_1uwbg_139 {
+        padding: 16px;
+    }
+}/* ============================================================ */
+/* ========== CONFIRM MODAL (CSS Module) ====================== */
+/* ============================================================ */
+
+._backdrop_1hqnv_9 {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1090;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+}
+
+._modal_1hqnv_31 {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid var(--gray-200);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    width: 100%;
+    max-width: 420px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: _fadeInUp_1hqnv_1 0.3s ease;
+}
+
+._header_1hqnv_57 {
+    padding: 16px 20px;
+    background: white;
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+._title_1hqnv_75 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--gray-800);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+._title_1hqnv_75 i {
+    color: var(--warning);
+    font-size: 1rem;
+}
+
+._body_1hqnv_105 {
+    padding: 20px;
+    font-size: 0.95rem;
+    color: var(--gray-700);
+    line-height: 1.5;
+    text-align: center;
+}
+
+._footer_1hqnv_121 {
+    padding: 12px 20px;
+    background: var(--gray-50);
+    border-top: 1px solid var(--gray-200);
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+
+._btnSecondary_1hqnv_139 {
+    padding: 8px 24px;
+    border-radius: 30px;
+    border: none;
+    background: var(--gray-200);
+    color: var(--gray-700);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 110px;
+}
+
+._btnSecondary_1hqnv_139:hover {
+    background: var(--gray-300);
+    color: var(--gray-800);
+}
+
+._btnConfirm_1hqnv_175 {
+    padding: 8px 24px;
+    border-radius: 30px;
+    border: none;
+    background: var(--primary);
+    color: white;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 110px;
+}
+
+._btnConfirm_1hqnv_175:hover {
+    background: var(--primary-dark);
+}
+
+/* ---- Типы ---- */
+._danger_1hqnv_211 ._title_1hqnv_75 i {
+    color: var(--danger);
+}
+
+._danger_1hqnv_211 ._btnConfirm_1hqnv_175 {
+    background: var(--danger);
+}
+
+._danger_1hqnv_211 ._btnConfirm_1hqnv_175:hover {
+    background: #b91c1c;
+}
+
+._info_1hqnv_235 ._title_1hqnv_75 i {
+    color: var(--primary);
+}
+
+/* ---- Анимация ---- */
+@keyframes _fadeInUp_1hqnv_1 {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 768px) {
+    ._backdrop_1hqnv_9 {
+        padding: 16px;
+    }
+
+    ._modal_1hqnv_31 {
+        max-width: 100%;
+    }
+
+    ._body_1hqnv_105 {
+        padding: 16px;
+    }
+
+    ._footer_1hqnv_121 {
+        flex-direction: column-reverse;
+    }
+
+    ._btnSecondary_1hqnv_139,
+    ._btnConfirm_1hqnv_175 {
+        width: 100%;
     }
 }/* ============================================================ */
 /* ========== BREAKS EDITOR (CSS Module) ====================== */
 /* ============================================================ */
 
 /* ---- Контейнер ---- */
-._editor_qbm6c_6 {
+._editor_1al4j_11 {
     display: flex;
     flex-direction: column;
     gap: 4px;
@@ -461,7 +770,7 @@
 }
 
 /* ---- Заголовок «Перерывы:» ---- */
-._title_qbm6c_15 {
+._title_1al4j_29 {
     font-size: 0.95rem;
     font-weight: 600;
     color: var(--gray-800);
@@ -469,7 +778,7 @@
 }
 
 /* ---- Строка перерыва ---- */
-._breakRow_qbm6c_23 {
+._breakRow_1al4j_45 {
     display: flex;
     align-items: center;
     gap: 6px;
@@ -480,7 +789,7 @@
 }
 
 /* ---- Метка «Перерыв:» / «Перерыв 1:» ---- */
-._label_qbm6c_34 {
+._label_1al4j_67 {
     font-size: 0.95rem;
     font-weight: 600;
     color: var(--gray-800);
@@ -489,14 +798,14 @@
 }
 
 /* ---- Часы перерыва ---- */
-._value_qbm6c_43 {
+._value_1al4j_85 {
     font-size: 0.95rem;
     color: var(--gray-700);
     white-space: nowrap;
 }
 
 /* ---- Поля ввода ---- */
-._input_qbm6c_50 {
+._input_1al4j_99 {
     width: 90px;
     height: 32px;
     padding: 4px 8px;
@@ -507,23 +816,23 @@
     box-sizing: border-box;
 }
 
-._input_qbm6c_50:focus {
+._input_1al4j_99:focus {
     outline: none;
     border-color: var(--primary);
 }
 
-._separator_qbm6c_66 {
+._separator_1al4j_131 {
     color: var(--gray-500);
     font-weight: 500;
 }
 
-._actions_qbm6c_71 {
+._actions_1al4j_141 {
     display: flex;
     gap: 1px;  /* ← отдельный gap для иконок */
 }
 
 /* ---- Иконки-кнопки ---- */
-._iconBtn_qbm6c_77 {
+._iconBtn_1al4j_153 {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -540,36 +849,36 @@
     flex-shrink: 0;
 }
 
-._iconBtn_qbm6c_77:hover {
+._iconBtn_1al4j_153:hover {
     background: var(--gray-100);
     color: var(--gray-800);
 }
 
-._iconBtnSuccess_qbm6c_99 {
+._iconBtnSuccess_1al4j_197 {
     color: var(--success);
 }
 
-._iconBtnSuccess_qbm6c_99:hover {
+._iconBtnSuccess_1al4j_197:hover {
     background: #dcfce7;
     color: #16a34a;
 }
 
-._iconBtnSecondary_qbm6c_108 {
+._iconBtnSecondary_1al4j_215 {
     color: var(--gray-500);
 }
 
-._iconBtnSecondary_qbm6c_108:hover {
+._iconBtnSecondary_1al4j_215:hover {
     background: var(--gray-100);
     color: var(--gray-700);
 }
 
-._iconBtnDanger_qbm6c_117:hover {
+._iconBtnDanger_1al4j_233:hover {
     background: #fef2f2;
     color: var(--danger);
 }
 
 /* ---- Пустое состояние ---- */
-._emptyRow_qbm6c_123 {
+._emptyRow_1al4j_245 {
     display: flex;
     align-items: center;
     gap: 6px;
@@ -578,13 +887,13 @@
     padding: 0;
 }
 
-._emptyText_qbm6c_132 {
+._emptyText_1al4j_263 {
     font-size: 0.95rem;
     color: var(--gray-500);
     margin: 0;
 }
 
-._dot_qbm6c_138 {
+._dot_1al4j_275 {
     font-size: 0.95rem;
     font-weight: 600;
     color: var(--gray-500);
@@ -595,38 +904,38 @@
 
 /* ---- Адаптив ---- */
 @media (max-width: 768px) {
-    ._title_qbm6c_15 {
+    ._title_1al4j_29 {
         font-size: 0.85rem;
     }
     
-    ._label_qbm6c_34 {
+    ._label_1al4j_67 {
         font-size: 0.85rem;
     }
     
-    ._value_qbm6c_43 {
+    ._value_1al4j_85 {
         font-size: 0.85rem;
     }
     
-    ._input_qbm6c_50 {
+    ._input_1al4j_99 {
         width: 75px;
         height: 28px;
         font-size: 12px;
         padding: 2px 6px;
     }
     
-    ._iconBtn_qbm6c_77 {
+    ._iconBtn_1al4j_153 {
         width: 26px;
         height: 26px;
         font-size: 0.75rem;
     }
     
-    ._emptyText_qbm6c_132 {
+    ._emptyText_1al4j_263 {
         font-size: 0.85rem;
     }
 }
 
 @media (max-width: 480px) {
-    ._input_qbm6c_50 {
+    ._input_1al4j_99 {
         width: 70px;
     }
 }/* ============================================================ */
@@ -635,7 +944,7 @@
 /* ============================================================ */
 
 /* ---- Backdrop ---- */
-._backdrop_jzeii_7 {
+._backdrop_yrfp6_13 {
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.6);
@@ -648,7 +957,7 @@
 }
 
 /* ---- Окно модалки ---- */
-._modal_jzeii_20 {
+._modal_yrfp6_39 {
     background: white;
     border-radius: 16px;
     border: 1px solid var(--gray-200);
@@ -659,11 +968,11 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    animation: _fadeInUp_jzeii_1 0.3s ease;
+    animation: _fadeInUp_yrfp6_1 0.3s ease;
 }
 
 /* ---- Заголовок ---- */
-._header_jzeii_35 {
+._header_yrfp6_69 {
     padding: 16px 20px;
     background: white;
     border-bottom: 1px solid var(--gray-200);
@@ -673,7 +982,7 @@
     flex-shrink: 0;
 }
 
-._title_jzeii_45 {
+._title_yrfp6_89 {
     font-size: 1.1rem;
     font-weight: 600;
     color: var(--gray-800);
@@ -683,7 +992,7 @@
     gap: 8px;
 }
 
-._closeBtn_jzeii_55 {
+._closeBtn_yrfp6_109 {
     background: transparent;
     border: none;
     font-size: 1.2rem;
@@ -695,26 +1004,26 @@
     line-height: 1;
 }
 
-._closeBtn_jzeii_55:hover {
+._closeBtn_yrfp6_109:hover {
     background: var(--gray-100);
     color: var(--gray-800);
 }
 
 /* ---- Тело ---- */
-._body_jzeii_73 {
+._body_yrfp6_145 {
     padding: 20px;
     overflow-y: auto;
     flex: 1;
 }
 
 /* ---- Состояние загрузки ---- */
-._loading_jzeii_80 {
+._loading_yrfp6_159 {
     text-align: center;
     padding: 24px 0;
 }
 
 /* ---- Метка секции ---- */
-._sectionLabel_jzeii_86 {
+._sectionLabel_yrfp6_171 {
     font-size: 0.85rem;
     font-weight: 600;
     color: var(--gray-800);
@@ -722,12 +1031,12 @@
     display: block;
 }
 
-._sectionLabelTop_jzeii_94 {
+._sectionLabelTop_yrfp6_187 {
     margin-top: 16px;
 }
 
 /* ---- Метка категории ---- */
-._categoryLabel_jzeii_99 {
+._categoryLabel_yrfp6_197 {
     font-size: 0.75rem;
     color: var(--gray-500);
     text-transform: uppercase;
@@ -736,7 +1045,7 @@
 }
 
 /* ---- Сетка карточек услуг ---- */
-._grid_jzeii_108 {
+._grid_yrfp6_215 {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
@@ -744,7 +1053,7 @@
 }
 
 /* ---- Карточка услуги ---- */
-._serviceCard_jzeii_116 {
+._serviceCard_yrfp6_231 {
     flex: 0 0 calc(50% - 4px);
     padding: 10px 12px;
     border-radius: 12px;
@@ -755,18 +1064,18 @@
     position: relative;
 }
 
-._serviceCard_jzeii_116:hover {
+._serviceCard_yrfp6_231:hover {
     border-color: var(--primary-light);
     background: var(--primary-lighter);
 }
 
-._serviceCardSelected_jzeii_132 {
+._serviceCardSelected_yrfp6_263 {
     border: 1px solid var(--primary);
     background-color: var(--primary-light);
 }
 
 /* ---- Крестик у выбранной услуги (только в AddBookingModal) ---- */
-._serviceCloseBtn_jzeii_138 {
+._serviceCloseBtn_yrfp6_275 {
     position: absolute;
     top: -6px;
     right: -6px;
@@ -789,40 +1098,40 @@
     padding: 0;
 }
 
-._serviceCloseBtn_jzeii_138:hover {
+._serviceCloseBtn_yrfp6_275:hover {
     background: #f8d6d6;
     color: #dc2626;
     border-color: #dc2626;
 }
 
-._serviceCardHeader_jzeii_167 {
+._serviceCardHeader_yrfp6_333 {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
     gap: 8px;
 }
 
-._serviceCardName_jzeii_174 {
+._serviceCardName_yrfp6_347 {
     font-size: 0.85rem;
     font-weight: 700;
     color: var(--gray-800);
 }
 
-._serviceCardPrice_jzeii_180 {
+._serviceCardPrice_yrfp6_359 {
     font-size: 0.8rem;
     font-weight: 700;
     color: var(--primary);
     flex-shrink: 0;
 }
 
-._serviceCardMeta_jzeii_187 {
+._serviceCardMeta_yrfp6_373 {
     margin-top: 2px;
     font-size: 0.7rem;
     color: var(--gray-500);
 }
 
 /* ---- Сетка дат ---- */
-._dateGrid_jzeii_194 {
+._dateGrid_yrfp6_387 {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
@@ -831,7 +1140,7 @@
     border-top: 1px solid var(--gray-200);
 }
 
-._dateCard_jzeii_203 {
+._dateCard_yrfp6_405 {
     flex: 0 0 calc(25% - 6px);
     padding: 6px 4px;
     border-radius: 8px;
@@ -842,23 +1151,23 @@
     transition: all 0.2s ease;
 }
 
-._dateCard_jzeii_203:hover {
+._dateCard_yrfp6_405:hover {
     border-color: var(--primary-light);
     background: var(--primary-lighter);
 }
 
-._dateCardSelected_jzeii_219 {
+._dateCardSelected_yrfp6_437 {
     border: 1px solid var(--primary);
     background-color: var(--primary-light);
 }
 
-._dateCardWeekday_jzeii_224 {
+._dateCardWeekday_yrfp6_447 {
     font-size: 0.65rem;
     color: var(--gray-500);
     line-height: 1;
 }
 
-._dateCardDay_jzeii_230 {
+._dateCardDay_yrfp6_459 {
     font-size: 0.8rem;
     font-weight: 600;
     color: var(--gray-800);
@@ -866,7 +1175,7 @@
 }
 
 /* ---- Сетка слотов ---- */
-._slotGrid_jzeii_238 {
+._slotGrid_yrfp6_475 {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
@@ -876,7 +1185,7 @@
     border-top: 1px solid var(--gray-200);
 }
 
-._slotCard_jzeii_248 {
+._slotCard_yrfp6_495 {
     flex: 0 0 calc(16.666% - 7px);
     padding: 4px;
     border-radius: 8px;
@@ -890,25 +1199,25 @@
     color: var(--gray-700);
 }
 
-._slotCard_jzeii_248:hover {
+._slotCard_yrfp6_495:hover {
     border-color: var(--primary-light);
     background: var(--primary-lighter);
 }
 
-._slotCardSelected_jzeii_267 {
+._slotCardSelected_yrfp6_533 {
     border: 1px solid var(--primary);
     background-color: var(--primary-light);
 }
 
 /* ---- Пустое состояние ---- */
-._emptyText_jzeii_273 {
+._emptyText_yrfp6_545 {
     font-size: 0.85rem;
     color: var(--gray-500);
     margin: 0;
 }
 
 /* ---- Сводка ---- */
-._summaryBox_jzeii_280 {
+._summaryBox_yrfp6_559 {
     background: var(--primary-lighter);
     border-radius: 12px;
     padding: 12px 16px;
@@ -916,7 +1225,7 @@
     margin-bottom: 12px;
 }
 
-._summaryTitle_jzeii_288 {
+._summaryTitle_yrfp6_575 {
     font-size: 0.75rem;
     color: var(--gray-500);
     text-transform: uppercase;
@@ -927,7 +1236,7 @@
     gap: 4px;
 }
 
-._summaryRow_jzeii_299 {
+._summaryRow_yrfp6_597 {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -936,16 +1245,16 @@
     border-bottom: 1px solid rgba(255, 255, 255, 0.6);
 }
 
-._summaryRow_jzeii_299:last-of-type {
+._summaryRow_yrfp6_597:last-of-type {
     border-bottom: none;
 }
 
-._summaryRowMeta_jzeii_312 {
+._summaryRowMeta_yrfp6_623 {
     color: var(--gray-500);
     font-size: 0.8rem;
 }
 
-._summaryTotal_jzeii_317 {
+._summaryTotal_yrfp6_633 {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -956,11 +1265,11 @@
     font-size: 0.9rem;
 }
 
-._summaryTotalValue_jzeii_328 {
+._summaryTotalValue_yrfp6_655 {
     color: var(--primary);
 }
 
-._summaryMeta_jzeii_332 {
+._summaryMeta_yrfp6_663 {
     display: flex;
     gap: 16px;
     margin-top: 10px;
@@ -968,15 +1277,15 @@
     color: var(--gray-500);
 }
 
-._summaryMetaItem_jzeii_340 {
+._summaryMetaItem_yrfp6_679 {
     display: inline-flex;
     align-items: center;
     gap: 4px;
 }
 
 /* ---- Поля формы ---- */
-._formInput_jzeii_347,
-._formTextarea_jzeii_348 {
+._formInput_yrfp6_693,
+._formTextarea_yrfp6_695 {
     width: 100%;
     border-radius: 10px;
     border: 1px solid var(--gray-300);
@@ -988,35 +1297,35 @@
     margin-bottom: 8px;
 }
 
-._formInput_jzeii_347 {
+._formInput_yrfp6_693 {
     height: 40px;
 }
 
-._formInput_jzeii_347::placeholder {
+._formInput_yrfp6_693::placeholder {
     color: var(--gray-400);
     opacity: 1;
 }
 
-._formTextarea_jzeii_348 {
+._formTextarea_yrfp6_695 {
     min-height: 60px;
     resize: vertical;
     font-family: inherit;
 }
 
-._formTextarea_jzeii_348::placeholder {
+._formTextarea_yrfp6_695::placeholder {
     color: var(--gray-400);
     opacity: 1;
 }
 
-._formInput_jzeii_347:focus,
-._formTextarea_jzeii_348:focus {
+._formInput_yrfp6_693:focus,
+._formTextarea_yrfp6_695:focus {
     outline: none;
     border-color: var(--primary);
     box-shadow: 0 0 0 3px rgba(64, 83, 211, 0.08);
 }
 
 /* ---- Футер ---- */
-._footer_jzeii_388 {
+._footer_yrfp6_775 {
     padding: 12px 20px;
     background: var(--gray-50);
     border-top: 1px solid var(--gray-200);
@@ -1026,7 +1335,7 @@
     flex-shrink: 0;
 }
 
-._btnSecondary_jzeii_398 {
+._btnSecondary_yrfp6_795 {
     padding: 8px 20px;
     border-radius: 30px;
     border: none;
@@ -1038,17 +1347,17 @@
     transition: all 0.2s ease;
 }
 
-._btnSecondary_jzeii_398:hover {
+._btnSecondary_yrfp6_795:hover {
     background: var(--gray-300);
     color: var(--gray-800);
 }
 
-._btnSecondary_jzeii_398:disabled {
+._btnSecondary_yrfp6_795:disabled {
     opacity: 0.6;
     cursor: not-allowed;
 }
 
-._btnPink_jzeii_420 {
+._btnPink_yrfp6_839 {
     padding: 8px 20px;
     border-radius: 30px;
     border: none;
@@ -1060,17 +1369,17 @@
     transition: all 0.2s ease;
 }
 
-._btnPink_jzeii_420:hover {
+._btnPink_yrfp6_839:hover {
     background: var(--primary-dark);
 }
 
-._btnPink_jzeii_420:disabled {
+._btnPink_yrfp6_839:disabled {
     opacity: 0.6;
     cursor: not-allowed;
 }
 
 /* ---- Анимация ---- */
-@keyframes _fadeInUp_jzeii_1 {
+@keyframes _fadeInUp_yrfp6_1 {
     from {
         opacity: 0;
         transform: translateY(20px);
@@ -1086,12 +1395,12 @@
 /* ============================================================ */
 
 @media (max-width: 768px) {
-    ._backdrop_jzeii_7 {
+    ._backdrop_yrfp6_13 {
         padding: 0;
         align-items: stretch;
     }
     
-    ._modal_jzeii_20 {
+    ._modal_yrfp6_39 {
         max-width: 100%;
         border-radius: 0;
         max-height: none;
@@ -1100,58 +1409,58 @@
         box-shadow: none;
     }
     
-    ._header_jzeii_35 {
+    ._header_yrfp6_69 {
         padding: 14px 16px;
     }
     
-    ._title_jzeii_45 {
+    ._title_yrfp6_89 {
         font-size: 0.95rem;
     }
     
-    ._body_jzeii_73 {
+    ._body_yrfp6_145 {
         padding: 16px;
     }
     
-    ._footer_jzeii_388 {
+    ._footer_yrfp6_775 {
         padding: 10px 16px;
         flex-direction: column;
     }
     
-    ._footer_jzeii_388 ._btnSecondary_jzeii_398,
-    ._footer_jzeii_388 ._btnPink_jzeii_420 {
+    ._footer_yrfp6_775 ._btnSecondary_yrfp6_795,
+    ._footer_yrfp6_775 ._btnPink_yrfp6_839 {
         width: 100%;
         justify-content: center;
     }
     
-    ._serviceCard_jzeii_116 {
+    ._serviceCard_yrfp6_231 {
         flex: 0 0 100%;
     }
     
-    ._dateCard_jzeii_203 {
+    ._dateCard_yrfp6_405 {
         flex: 0 0 calc(33.333% - 6px);
     }
     
-    ._slotCard_jzeii_248 {
+    ._slotCard_yrfp6_495 {
         flex: 0 0 calc(33.333% - 6px);
         font-size: 0.75rem;
     }
     
-    ._formInput_jzeii_347,
-    ._formTextarea_jzeii_348 {
+    ._formInput_yrfp6_693,
+    ._formTextarea_yrfp6_695 {
         font-size: 16px;
     }
 }
 
 @media (max-width: 480px) {
-    ._header_jzeii_35 {
+    ._header_yrfp6_69 {
         padding: 12px 14px;
     }
     
-    ._title_jzeii_45 {
+    ._title_yrfp6_89 {
         font-size: 0.9rem;
     }
     
-    ._body_jzeii_73 {
+    ._body_yrfp6_145 {
         padding: 12px;
     }
 }/* ============================================================ */
@@ -1159,7 +1468,7 @@
 /* ============================================================ */
 
 /* ---- Backdrop ---- */
-._backdrop_17fi4_6 {
+._backdrop_iwppj_11 {
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.5);
@@ -1172,7 +1481,7 @@
 }
 
 /* ---- Окно модалки ---- */
-._modal_17fi4_19 {
+._modal_iwppj_37 {
     background: white;
     border-radius: 16px;
     border: 1px solid var(--gray-200);
@@ -1183,11 +1492,11 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    animation: _fadeInUp_17fi4_1 0.3s ease;
+    animation: _fadeInUp_iwppj_1 0.3s ease;
 }
 
 /* ---- Заголовок ---- */
-._header_17fi4_34 {
+._header_iwppj_67 {
     padding: 16px 20px;
     background: white;
     border-bottom: 1px solid var(--gray-200);
@@ -1197,7 +1506,7 @@
     flex-shrink: 0;
 }
 
-._title_17fi4_44 {
+._title_iwppj_87 {
     font-size: 1.1rem;
     font-weight: 600;
     color: var(--gray-800);
@@ -1207,7 +1516,7 @@
     gap: 8px;
 }
 
-._closeBtn_17fi4_54 {
+._closeBtn_iwppj_107 {
     background: transparent;
     border: none;
     font-size: 1.2rem;
@@ -1219,26 +1528,26 @@
     line-height: 1;
 }
 
-._closeBtn_17fi4_54:hover {
+._closeBtn_iwppj_107:hover {
     background: var(--gray-100);
     color: var(--gray-800);
 }
 
 /* ---- Тело ---- */
-._body_17fi4_72 {
+._body_iwppj_143 {
     padding: 20px;
     overflow-y: auto;
     flex: 1;
 }
 
 /* ---- Состояние загрузки ---- */
-._loading_17fi4_79 {
+._loading_iwppj_157 {
     text-align: center;
     padding: 24px 0;
 }
 
 /* ---- Инфо о дне ---- */
-._dayInfo_17fi4_85 {
+._dayInfo_iwppj_169 {
     margin-bottom: 16px;
     display: flex;
     align-items: center;
@@ -1246,14 +1555,14 @@
     flex-wrap: wrap;
 }
 
-._dayInfoOff_17fi4_93 {
+._dayInfoOff_iwppj_185 {
     color: var(--gray-500);
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
-._dayInfoWork_17fi4_100 {
+._dayInfoWork_iwppj_199 {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -1261,16 +1570,16 @@
     width: 100%;
 }
 
-._dayInfoWork_17fi4_100 strong {
+._dayInfoWork_iwppj_199 strong {
     color: var(--gray-800);
 }
 
-._dayInfoLabel_17fi4_112 {
+._dayInfoLabel_iwppj_223 {
     font-weight: 600;
     color: var(--gray-800);
 }
 
-._dayInfoValue_17fi4_117 {
+._dayInfoValue_iwppj_233 {
     display: flex;
     align-items: center;
     gap: 6px;
@@ -1278,14 +1587,14 @@
 }
 
 /* ---- Редактирование часов ---- */
-._hoursEdit_17fi4_125 {
+._hoursEdit_iwppj_249 {
     display: flex;
     align-items: center;
     gap: 8px;
     flex-wrap: wrap;
 }
 
-._hoursInput_17fi4_132 {
+._hoursInput_iwppj_263 {
     width: 110px;
     height: 30px;
     padding: 4px 8px;
@@ -1296,17 +1605,17 @@
     box-sizing: border-box;
 }
 
-._hoursInput_17fi4_132:focus {
+._hoursInput_iwppj_263:focus {
     outline: none;
     border-color: var(--primary);
 }
 
-._hoursSeparator_17fi4_148 {
+._hoursSeparator_iwppj_295 {
     color: var(--gray-500);
     font-weight: 500;
 }
 
-._iconBtn_17fi4_153 {
+._iconBtn_iwppj_305 {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -1322,43 +1631,43 @@
     transition: all 0.2s ease;
 }
 
-._iconBtn_17fi4_153:hover {
+._iconBtn_iwppj_305:hover {
     background: var(--gray-100);
     color: var(--gray-800);
 }
 
-._iconBtnSuccess_17fi4_174 {
+._iconBtnSuccess_iwppj_347 {
     color: var(--success);
 }
 
-._iconBtnSuccess_17fi4_174:hover {
+._iconBtnSuccess_iwppj_347:hover {
     background: #dcfce7;
     color: #16a34a;
 }
 
-._iconBtnSecondary_17fi4_183 {
+._iconBtnSecondary_iwppj_365 {
     color: var(--gray-500);
 }
 
-._iconBtnSecondary_17fi4_183:hover {
+._iconBtnSecondary_iwppj_365:hover {
     background: var(--gray-100);
     color: var(--gray-700);
 }
 
 /* ---- Блок перерывов ---- */
-._breaksBlock_17fi4_193 {
+._breaksBlock_iwppj_385 {
     margin-bottom: 16px;
 }
 
 /* ---- Кнопки управления ---- */
-._actions_17fi4_198 {
+._actions_iwppj_395 {
     display: flex;
     gap: 8px;
     flex-wrap: wrap;
     margin-bottom: 16px;
 }
 
-._btnSoftBlue_17fi4_205 {
+._btnSoftBlue_iwppj_409 {
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -1373,12 +1682,12 @@
     transition: all 0.2s ease;
 }
 
-._btnSoftBlue_17fi4_205:hover {
+._btnSoftBlue_iwppj_409:hover {
     background: #bfdbfe;
     color: #021035;
 }
 
-._btnSuccess_17fi4_225 {
+._btnSuccess_iwppj_449 {
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -1393,12 +1702,12 @@
     transition: all 0.2s ease;
 }
 
-._btnSuccess_17fi4_225:hover {
+._btnSuccess_iwppj_449:hover {
     background: var(--success);
     color: white;
 }
 
-._btnPink_17fi4_245 {
+._btnPink_iwppj_489 {
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -1413,19 +1722,19 @@
     transition: all 0.2s ease;
 }
 
-._btnPink_17fi4_245:hover {
+._btnPink_iwppj_489:hover {
     background: var(--primary-dark);
 }
 
 /* ---- Разделитель ---- */
-._divider_17fi4_265 {
+._divider_iwppj_529 {
     border: none;
     border-top: 1px solid var(--gray-200);
     margin: 16px 0;
 }
 
 /* ---- Заголовок списка записей ---- */
-._bookingsTitle_17fi4_272 {
+._bookingsTitle_iwppj_543 {
     font-size: 0.95rem;
     font-weight: 600;
     color: var(--gray-800);
@@ -1436,24 +1745,24 @@
 }
 
 /* ---- Пустое состояние ---- */
-._emptyState_17fi4_283 {
+._emptyState_iwppj_565 {
     text-align: center;
     color: var(--gray-500);
     margin: 0;
 }
 
 /* ---- Таблица записей ---- */
-._tableWrapper_17fi4_290 {
+._tableWrapper_iwppj_579 {
     overflow: visible;
 }
 
-._table_17fi4_290 {
+._table_iwppj_579 {
     width: 100%;
     font-size: 0.9rem;
     border-collapse: collapse;
 }
 
-._table_17fi4_290 thead th {
+._table_iwppj_579 thead th {
     font-weight: 600;
     color: var(--gray-600);
     border-bottom: 2px solid var(--gray-200);
@@ -1465,28 +1774,28 @@
     background: var(--gray-50);
 }
 
-._table_17fi4_290 tbody td {
+._table_iwppj_579 tbody td {
     padding: 10px 12px;
     vertical-align: middle;
     border-bottom: 1px solid var(--gray-100);
 }
 
-._table_17fi4_290 tbody tr:last-child td {
+._table_iwppj_579 tbody tr:last-child td {
     border-bottom: none;
 }
 
 /* ---- Действия в таблице ---- */
-._actionsCell_17fi4_323 {
+._actionsCell_iwppj_645 {
     white-space: nowrap;
 }
 
-._actionIcons_17fi4_327 {
+._actionIcons_iwppj_653 {
     display: flex;
     gap: 8px;
     align-items: center;
 }
 
-._actionIconBtn_17fi4_333 {
+._actionIconBtn_iwppj_665 {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -1502,18 +1811,18 @@
     transition: all 0.2s ease;
 }
 
-._actionIconBtn_17fi4_333:hover {
+._actionIconBtn_iwppj_665:hover {
     background: var(--gray-100);
     color: var(--gray-800);
 }
 
-._actionIconBtnDelete_17fi4_354:hover {
+._actionIconBtnDelete_iwppj_707:hover {
     background: #fef2f2;
     color: #dc2626;
 }
 
 /* ---- Футер ---- */
-._footer_17fi4_360 {
+._footer_iwppj_719 {
     padding: 12px 20px;
     background: var(--gray-50);
     border-top: 1px solid var(--gray-200);
@@ -1523,7 +1832,7 @@
     flex-shrink: 0;
 }
 
-._btnSecondary_17fi4_370 {
+._btnSecondary_iwppj_739 {
     padding: 8px 20px;
     border-radius: 30px;
     border: none;
@@ -1535,13 +1844,13 @@
     transition: all 0.2s ease;
 }
 
-._btnSecondary_17fi4_370:hover {
+._btnSecondary_iwppj_739:hover {
     background: var(--gray-300);
     color: var(--gray-800);
 }
 
 /* ---- Анимация ---- */
-@keyframes _fadeInUp_17fi4_1 {
+@keyframes _fadeInUp_iwppj_1 {
     from {
         opacity: 0;
         transform: translateY(20px);
@@ -1558,30 +1867,30 @@
 
 /* ---- 992-1200 (ноутбуки) ---- */
 @media (max-width: 1200px) {
-    ._modal_17fi4_19 {
+    ._modal_iwppj_37 {
         max-width: 700px;
     }
 }
 
 /* ---- 768-992 (планшеты) ---- */
 @media (max-width: 992px) {
-    ._modal_17fi4_19 {
+    ._modal_iwppj_37 {
         max-width: 600px;
     }
     
-    ._hoursInput_17fi4_132 {
+    ._hoursInput_iwppj_263 {
         width: 100px;
     }
 }
 
 /* ---- <768 (смартфоны) ---- */
 @media (max-width: 768px) {
-    ._backdrop_17fi4_6 {
+    ._backdrop_iwppj_11 {
         padding: 0;
         align-items: stretch;
     }
     
-    ._modal_17fi4_19 {
+    ._modal_iwppj_37 {
         max-width: 100%;
         border-radius: 0;
         max-height: none;
@@ -1590,66 +1899,66 @@
         box-shadow: none;
     }
     
-    ._header_17fi4_34 {
+    ._header_iwppj_67 {
         padding: 14px 16px;
     }
     
-    ._title_17fi4_44 {
+    ._title_iwppj_87 {
         font-size: 0.95rem;
     }
     
-    ._body_17fi4_72 {
+    ._body_iwppj_143 {
         padding: 16px;
     }
     
-    ._footer_17fi4_360 {
+    ._footer_iwppj_719 {
         padding: 10px 16px;
         flex-direction: column;
     }
     
-    ._footer_17fi4_360 ._btnSecondary_17fi4_370,
-    ._footer_17fi4_360 ._btnPink_17fi4_245 {
+    ._footer_iwppj_719 ._btnSecondary_iwppj_739,
+    ._footer_iwppj_719 ._btnPink_iwppj_489 {
         width: 100%;
         justify-content: center;
     }
     
     /* Часы работы — на всю ширину */
-    ._hoursEdit_17fi4_125 {
+    ._hoursEdit_iwppj_249 {
         flex-wrap: wrap;
     }
     
-    ._hoursInput_17fi4_132 {
+    ._hoursInput_iwppj_263 {
         width: 90px;
         height: 28px;
         font-size: 0.8rem;
     }
     
     /* Кнопки действий — на всю ширину */
-    ._actions_17fi4_198 {
+    ._actions_iwppj_395 {
         flex-direction: column;
     }
     
-    ._actions_17fi4_198 ._btnSoftBlue_17fi4_205,
-    ._actions_17fi4_198 ._btnSuccess_17fi4_225,
-    ._actions_17fi4_198 ._btnPink_17fi4_245 {
+    ._actions_iwppj_395 ._btnSoftBlue_iwppj_409,
+    ._actions_iwppj_395 ._btnSuccess_iwppj_449,
+    ._actions_iwppj_395 ._btnPink_iwppj_489 {
         width: 100%;
         justify-content: center;
     }
     
     /* Таблица → карточки */
-    ._table_17fi4_290,
-    ._table_17fi4_290 tbody,
-    ._table_17fi4_290 tr,
-    ._table_17fi4_290 td {
+    ._table_iwppj_579,
+    ._table_iwppj_579 tbody,
+    ._table_iwppj_579 tr,
+    ._table_iwppj_579 td {
         display: block;
         width: 100%;
     }
     
-    ._table_17fi4_290 thead {
+    ._table_iwppj_579 thead {
         display: none;
     }
     
-    ._table_17fi4_290 tbody tr {
+    ._table_iwppj_579 tbody tr {
         background: white;
         border-radius: 12px;
         padding: 10px 12px;
@@ -1658,7 +1967,7 @@
         box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
     }
     
-    ._table_17fi4_290 tbody td {
+    ._table_iwppj_579 tbody td {
         display: flex;
         justify-content: flex-start;
         align-items: center;
@@ -1670,20 +1979,20 @@
     }
     
     /* Время — жирным */
-    ._table_17fi4_290 tbody td:first-child {
+    ._table_iwppj_579 tbody td:first-child {
         font-weight: 600;
         font-size: 0.85rem;
         color: var(--gray-800);
     }
     
     /* Телефон — серым */
-    ._table_17fi4_290 tbody td:nth-child(4) {
+    ._table_iwppj_579 tbody td:nth-child(4) {
         color: var(--gray-500);
         font-size: 0.75rem;
     }
     
     /* Действия — отдельной строкой */
-    ._table_17fi4_290 tbody td:last-child {
+    ._table_iwppj_579 tbody td:last-child {
         border-top: 1px solid var(--gray-200);
         padding-top: 6px;
         margin-top: 4px;
@@ -1692,26 +2001,26 @@
         justify-content: flex-start;
     }
     
-    ._actionIcons_17fi4_327 {
+    ._actionIcons_iwppj_653 {
         gap: 4px;
     }
 }
 
 /* ---- <480 (маленькие смартфоны) ---- */
 @media (max-width: 480px) {
-    ._header_17fi4_34 {
+    ._header_iwppj_67 {
         padding: 12px 14px;
     }
     
-    ._title_17fi4_44 {
+    ._title_iwppj_87 {
         font-size: 0.9rem;
     }
     
-    ._body_17fi4_72 {
+    ._body_iwppj_143 {
         padding: 12px;
     }
     
-    ._hoursInput_17fi4_132 {
+    ._hoursInput_iwppj_263 {
         width: 80px;
         height: 26px;
         font-size: 0.75rem;
@@ -1720,7 +2029,7 @@
 /* ========== BOOKING DETAILS MODAL (CSS Module) ============== */
 /* ============================================================ */
 
-._backdrop_1ese5_5 {
+._backdrop_1pc6d_9 {
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.6);
@@ -1732,7 +2041,7 @@
     padding: 24px 16px;
 }
 
-._modal_1ese5_17 {
+._modal_1pc6d_33 {
     background: white;
     border-radius: 16px;
     border: 1px solid var(--gray-200);
@@ -1743,10 +2052,10 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    animation: _fadeInUp_1ese5_1 0.3s ease;
+    animation: _fadeInUp_1pc6d_1 0.3s ease;
 }
 
-._header_1ese5_31 {
+._header_1pc6d_61 {
     padding: 16px 20px;
     background: white;
     border-bottom: 1px solid var(--gray-200);
@@ -1756,7 +2065,7 @@
     flex-shrink: 0;
 }
 
-._title_1ese5_41 {
+._title_1pc6d_81 {
     font-size: 1.1rem;
     font-weight: 600;
     color: var(--gray-800);
@@ -1766,7 +2075,7 @@
     gap: 8px;
 }
 
-._closeBtn_1ese5_51 {
+._closeBtn_1pc6d_101 {
     background: transparent;
     border: none;
     font-size: 1.2rem;
@@ -1778,32 +2087,32 @@
     line-height: 1;
 }
 
-._closeBtn_1ese5_51:hover {
+._closeBtn_1pc6d_101:hover {
     background: var(--gray-100);
     color: var(--gray-800);
 }
 
-._body_1ese5_68 {
+._body_1pc6d_135 {
     padding: 20px;
     overflow-y: auto;
     flex: 1;
 }
 
-._loading_1ese5_74 {
+._loading_1pc6d_147 {
     text-align: center;
     padding: 24px 0;
 }
 
 /* ---- Секции ---- */
-._section_1ese5_80 {
+._section_1pc6d_159 {
     margin-bottom: 16px;
 }
 
-._section_1ese5_80:last-child {
+._section_1pc6d_159:last-child {
     margin-bottom: 0;
 }
 
-._sectionTitle_1ese5_88 {
+._sectionTitle_1pc6d_175 {
     font-size: 0.75rem;
     font-weight: 500;
     color: var(--gray-500);
@@ -1812,12 +2121,12 @@
     margin: 0 0 4px 0;
 }
 
-._sectionTitle_1ese5_88 i {
+._sectionTitle_1pc6d_175 i {
     color: var(--primary);
     font-size: 0.85rem;
 }
 
-._sectionValue_1ese5_102 {
+._sectionValue_1pc6d_203 {
     font-size: 1rem;
     font-weight: 600;
     color: var(--gray-800);
@@ -1826,13 +2135,13 @@
 }
 
 /* ---- Услуги ---- */
-._servicesList_1ese5_111 {
+._servicesList_1pc6d_221 {
     display: flex;
     flex-direction: column;
     gap: 6px;
 }
 
-._serviceItem_1ese5_117 {
+._serviceItem_1pc6d_233 {
     padding: 6px 10px;
     background: var(--gray-50);
     border-radius: 8px;
@@ -1841,19 +2150,19 @@
     color: var(--gray-700);
 }
 
-._serviceItem_1ese5_117 ._category_1ese5_126 {
+._serviceItem_1pc6d_233 ._category_1pc6d_251 {
     color: var(--gray-500);
     font-size: 0.75rem;
 }
 
 /* ---- История визитов ---- */
-._historyBox_1ese5_132 {
+._historyBox_1pc6d_263 {
     margin-top: 8px;
     max-height: 200px;
     overflow-y: auto;
 }
 
-._historyItem_1ese5_138 {
+._historyItem_1pc6d_275 {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -1863,21 +2172,21 @@
     border-bottom: 1px solid var(--gray-100);
 }
 
-._historyItem_1ese5_138:last-child {
+._historyItem_1pc6d_275:last-child {
     border-bottom: none;
 }
 
-._historyDate_1ese5_152 {
+._historyDate_1pc6d_303 {
     color: var(--gray-700);
     flex-shrink: 0;
 }
 
-._historyTime_1ese5_157 {
+._historyTime_1pc6d_313 {
     color: var(--gray-500);
     flex-shrink: 0;
 }
 
-._historyService_1ese5_162 {
+._historyService_1pc6d_323 {
     color: var(--gray-700);
     text-align: right;
     flex: 1;
@@ -1888,14 +2197,14 @@
 }
 
 /* ---- Разделитель ---- */
-._divider_1ese5_173 {
+._divider_1pc6d_345 {
     border: none;
     border-top: 1px solid var(--gray-200);
     margin: 16px 0;
 }
 
 /* ---- Футер ---- */
-._footer_1ese5_180 {
+._footer_1pc6d_359 {
     padding: 12px 20px;
     background: var(--gray-50);
     border-top: 1px solid var(--gray-200);
@@ -1905,7 +2214,7 @@
     flex-shrink: 0;
 }
 
-._btnSecondary_1ese5_190 {
+._btnSecondary_1pc6d_379 {
     padding: 8px 20px;
     border-radius: 30px;
     border: none;
@@ -1917,13 +2226,13 @@
     transition: all 0.2s ease;
 }
 
-._btnSecondary_1ese5_190:hover {
+._btnSecondary_1pc6d_379:hover {
     background: var(--gray-300);
     color: var(--gray-800);
 }
 
 /* ---- Анимация ---- */
-@keyframes _fadeInUp_1ese5_1 {
+@keyframes _fadeInUp_1pc6d_1 {
     from {
         opacity: 0;
         transform: translateY(20px);
@@ -1939,12 +2248,12 @@
 /* ============================================================ */
 
 @media (max-width: 768px) {
-    ._backdrop_1ese5_5 {
+    ._backdrop_1pc6d_9 {
         padding: 0;
         align-items: stretch;
     }
     
-    ._modal_1ese5_17 {
+    ._modal_1pc6d_33 {
         max-width: 100%;
         border-radius: 0;
         max-height: none;
@@ -1953,33 +2262,33 @@
         box-shadow: none;
     }
     
-    ._header_1ese5_31 {
+    ._header_1pc6d_61 {
         padding: 14px 16px;
     }
     
-    ._title_1ese5_41 {
+    ._title_1pc6d_81 {
         font-size: 0.95rem;
     }
     
-    ._body_1ese5_68 {
+    ._body_1pc6d_135 {
         padding: 16px;
     }
     
-    ._footer_1ese5_180 {
+    ._footer_1pc6d_359 {
         padding: 10px 16px;
         flex-direction: column;
     }
     
-    ._footer_1ese5_180 ._btnSecondary_1ese5_190 {
+    ._footer_1pc6d_359 ._btnSecondary_1pc6d_379 {
         width: 100%;
         justify-content: center;
     }
     
-    ._statsNumber_1ese5_260 {
+    ._statsNumber_1pc6d_519 {
         font-size: 1rem;
     }
     
-    ._statsLabel_1ese5_264 {
+    ._statsLabel_1pc6d_527 {
         font-size: 0.65rem;
     }
 }/* ============================================================ */
@@ -1987,7 +2296,7 @@
 /* ============================================================ */
 
 /* ---- Карточка ---- */
-._card_irfie_6 {
+._card_c7nfg_11 {
     background: white;
     border-radius: 30px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
@@ -1996,20 +2305,20 @@
     overflow: visible;
 }
 
-._cardInner_irfie_15 {
+._cardInner_c7nfg_29 {
     background: white;
     border-radius: 30px;
     overflow: visible;
 }
 
-._cardHeader_irfie_21 {
+._cardHeader_c7nfg_41 {
     background: white;
     padding: 16px 20px;
     border-bottom: 1px solid var(--gray-200);
     border-radius: 20px 20px 0 0;
 }
 
-._cardHeader_irfie_21 h5 {
+._cardHeader_c7nfg_41 h5 {
     margin: 0;
     font-size: 1rem;
     font-weight: 600;
@@ -2019,30 +2328,30 @@
     gap: 8px;
 }
 
-._cardBody_irfie_38 {
+._cardBody_c7nfg_75 {
     padding: 20px;
 }
 
 /* ---- Состояния ---- */
-._loadingState_irfie_43,
-._emptyState_irfie_44 {
+._loadingState_c7nfg_85,
+._emptyState_c7nfg_87 {
     text-align: center;
     padding: 24px 0;
     color: var(--gray-500);
 }
 
 /* ---- Таблица ---- */
-._tableWrapper_irfie_51 {
+._tableWrapper_c7nfg_101 {
     overflow: visible;
 }
 
-._table_irfie_51 {
+._table_c7nfg_101 {
     width: 100%;
     font-size: 0.9rem;
     border-collapse: collapse;
 }
 
-._table_irfie_51 thead th {
+._table_c7nfg_101 thead th {
     font-weight: 600;
     color: var(--gray-600);
     border-bottom: 2px solid var(--gray-200);
@@ -2054,22 +2363,22 @@
     background: var(--gray-50);
 }
 
-._table_irfie_51 tbody td {
+._table_c7nfg_101 tbody td {
     padding: 10px 16px;
     vertical-align: middle;
     border-bottom: 1px solid var(--gray-100);
 }
 
-._table_irfie_51 tbody tr:last-child td {
+._table_c7nfg_101 tbody tr:last-child td {
     border-bottom: none;
 }
 
 /* ---- Ячейка действий ---- */
-._actionsCell_irfie_84 {
+._actionsCell_c7nfg_167 {
     white-space: nowrap;
 }
 
-._allButtonsRow_irfie_88 {
+._allButtonsRow_c7nfg_175 {
     display: flex;
     align-items: center;
     gap: 4px;
@@ -2077,7 +2386,7 @@
 }
 
 /* ---- Кнопки-иконки ---- */
-._iconBtn_irfie_96 {
+._iconBtn_c7nfg_191 {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -2093,24 +2402,24 @@
     transition: all 0.2s ease;
 }
 
-._iconBtn_irfie_96:hover {
+._iconBtn_c7nfg_191:hover {
     background: var(--gray-100);
     color: var(--gray-800);
 }
 
-._iconBtnDelete_irfie_117:hover {
+._iconBtnDelete_c7nfg_233:hover {
     background: #fef2f2;
     color: #dc2626;
 }
 
 /* ---- Кнопка «Связаться» + меню ---- */
-._contactWrapper_irfie_123 {
+._contactWrapper_c7nfg_245 {
     position: relative;
     display: inline-flex;
     z-index: 200;
 }
 
-._contactBtn_irfie_129 {
+._contactBtn_c7nfg_257 {
     display: inline-flex;
     align-items: center;
     gap: 4px;
@@ -2126,17 +2435,17 @@
     white-space: nowrap;
 }
 
-._contactBtn_irfie_129:hover {
+._contactBtn_c7nfg_257:hover {
     background: var(--primary-light);
     color: var(--primary);
 }
 
-._contactBtn_irfie_129 ._fa-chevron-down_irfie_150 {
+._contactBtn_c7nfg_257 ._fa-chevron-down_c7nfg_299 {
     font-size: 0.5rem;
     margin-left: 2px;
 }
 
-._contactMenu_irfie_155 {
+._contactMenu_c7nfg_309 {
     position: absolute;
     top: 110%;
     left: 0;
@@ -2147,10 +2456,10 @@
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
     padding: 6px 0;
     z-index: 1200;
-    animation: _slideDown_irfie_1 0.2s ease;
+    animation: _slideDown_c7nfg_1 0.2s ease;
 }
 
-._contactMenu_irfie_155 button {
+._contactMenu_c7nfg_309 button {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -2165,16 +2474,16 @@
     text-align: left;
 }
 
-._contactMenu_irfie_155 button:hover {
+._contactMenu_c7nfg_309 button:hover {
     background: var(--gray-50);
 }
 
-._contactMenu_irfie_155 button:disabled {
+._contactMenu_c7nfg_309 button:disabled {
     opacity: 0.4;
     cursor: not-allowed;
 }
 
-._maxIcon_irfie_193 {
+._maxIcon_c7nfg_385 {
     font-weight: 700;
     font-size: 0.75rem;
     background: #e91e63;
@@ -2189,7 +2498,7 @@
 }
 
 /* ---- Галочка подтверждения ---- */
-._confirmBtn_irfie_208 {
+._confirmBtn_c7nfg_415 {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -2204,21 +2513,21 @@
     font-size: 1rem;
 }
 
-._confirmBtn_irfie_208:hover {
+._confirmBtn_c7nfg_415:hover {
     background: var(--gray-100);
     color: var(--primary);
 }
 
-._confirmBtn_irfie_208._confirmed_irfie_228 {
+._confirmBtn_c7nfg_415._confirmed_c7nfg_455 {
     color: #2e7d32;
 }
 
-._confirmBtn_irfie_208._confirmed_irfie_228:hover {
+._confirmBtn_c7nfg_415._confirmed_c7nfg_455:hover {
     color: #1b5e20;
 }
 
 /* ---- Футер ---- */
-._cardFooter_irfie_237 {
+._cardFooter_c7nfg_473 {
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -2227,7 +2536,7 @@
     border-radius: 0 0 30px 30px;
 }
 
-._loadMoreBtn_irfie_246 {
+._loadMoreBtn_c7nfg_491 {
     width: 20%;
     padding: 8px;
     font-size: 0.85rem;
@@ -2243,13 +2552,13 @@
     transition: all 0.2s ease;
 }
 
-._loadMoreBtn_irfie_246:hover {
+._loadMoreBtn_c7nfg_491:hover {
     background: var(--primary-gradient);
     border-color: transparent;
     color: white;
 }
 
-._footerInfoRow_irfie_268 {
+._footerInfoRow_c7nfg_535 {
     display: flex;
     align-items: center;
     width: 100%;
@@ -2258,20 +2567,20 @@
     gap: 30px;
 }
 
-._footerLeft_irfie_277,
-._footerRight_irfie_278 {
+._footerLeft_c7nfg_553,
+._footerRight_c7nfg_555 {
     display: flex;
     align-items: center;
     gap: 4px;
 }
 
-._totalLabel_irfie_284 {
+._totalLabel_c7nfg_567 {
     font-size: 0.75rem;
     color: var(--gray-500);
     font-weight: 400;
 }
 
-._totalNumber_irfie_290 {
+._totalNumber_c7nfg_579 {
     font-size: 0.75rem;
     font-weight: 600;
     color: var(--gray-700);
@@ -2283,14 +2592,14 @@
     text-align: center;
 }
 
-._limitLabel_irfie_302 {
+._limitLabel_c7nfg_603 {
     font-size: 0.75rem;
     color: var(--gray-500);
     font-weight: 400;
     margin: 0 4px 0 0;
 }
 
-._limitSelect_irfie_309 {
+._limitSelect_c7nfg_617 {
     font-size: 0.75rem;
     height: 28px;
     padding: 2px 4px 2px 8px;
@@ -2302,7 +2611,7 @@
 }
 
 /* ---- Анимация ---- */
-@keyframes _slideDown_irfie_1 {
+@keyframes _slideDown_c7nfg_1 {
     from {
         opacity: 0;
         transform: translateY(-8px);
@@ -2321,92 +2630,92 @@
 
 /* ---- 1200-1600 (ноутбуки) ---- */
 @media (max-width: 1600px) {
-    ._loadMoreBtn_irfie_246 {
+    ._loadMoreBtn_c7nfg_491 {
         width: 30%;
     }
 }
 
 /* ---- 992-1200 (маленькие ноутбуки) ---- */
 @media (max-width: 1200px) {
-    ._table_irfie_51 {
+    ._table_c7nfg_101 {
         font-size: 0.85rem;
     }
     
-    ._table_irfie_51 thead th,
-    ._table_irfie_51 tbody td {
+    ._table_c7nfg_101 thead th,
+    ._table_c7nfg_101 tbody td {
         padding: 8px 12px;
     }
 }
 
 /* ---- 768-992 (планшеты) ---- */
 @media (max-width: 992px) {
-    ._table_irfie_51 thead th,
-    ._table_irfie_51 tbody td {
+    ._table_c7nfg_101 thead th,
+    ._table_c7nfg_101 tbody td {
         padding: 8px 10px;
         font-size: 0.8rem;
     }
     
-    ._iconBtn_irfie_96,
-    ._confirmBtn_irfie_208 {
+    ._iconBtn_c7nfg_191,
+    ._confirmBtn_c7nfg_415 {
         width: 28px;
         height: 28px;
         font-size: 0.75rem;
     }
     
-    ._contactBtn_irfie_129 {
+    ._contactBtn_c7nfg_257 {
         padding: 4px 8px;
         height: 28px;
         font-size: 0.65rem;
     }
     
-    ._loadMoreBtn_irfie_246 {
+    ._loadMoreBtn_c7nfg_491 {
         width: 40%;
     }
 }
 
 /* ---- <768 (смартфоны) ---- */
 @media (max-width: 768px) {
-    ._card_irfie_6 {
+    ._card_c7nfg_11 {
         border-radius: 12px;
         margin-bottom: 8px;
     }
     
-    ._cardInner_irfie_15 {
+    ._cardInner_c7nfg_29 {
         border-radius: 12px;
     }
     
-    ._cardHeader_irfie_21 {
+    ._cardHeader_c7nfg_41 {
         padding: 16px 16px 4px 16px;
         border-bottom: none;
         border-radius: 12px 12px 0 0;
     }
     
-    ._cardHeader_irfie_21 h5 {
+    ._cardHeader_c7nfg_41 h5 {
         font-weight: 700;
     }
     
-    ._cardHeader_irfie_21 h5 i {
+    ._cardHeader_c7nfg_41 h5 i {
         display: none;
     }
     
-    ._cardBody_irfie_38 {
+    ._cardBody_c7nfg_75 {
         padding: 10px;
     }
     
     /* Таблица → карточки */
-    ._table_irfie_51,
-    ._table_irfie_51 tbody,
-    ._table_irfie_51 tr,
-    ._table_irfie_51 td {
+    ._table_c7nfg_101,
+    ._table_c7nfg_101 tbody,
+    ._table_c7nfg_101 tr,
+    ._table_c7nfg_101 td {
         display: block;
         width: 100%;
     }
     
-    ._table_irfie_51 thead {
+    ._table_c7nfg_101 thead {
         display: none;
     }
     
-    ._table_irfie_51 tbody tr {
+    ._table_c7nfg_101 tbody tr {
         border-radius: 12px;
         margin-bottom: 8px;
         padding: 8px 10px;
@@ -2414,33 +2723,33 @@
         border: 0.5px solid rgb(155, 155, 155);
     }
     
-    ._table_irfie_51 tbody td {
+    ._table_c7nfg_101 tbody td {
         padding: 1px 0;
         border: none;
         font-size: 0.8rem;
     }
     
     /* Дата + время — в одну строку */
-    ._table_irfie_51 tbody td:first-child,
-    ._table_irfie_51 tbody td:nth-child(2) {
+    ._table_c7nfg_101 tbody td:first-child,
+    ._table_c7nfg_101 tbody td:nth-child(2) {
         display: inline-block;
         width: auto;
         font-size: 13px;
     }
     
-    ._table_irfie_51 tbody td:first-child {
+    ._table_c7nfg_101 tbody td:first-child {
         font-weight: 600;
         color: var(--primary);
         margin-right: 8px;
     }
     
-    ._table_irfie_51 tbody td:nth-child(2) {
+    ._table_c7nfg_101 tbody td:nth-child(2) {
         color: black;
         font-weight: 600;
     }
     
     /* Имя клиента */
-    ._table_irfie_51 tbody td:nth-child(3) {
+    ._table_c7nfg_101 tbody td:nth-child(3) {
         font-weight: 500;
         font-size: 0.85rem;
         margin-top: 2px;
@@ -2448,7 +2757,7 @@
     }
     
     /* Услуга */
-    ._table_irfie_51 tbody td:nth-child(4) {
+    ._table_c7nfg_101 tbody td:nth-child(4) {
         color: var(--gray-500);
         font-size: 0.7rem;
         margin-bottom: 6px;
@@ -2457,7 +2766,7 @@
     }
     
     /* Действия */
-    ._table_irfie_51 tbody td:last-child {
+    ._table_c7nfg_101 tbody td:last-child {
         display: flex;
         justify-content: flex-start;
         align-items: center;
@@ -2466,69 +2775,69 @@
         margin-top: 4px;
     }
     
-    ._actionsCell_irfie_84 {
+    ._actionsCell_c7nfg_167 {
         white-space: normal;
     }
     
-    ._allButtonsRow_irfie_88 {
+    ._allButtonsRow_c7nfg_175 {
         flex-wrap: wrap;
         gap: 4px;
     }
     
-    ._iconBtn_irfie_96,
-    ._confirmBtn_irfie_208 {
+    ._iconBtn_c7nfg_191,
+    ._confirmBtn_c7nfg_415 {
         width: 32px;
         height: 32px;
         font-size: 0.75rem;
     }
     
-    ._contactBtn_irfie_129 {
+    ._contactBtn_c7nfg_257 {
         padding: 4px 8px;
         width: 32px;
         justify-content: center;
     }
     
-    ._contactBtn_irfie_129 span {
+    ._contactBtn_c7nfg_257 span {
         display: none;
     }
     
-    ._contactMenu_irfie_155 {
+    ._contactMenu_c7nfg_309 {
         left: 50%;
         transform: translateX(-50%);
         min-width: 160px;
     }
     
     /* Футер */
-    ._cardFooter_irfie_237 {
+    ._cardFooter_c7nfg_473 {
         padding: 6px 12px 12px 12px;
         gap: 6px;
     }
     
-    ._loadMoreBtn_irfie_246 {
+    ._loadMoreBtn_c7nfg_491 {
         width: 100%;
         font-size: 0.8rem;
         padding: 8px;
     }
     
-    ._footerInfoRow_irfie_268 {
+    ._footerInfoRow_c7nfg_535 {
         padding-top: 4px;
         flex-wrap: wrap;
         justify-content: space-between;
     }
     
-    ._totalLabel_irfie_284,
-    ._limitLabel_irfie_302 {
+    ._totalLabel_c7nfg_567,
+    ._limitLabel_c7nfg_603 {
         font-size: 0.7rem;
     }
     
-    ._totalNumber_irfie_290 {
+    ._totalNumber_c7nfg_579 {
         font-size: 0.7rem;
         line-height: 20px;
         padding: 0 8px;
         min-width: 20px;
     }
     
-    ._limitSelect_irfie_309 {
+    ._limitSelect_c7nfg_617 {
         font-size: 0.7rem;
         height: 25px;
         width: 50px;
@@ -2539,182 +2848,44 @@
 
 /* ---- <480 (маленькие смартфоны) ---- */
 @media (max-width: 480px) {
-    ._cardBody_irfie_38 {
+    ._cardBody_c7nfg_75 {
         padding: 8px;
     }
     
-    ._table_irfie_51 tbody tr {
+    ._table_c7nfg_101 tbody tr {
         padding: 6px 8px;
     }
     
-    ._table_irfie_51 tbody td:first-child,
-    ._table_irfie_51 tbody td:nth-child(2) {
+    ._table_c7nfg_101 tbody td:first-child,
+    ._table_c7nfg_101 tbody td:nth-child(2) {
         font-size: 12px;
     }
     
-    ._table_irfie_51 tbody td:nth-child(3) {
+    ._table_c7nfg_101 tbody td:nth-child(3) {
         font-size: 0.8rem;
     }
     
-    ._table_irfie_51 tbody td:nth-child(4) {
+    ._table_c7nfg_101 tbody td:nth-child(4) {
         font-size: 0.65rem;
     }
     
-    ._iconBtn_irfie_96,
-    ._confirmBtn_irfie_208 {
+    ._iconBtn_c7nfg_191,
+    ._confirmBtn_c7nfg_415 {
         width: 28px;
         height: 28px;
         font-size: 0.7rem;
     }
     
-    ._contactBtn_irfie_129 {
+    ._contactBtn_c7nfg_257 {
         width: 28px;
         height: 28px;
-    }
-}/* ============================================================ */
-/* ========== ALERT MODAL (CSS Module) ======================== */
-/* ============================================================ */
-
-._backdrop_23ryy_5 {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 1090;              /* выше EditBookingModal (1080) */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 24px 16px;
-}
-
-._modal_23ryy_16 {
-    background: white;
-    border-radius: 16px;
-    border: 1px solid var(--gray-200);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-    width: 100%;
-    max-width: 400px;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    animation: _fadeInUp_23ryy_1 0.3s ease;
-}
-
-._header_23ryy_29 {
-    padding: 16px 20px;
-    background: white;
-    border-bottom: 1px solid var(--gray-200);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-._title_23ryy_38 {
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--gray-800);
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-._title_23ryy_38 i {
-    color: var(--primary);
-    font-size: 1rem;
-}
-
-._closeBtn_23ryy_53 {
-    background: transparent;
-    border: none;
-    font-size: 1.1rem;
-    color: var(--gray-500);
-    cursor: pointer;
-    padding: 4px 8px;
-    border-radius: 6px;
-    transition: all 0.2s ease;
-    line-height: 1;
-}
-
-._closeBtn_23ryy_53:hover {
-    background: var(--gray-100);
-    color: var(--gray-800);
-}
-
-._body_23ryy_70 {
-    padding: 20px;
-    font-size: 0.95rem;
-    color: var(--gray-700);
-    line-height: 1.5;
-    text-align: center;
-}
-
-._footer_23ryy_78 {
-    padding: 12px 20px;
-    background: var(--gray-50);
-    border-top: 1px solid var(--gray-200);
-    display: flex;
-    justify-content: center;
-}
-
-._btnPrimary_23ryy_86 {
-    padding: 8px 32px;
-    border-radius: 30px;
-    border: none;
-    background: var(--primary);
-    color: white;
-    font-size: 0.9rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    min-width: 120px;
-}
-
-._btnPrimary_23ryy_86:hover {
-    background: var(--primary-dark);
-}
-
-/* ---- Типы ---- */
-._success_23ryy_104 ._title_23ryy_38 i {
-    color: var(--success);
-}
-
-._error_23ryy_108 ._title_23ryy_38 i {
-    color: var(--danger);
-}
-
-._warning_23ryy_112 ._title_23ryy_38 i {
-    color: var(--warning);
-}
-
-@keyframes _fadeInUp_23ryy_1 {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@media (max-width: 768px) {
-    ._backdrop_23ryy_5 {
-        padding: 16px;
-    }
-    
-    ._modal_23ryy_16 {
-        max-width: 100%;
-    }
-    
-    ._body_23ryy_70 {
-        padding: 16px;
     }
 }/* ============================================================ */
 /* ========== PUSH SETTINGS (CSS Module) ====================== */
 /* ============================================================ */
 
 /* ---- Карточка ---- */
-._card_c3tfs_6 {
+._card_59vvh_11 {
     background: white;
     border-radius: 20px;
     border: none;
@@ -2723,12 +2894,12 @@
     width: 100%;
 }
 
-._cardBody_c3tfs_15 {
+._cardBody_59vvh_29 {
     padding: 20px;
 }
 
 /* ---- Верхняя строка: заголовок + кнопка ---- */
-._row_c3tfs_20 {
+._row_59vvh_39 {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
@@ -2736,7 +2907,7 @@
     gap: 8px;
 }
 
-._title_c3tfs_28 {
+._title_59vvh_55 {
     font-size: 0.95rem;
     font-weight: 600;
     color: var(--gray-800);
@@ -2745,19 +2916,19 @@
     gap: 8px;
 }
 
-._title_c3tfs_28 i {
+._title_59vvh_55 i {
     color: var(--primary);
 }
 
-._subtitle_c3tfs_41 {
+._subtitle_59vvh_81 {
     color: var(--gray-500);
     font-size: 0.8rem;
     margin-top: 4px;
 }
 
 /* ---- Кнопки ---- */
-._btnEnable_c3tfs_48,
-._btnDisable_c3tfs_49 {
+._btnEnable_59vvh_95,
+._btnDisable_59vvh_97 {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -2770,36 +2941,36 @@
     white-space: nowrap;
 }
 
-._btnEnable_c3tfs_48 {
+._btnEnable_59vvh_95 {
     border: 1px solid var(--primary);
     color: var(--primary);
     background: transparent;
 }
 
-._btnEnable_c3tfs_48:hover:not(:disabled) {
+._btnEnable_59vvh_95:hover:not(:disabled) {
     background: var(--primary);
     color: white;
 }
 
-._btnDisable_c3tfs_49 {
+._btnDisable_59vvh_97 {
     border: 1px solid var(--danger);
     color: var(--danger);
     background: transparent;
 }
 
-._btnDisable_c3tfs_49:hover:not(:disabled) {
+._btnDisable_59vvh_97:hover:not(:disabled) {
     background: var(--danger);
     color: white;
 }
 
-._btnEnable_c3tfs_48:disabled,
-._btnDisable_c3tfs_49:disabled {
+._btnEnable_59vvh_95:disabled,
+._btnDisable_59vvh_97:disabled {
     opacity: 0.6;
     cursor: not-allowed;
 }
 
 /* ---- Нижний блок с пояснениями ---- */
-._hints_c3tfs_91 {
+._hints_59vvh_181 {
     margin-top: 16px;
     padding-top: 16px;
     border-top: 1px solid var(--gray-200);
@@ -2807,23 +2978,23 @@
     color: var(--gray-500);
 }
 
-._hint_c3tfs_91 {
+._hint_59vvh_181 {
     margin-bottom: 4px;
     display: flex;
     align-items: center;
     gap: 4px;
 }
 
-._hint_c3tfs_91 i {
+._hint_59vvh_181 i {
     color: var(--primary);
     flex-shrink: 0;
 }
 
-._hintError_c3tfs_111 {
+._hintError_59vvh_221 {
     color: #dc2626;
 }
 
-._hintError_c3tfs_111 i {
+._hintError_59vvh_221 i {
     color: #dc2626;
 }
 
@@ -2832,25 +3003,25 @@
 /* ============================================================ */
 
 @media (max-width: 768px) {
-    ._card_c3tfs_6 {
+    ._card_59vvh_11 {
         border-radius: 12px;
         margin-bottom: 8px;
     }
 
-    ._cardBody_c3tfs_15 {
+    ._cardBody_59vvh_29 {
         padding: 16px;
     }
 
-    ._title_c3tfs_28 {
+    ._title_59vvh_55 {
         font-size: 0.9rem;
     }
 
-    ._subtitle_c3tfs_41 {
+    ._subtitle_59vvh_81 {
         font-size: 0.75rem;
     }
 
-    ._btnEnable_c3tfs_48,
-    ._btnDisable_c3tfs_49 {
+    ._btnEnable_59vvh_95,
+    ._btnDisable_59vvh_97 {
         padding: 6px 14px;
         font-size: 0.8rem;
     }

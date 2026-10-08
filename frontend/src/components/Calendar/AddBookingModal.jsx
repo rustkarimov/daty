@@ -6,6 +6,7 @@ import {
 } from '../../api/booking';
 import { phoneMask } from '../../utils/phoneMask';
 import shared from './BookingModalShared.module.css';
+import useModal from '../../hooks/useModal';
 
 const MONTH_NAMES = [
     'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
@@ -38,7 +39,7 @@ export default function AddBookingModal({ masterSlug, defaultDate, onClose, onCr
     const [loadingDates, setLoadingDates] = useState(false);
     const [loadingSlots, setLoadingSlots] = useState(false);
     const [saving, setSaving] = useState(false);
-
+    const { showAlert } = useModal();
     const slotsRef = useRef(null);
     const summaryRef = useRef(null);
 
@@ -113,7 +114,7 @@ export default function AddBookingModal({ masterSlug, defaultDate, onClose, onCr
             setSelectedTime('');
         } else {
             if (selectedServices.length >= 3) {
-                alert('Можно выбрать не более 3 услуг');
+                showAlert('Можно выбрать не более 3 услуг', 'warning');
                 return;
             }
             const newList = [...selectedServices, service];
@@ -151,24 +152,24 @@ export default function AddBookingModal({ masterSlug, defaultDate, onClose, onCr
 
     async function handleSave() {
         if (selectedServices.length === 0) {
-            alert('Выберите хотя бы одну услугу');
+            showAlert('Выберите хотя бы одну услугу', 'warning');
             return;
         }
         if (!selectedDate) {
-            alert('Выберите дату');
+            showAlert('Выберите дату', 'warning');
             return;
         }
         if (!selectedTime) {
-            alert('Выберите время');
+            showAlert('Выберите время', 'warning');
             return;
         }
         if (!clientName.trim()) {
-            alert('Введите имя клиента');
+            showAlert('Введите имя клиента', 'warning');
             return;
         }
         const phoneCleaned = clientPhone.replace(/\D/g, '');
         if (phoneCleaned.length !== 11) {
-            alert('Телефон должен содержать 11 цифр');
+            showAlert('Телефон должен содержать 11 цифр', 'warning');
             return;
         }
 
@@ -187,11 +188,11 @@ export default function AddBookingModal({ masterSlug, defaultDate, onClose, onCr
                 if (onCreated) onCreated();
                 onClose();
             } else {
-                alert(data.error || 'Ошибка создания записи');
+                showAlert(data.error || 'Ошибка создания записи', 'error');
             }
         } catch (error) {
             console.error('Ошибка:', error);
-            alert('Ошибка соединения');
+            showAlert('Ошибка соединения', 'error');
         } finally {
             setSaving(false);
         }

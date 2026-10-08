@@ -1,0 +1,155 @@
+/* ============================================================ */
+/* ========== CONFIRM MODAL (CSS Module) ====================== */
+/* ============================================================ */
+
+.backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1090;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+}
+
+.modal {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid var(--gray-200);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    width: 100%;
+    max-width: 420px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: fadeInUp 0.3s ease;
+}
+
+.header {
+    padding: 16px 20px;
+    background: white;
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--gray-800);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.title i {
+    color: var(--warning);
+    font-size: 1rem;
+}
+
+.body {
+    padding: 20px;
+    font-size: 0.95rem;
+    color: var(--gray-700);
+    line-height: 1.5;
+    text-align: center;
+}
+
+.footer {
+    padding: 12px 20px;
+    background: var(--gray-50);
+    border-top: 1px solid var(--gray-200);
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btnSecondary {
+    padding: 8px 24px;
+    border-radius: 30px;
+    border: none;
+    background: var(--gray-200);
+    color: var(--gray-700);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 110px;
+}
+
+.btnSecondary:hover {
+    background: var(--gray-300);
+    color: var(--gray-800);
+}
+
+.btnConfirm {
+    padding: 8px 24px;
+    border-radius: 30px;
+    border: none;
+    background: var(--primary);
+    color: white;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 110px;
+}
+
+.btnConfirm:hover {
+    background: var(--primary-dark);
+}
+
+/* ---- Типы ---- */
+.danger .title i {
+    color: var(--danger);
+}
+
+.danger .btnConfirm {
+    background: var(--danger);
+}
+
+.danger .btnConfirm:hover {
+    background: #b91c1c;
+}
+
+.info .title i {
+    color: var(--primary);
+}
+
+/* ---- Анимация ---- */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 768px) {
+    .backdrop {
+        padding: 16px;
+    }
+
+    .modal {
+        max-width: 100%;
+    }
+
+    .body {
+        padding: 16px;
+    }
+
+    .footer {
+        flex-direction: column-reverse;
+    }
+
+    .btnSecondary,
+    .btnConfirm {
+        width: 100%;
+    }
+}

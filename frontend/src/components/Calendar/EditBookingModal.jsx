@@ -6,6 +6,7 @@ import {
 import { loadBookingForEdit, updateBooking } from '../../api/day';
 import { phoneMask } from '../../utils/phoneMask';
 import shared from './BookingModalShared.module.css';
+import useModal from '../../hooks/useModal';
 
 const MONTH_NAMES = [
     'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
@@ -39,6 +40,7 @@ export default function EditBookingModal({ bookingId, masterSlug, onClose, onSav
     const [loadingDates, setLoadingDates] = useState(false);
     const [loadingSlots, setLoadingSlots] = useState(false);
     const [saving, setSaving] = useState(false);
+    const { showAlert } = useModal();
     const slotsRef = useRef(null);
     const summaryRef = useRef(null);
     const datesRef = useRef(null);
@@ -171,24 +173,24 @@ export default function EditBookingModal({ bookingId, masterSlug, onClose, onSav
 
     async function handleSave() {
         if (!selectedService) {
-            alert('Выберите услугу');
+            showAlert('Выберите услугу', 'warning');
             return;
         }
         if (!selectedDate) {
-            alert('Выберите дату');
+            showAlert('Выберите дату', 'warning');
             return;
         }
         if (!selectedTime) {
-            alert('Выберите время');
+            showAlert('Выберите время', 'warning');
             return;
         }
         if (!clientName.trim()) {
-            alert('Введите имя клиента');
+            showAlert('Введите имя клиента', 'warning');
             return;
         }
         const phoneCleaned = clientPhone.replace(/\D/g, '');
         if (phoneCleaned.length !== 11) {
-            alert('Телефон должен содержать 11 цифр');
+            showAlert('Телефон должен содержать 11 цифр', 'warning');
             return;
         }
 
@@ -207,11 +209,11 @@ export default function EditBookingModal({ bookingId, masterSlug, onClose, onSav
                 if (onSaved) onSaved();
                 onClose();
             } else {
-                alert(data.error || 'Ошибка сохранения');
+                showAlert(data.error || 'Ошибка сохранения', 'error');
             }
         } catch (error) {
             console.error('Ошибка:', error);
-            alert('Ошибка соединения');
+            showAlert('Ошибка соединения', 'error');
         } finally {
             setSaving(false);
         }
