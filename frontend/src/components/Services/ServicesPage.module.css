@@ -1,0 +1,101 @@
+/* ============================================================ */
+/* ========== SERVICES PAGE (CSS Module) ====================== */
+/* ============================================================ */
+
+.page {
+    width: 60%;
+}
+
+.pageHeader {
+    margin-bottom: 16px;
+}
+
+.pageHeader h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--gray-800);
+    margin: 0;
+}
+
+/* ---- Кнопки действий ---- */
+.actionsBar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.btnOutline,
+.btnPrimary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.btnOutline {
+    border: 1px solid var(--primary);
+    color: var(--primary);
+    background: transparent;
+}
+
+.btnOutline:hover {
+    background: var(--primary);
+    border-color: transparent;
+    color: white;
+}
+
+.btnPrimary {
+    border: none;
+    background: var(--primary);
+    color: white;
+}
+
+.btnPrimary:hover {
+    background: var(--primary-dark);
+}
+
+/* ---- Состояние загрузки ---- */
+.loading {
+    text-align: center;
+    padding: 40px 0;
+}
+
+/* ============================================================ */
+/* ==================== АДАПТИВ =============================== */
+/* ============================================================ */
+
+@media (max-width: 1600px) {
+    .page {
+        width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .page {
+        width: 100%;
+    }
+
+    .pageHeader h2 {
+        font-size: 1.2rem;
+    }
+
+    .actionsBar {
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+
+    .btnOutline,
+    .btnPrimary {
+        width: 100%;
+        justify-content: center;
+        font-size: 0.8rem;
+    }
+}
