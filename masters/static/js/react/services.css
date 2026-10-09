@@ -1,0 +1,1186 @@
+/* ============================================================ */
+/* ========== SERVICES LIST (CSS Module) ====================== */
+/* ============================================================ */
+
+._list_1khpi_9 {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* ---- Карточка категории ---- */
+._categoryCard_1khpi_23 {
+    border-radius: 16px;
+    border: 1px solid var(--gray-200);
+    overflow: hidden;
+    background: white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    transition: box-shadow 0.2s ease;
+}
+
+._categoryCard_1khpi_23:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+/* ---- Заголовок категории ---- */
+._categoryHeader_1khpi_51 {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: var(--gray-50);
+    border-bottom: 1px solid var(--gray-200);
+    transition: background 0.2s ease;
+}
+
+._categoryHeader_1khpi_51:hover {
+    background: var(--gray-100);
+}
+
+._categoryTitle_1khpi_79 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--gray-700);
+}
+
+._categoryTitle_1khpi_79 i {
+    color: var(--primary);
+}
+
+._chevron_1khpi_105 {
+    font-size: 12px;
+    transition: transform 0.2s ease;
+    color: var(--gray-500) !important;
+}
+
+._chevronOpen_1khpi_117 {
+    transform: rotate(90deg);
+}
+
+._badge_1khpi_125 {
+    font-size: 0.7rem;
+    padding: 2px 10px;
+    background: var(--gray-300);
+    color: var(--gray-700);
+    border-radius: 30px;
+    font-weight: 500;
+}
+
+/* ---- Действия в заголовке категории ---- */
+._categoryActions_1khpi_145 {
+    display: flex;
+    gap: 4px;
+}
+
+/* ---- Сетка услуг ---- */
+._servicesGrid_1khpi_157 {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    padding: 12px 16px;
+}
+
+/* ---- Карточка услуги ---- */
+._serviceCard_1khpi_173 {
+    background: white;
+    border: 1px solid var(--gray-300);
+    border-radius: 12px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+._serviceName_1khpi_193 {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--gray-800);
+}
+
+._serviceDescription_1khpi_205 {
+    font-size: 0.75rem;
+    color: var(--gray-500);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+._serviceMeta_1khpi_223 {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 8px;
+    border-top: 1px solid var(--gray-100);
+}
+
+._serviceDuration_1khpi_239 {
+    font-size: 0.7rem;
+    color: var(--gray-500);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+._servicePrice_1khpi_255 {
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--primary);
+}
+
+/* ---- Действия с услугой ---- */
+._serviceActions_1khpi_269 {
+    display: flex;
+    gap: 4px;
+    padding-top: 8px;
+    border-top: 1px solid var(--gray-100);
+}
+
+/* ---- Иконочные кнопки (общие для категорий и услуг) ---- */
+._iconBtn_1khpi_285 {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--gray-500);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+._iconBtn_1khpi_285:hover {
+    background: var(--gray-100);
+    color: var(--gray-700);
+}
+
+._iconBtnDanger_1khpi_329:hover {
+    background: #fef2f2;
+    color: var(--danger);
+}
+
+/* ---- Пустое состояние ---- */
+._emptyState_1khpi_341 {
+    text-align: center;
+    padding: 60px 20px;
+    background: white;
+    border-radius: 16px;
+    border: 1px solid var(--gray-200);
+}
+
+._emptyState_1khpi_341 i {
+    font-size: 4rem;
+    color: var(--gray-300);
+    margin-bottom: 16px;
+    display: block;
+}
+
+._emptyState_1khpi_341 h5 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--gray-700);
+    margin-bottom: 8px;
+}
+
+._emptyState_1khpi_341 p {
+    color: var(--gray-500);
+    margin-bottom: 16px;
+}
+
+/* ---- Кнопка «Добавить услугу» в пустом состоянии ---- */
+._btnPrimary_1khpi_397 {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    background: var(--primary);
+    color: white;
+}
+
+._btnPrimary_1khpi_397:hover {
+    background: var(--primary-dark);
+}
+
+/* ============================================================ */
+/* ==================== АДАПТИВ =============================== */
+/* ============================================================ */
+
+@media (max-width: 768px) {
+    ._categoryHeader_1khpi_51 {
+        padding: 10px 12px;
+    }
+
+    ._categoryTitle_1khpi_79 {
+        font-size: 0.85rem;
+    }
+
+    ._servicesGrid_1khpi_157 {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 8px;
+        padding: 8px 12px;
+    }
+
+    ._serviceCard_1khpi_173 {
+        padding: 10px;
+    }
+
+    ._serviceName_1khpi_193 {
+        font-size: 0.8rem;
+    }
+
+    ._serviceDescription_1khpi_205 {
+        font-size: 0.7rem;
+        -webkit-line-clamp: 1;
+    }
+
+    ._serviceDuration_1khpi_239 {
+        font-size: 0.65rem;
+    }
+
+    ._servicePrice_1khpi_255 {
+        font-size: 0.75rem;
+    }
+
+    ._iconBtn_1khpi_285 {
+        width: 28px;
+        height: 28px;
+        font-size: 0.75rem;
+    }
+
+    ._emptyState_1khpi_341 {
+        padding: 40px 16px;
+    }
+
+    ._emptyState_1khpi_341 i {
+        font-size: 3rem;
+    }
+
+    ._emptyState_1khpi_341 h5 {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    ._servicesGrid_1khpi_157 {
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+        padding: 6px 10px;
+    }
+
+    ._serviceCard_1khpi_173 {
+        padding: 8px;
+    }
+
+    ._serviceName_1khpi_193 {
+        font-size: 0.75rem;
+    }
+
+    ._serviceDescription_1khpi_205 {
+        display: none;
+    }
+
+    ._serviceMeta_1khpi_223 {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+    }
+
+    ._serviceDuration_1khpi_239 {
+        font-size: 0.6rem;
+    }
+
+    ._servicePrice_1khpi_255 {
+        font-size: 0.7rem;
+    }
+}/* ============================================================ */
+/* ========== CATEGORY MODAL (CSS Module) ===================== */
+/* ============================================================ */
+
+/* ---- Backdrop ---- */
+._backdrop_182nc_11 {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 1080;
+    overflow-y: auto;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 24px 16px;
+}
+
+/* ---- Окно ---- */
+._modal_182nc_37 {
+    background: white;
+    border-radius: 20px;
+    border: 1px solid var(--gray-200);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 600px;
+    max-height: calc(100vh - 48px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: _fadeInUp_182nc_1 0.3s ease;
+}
+
+/* ---- Заголовок ---- */
+._header_182nc_67 {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+._title_182nc_85 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--gray-800);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+._title_182nc_85 i {
+    color: var(--primary);
+}
+
+._closeBtn_182nc_113 {
+    background: transparent;
+    border: none;
+    font-size: 1.2rem;
+    color: var(--gray-500);
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    line-height: 1;
+}
+
+._closeBtn_182nc_113:hover {
+    background: var(--gray-100);
+    color: var(--gray-800);
+}
+
+/* ---- Тело ---- */
+._body_182nc_149 {
+    padding: 20px 24px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+/* ---- Форма ---- */
+._form_182nc_163 {
+    padding: 16px;
+    background: var(--gray-50);
+    border-radius: 12px;
+    margin-bottom: 16px;
+}
+
+._formField_182nc_177 {
+    margin-bottom: 12px;
+}
+
+._formField_182nc_177:last-of-type {
+    margin-bottom: 16px;
+}
+
+._formLabel_182nc_193 {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--gray-700);
+    margin-bottom: 4px;
+}
+
+._formInput_182nc_209 {
+    width: 100%;
+    border-radius: 10px;
+    border: 1px solid var(--gray-300);
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    background: white;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease;
+}
+
+._formInput_182nc_209:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+._formHint_182nc_241 {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--gray-400);
+    margin-top: 4px;
+}
+
+/* ---- Список существующих ---- */
+._listBlock_182nc_257 {
+    margin-top: 8px;
+}
+
+._listTitle_182nc_265 {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-bottom: 8px;
+    padding: 0 4px;
+}
+
+._emptyText_182nc_285 {
+    text-align: center;
+    color: var(--gray-400);
+    font-size: 0.85rem;
+    padding: 20px 0;
+}
+
+._list_182nc_257 {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+._listItem_182nc_311 {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    background: white;
+    border: 1px solid var(--gray-200);
+    min-height: 48px;
+    box-sizing: border-box;
+    transition: background 0.15s ease;
+}
+
+._listItem_182nc_311:hover {
+    background: var(--gray-50);
+}
+
+/* ---- View mode ---- */
+._viewRow_182nc_349 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+}
+
+._viewName_182nc_365 {
+    font-size: 0.9rem;
+    color: var(--gray-800);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+._viewBadge_182nc_381 {
+    font-size: 0.7rem;
+    padding: 2px 10px;
+    background: var(--gray-100);
+    color: var(--gray-500);
+    border-radius: 30px;
+    font-weight: 500;
+    flex-shrink: 0;
+}
+
+._viewOrder_182nc_401 {
+    font-size: 0.75rem;
+    color: var(--gray-400);
+    flex-shrink: 0;
+}
+
+/* ---- Edit mode ---- */
+._editRow_182nc_415 {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex: 1;
+    min-width: 0;
+}
+
+._editName_182nc_431 {
+    flex: 1;
+    min-width: 0;
+    border-radius: 8px;
+    border: 1px solid var(--gray-300);
+    padding: 6px 10px;
+    font-size: 0.85rem;
+    background: white;
+    box-sizing: border-box;
+}
+
+._editName_182nc_431:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+._editOrder_182nc_463 {
+    width: 70px;
+    flex-shrink: 0;
+    border-radius: 8px;
+    border: 1px solid var(--gray-300);
+    padding: 6px 10px;
+    font-size: 0.85rem;
+    text-align: center;
+    background: white;
+    box-sizing: border-box;
+}
+
+._editOrder_182nc_463:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+/* ---- Действия ---- */
+._itemActions_182nc_499 {
+    display: flex;
+    gap: 2px;
+    flex-shrink: 0;
+}
+
+._iconBtn_182nc_511 {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: var(--gray-500);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+._iconBtn_182nc_511:hover {
+    background: var(--gray-100);
+    color: var(--gray-700);
+}
+
+._iconBtnSuccess_182nc_555 {
+    color: var(--success);
+}
+
+._iconBtnSuccess_182nc_555:hover {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+._iconBtnDanger_182nc_573:hover {
+    background: #fef2f2;
+    color: var(--danger);
+}
+
+/* ---- Кнопки ---- */
+._btnPrimary_182nc_585 {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border-radius: 30px;
+    border: none;
+    background: var(--primary);
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+._btnPrimary_182nc_585:hover:not(:disabled) {
+    background: var(--primary-dark);
+}
+
+._btnPrimary_182nc_585:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+._btnSecondary_182nc_635 {
+    padding: 8px 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border-radius: 30px;
+    border: none;
+    background: var(--gray-200);
+    color: var(--gray-700);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+._btnSecondary_182nc_635:hover {
+    background: var(--gray-300);
+    color: var(--gray-800);
+}
+
+/* ---- Футер ---- */
+._footer_182nc_671 {
+    padding: 12px 24px;
+    border-top: 1px solid var(--gray-200);
+    background: var(--gray-50);
+    display: flex;
+    justify-content: flex-end;
+    flex-shrink: 0;
+}
+
+/* ---- Анимация ---- */
+@keyframes _fadeInUp_182nc_1 {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ============================================================ */
+/* ==================== АДАПТИВ =============================== */
+/* ============================================================ */
+
+@media (max-width: 768px) {
+    ._backdrop_182nc_11 {
+        padding: 0;
+        align-items: stretch;
+    }
+
+    ._modal_182nc_37 {
+        max-width: 100%;
+        border-radius: 0;
+        max-height: none;
+        height: 100%;
+        border: none;
+        box-shadow: none;
+    }
+
+    ._header_182nc_67 {
+        padding: 14px 16px;
+    }
+
+    ._title_182nc_85 {
+        font-size: 1rem;
+    }
+
+    ._body_182nc_149 {
+        padding: 16px;
+    }
+
+    ._form_182nc_163 {
+        padding: 12px;
+    }
+
+    ._formInput_182nc_209 {
+        font-size: 16px;
+    }
+
+    ._listItem_182nc_311 {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+        min-height: auto;
+        padding: 10px 12px;
+    }
+
+    ._viewRow_182nc_349 {
+        width: 100%;
+    }
+
+    ._editRow_182nc_415 {
+        width: 100%;
+    }
+
+    ._itemActions_182nc_499 {
+        justify-content: flex-end;
+        width: 100%;
+    }
+
+    ._footer_182nc_671 {
+        padding: 12px 16px;
+    }
+
+    ._footer_182nc_671 ._btnSecondary_182nc_635 {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    ._header_182nc_67 {
+        padding: 12px 14px;
+    }
+
+    ._title_182nc_85 {
+        font-size: 0.9rem;
+    }
+
+    ._body_182nc_149 {
+        padding: 12px;
+    }
+
+    ._formInput_182nc_209,
+    ._editName_182nc_431,
+    ._editOrder_182nc_463 {
+        font-size: 14px;
+    }
+}/* ============================================================ */
+/* ========== SERVICE MODAL (CSS Module) ====================== */
+/* ============================================================ */
+
+/* ---- Backdrop ---- */
+._backdrop_1rzgw_11 {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 1080;
+    overflow-y: auto;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 24px 16px;
+}
+
+/* ---- Окно ---- */
+._modal_1rzgw_37 {
+    background: white;
+    border-radius: 20px;
+    border: 1px solid var(--gray-200);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 600px;
+    max-height: calc(100vh - 48px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: _fadeInUp_1rzgw_1 0.3s ease;
+}
+
+/* ---- Заголовок ---- */
+._header_1rzgw_67 {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+._title_1rzgw_85 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--gray-800);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+._title_1rzgw_85 i {
+    color: var(--primary);
+}
+
+._closeBtn_1rzgw_113 {
+    background: transparent;
+    border: none;
+    font-size: 1.2rem;
+    color: var(--gray-500);
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    line-height: 1;
+}
+
+._closeBtn_1rzgw_113:hover {
+    background: var(--gray-100);
+    color: var(--gray-800);
+}
+
+/* ---- Тело ---- */
+._body_1rzgw_149 {
+    padding: 20px 24px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+._loading_1rzgw_161 {
+    text-align: center;
+    padding: 24px 0;
+}
+
+/* ---- Поля формы ---- */
+._formField_1rzgw_173 {
+    margin-bottom: 14px;
+}
+
+._formLabel_1rzgw_181 {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--gray-700);
+    margin-bottom: 4px;
+}
+
+._required_1rzgw_197 {
+    color: var(--danger);
+}
+
+._formInput_1rzgw_205,
+._formSelect_1rzgw_207,
+._formTextarea_1rzgw_209 {
+    width: 100%;
+    border-radius: 10px;
+    border: 1px solid var(--gray-300);
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    background: white;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease;
+    font-family: inherit;
+}
+
+._formInput_1rzgw_205,
+._formSelect_1rzgw_207 {
+    height: 40px;
+}
+
+._formTextarea_1rzgw_209 {
+    min-height: 70px;
+    resize: vertical;
+}
+
+._formInput_1rzgw_205:focus,
+._formSelect_1rzgw_207:focus,
+._formTextarea_1rzgw_209:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+._formInput_1rzgw_205::placeholder,
+._formTextarea_1rzgw_209::placeholder {
+    color: var(--gray-400);
+    opacity: 1;
+}
+
+/* ---- Две колонки ---- */
+._row_1rzgw_281 {
+    display: flex;
+    gap: 12px;
+}
+
+._row_1rzgw_281 ._formField_1rzgw_173 {
+    flex: 1;
+    min-width: 0;
+}
+
+/* ---- Чекбокс ---- */
+._checkboxField_1rzgw_303 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 4px;
+    padding: 8px 0;
+}
+
+._checkboxInput_1rzgw_321 {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--primary);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+._checkboxLabel_1rzgw_337 {
+    font-size: 0.9rem;
+    color: var(--gray-700);
+    cursor: pointer;
+    font-weight: 500;
+}
+
+._checkboxHint_1rzgw_351 {
+    font-size: 0.75rem;
+    color: var(--gray-400);
+    flex-basis: 100%;
+    margin-left: 24px;
+}
+
+/* ---- Кнопки ---- */
+._btnPrimary_1rzgw_367 {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 24px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border-radius: 30px;
+    border: none;
+    background: var(--primary);
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 140px;
+}
+
+._btnPrimary_1rzgw_367:hover:not(:disabled) {
+    background: var(--primary-dark);
+}
+
+._btnPrimary_1rzgw_367:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+._btnSecondary_1rzgw_419 {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border-radius: 30px;
+    border: none;
+    background: var(--gray-200);
+    color: var(--gray-700);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+._btnSecondary_1rzgw_419:hover:not(:disabled) {
+    background: var(--gray-300);
+    color: var(--gray-800);
+}
+
+._btnSecondary_1rzgw_419:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* ---- Футер ---- */
+._footer_1rzgw_471 {
+    padding: 12px 24px;
+    border-top: 1px solid var(--gray-200);
+    background: var(--gray-50);
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+/* ---- Анимация ---- */
+@keyframes _fadeInUp_1rzgw_1 {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ============================================================ */
+/* ==================== АДАПТИВ =============================== */
+/* ============================================================ */
+
+@media (max-width: 768px) {
+    ._backdrop_1rzgw_11 {
+        padding: 0;
+        align-items: stretch;
+    }
+
+    ._modal_1rzgw_37 {
+        max-width: 100%;
+        border-radius: 0;
+        max-height: none;
+        height: 100%;
+        border: none;
+        box-shadow: none;
+    }
+
+    ._header_1rzgw_67 {
+        padding: 14px 16px;
+    }
+
+    ._title_1rzgw_85 {
+        font-size: 1rem;
+    }
+
+    ._body_1rzgw_149 {
+        padding: 16px;
+    }
+
+    ._formInput_1rzgw_205,
+    ._formSelect_1rzgw_207,
+    ._formTextarea_1rzgw_209 {
+        font-size: 16px; /* не зумится на iOS */
+    }
+
+    ._row_1rzgw_281 {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    ._footer_1rzgw_471 {
+        padding: 12px 16px;
+        flex-direction: column-reverse;
+    }
+
+    ._footer_1rzgw_471 ._btnPrimary_1rzgw_367,
+    ._footer_1rzgw_471 ._btnSecondary_1rzgw_419 {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    ._header_1rzgw_67 {
+        padding: 12px 14px;
+    }
+
+    ._title_1rzgw_85 {
+        font-size: 0.9rem;
+    }
+
+    ._body_1rzgw_149 {
+        padding: 12px;
+    }
+
+    ._formInput_1rzgw_205,
+    ._formSelect_1rzgw_207,
+    ._formTextarea_1rzgw_209 {
+        font-size: 14px;
+    }
+
+    ._formInput_1rzgw_205,
+    ._formSelect_1rzgw_207 {
+        height: 36px;
+    }
+}/* ============================================================ */
+/* ========== SERVICES PAGE (CSS Module) ====================== */
+/* ============================================================ */
+
+._page_1ijv2_9 {
+    width: 60%;
+}
+
+._pageHeader_1ijv2_17 {
+    margin-bottom: 16px;
+}
+
+._pageHeader_1ijv2_17 h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--gray-800);
+    margin: 0;
+}
+
+/* ---- Кнопки действий ---- */
+._actionsBar_1ijv2_41 {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+._btnOutline_1ijv2_55,
+._btnPrimary_1ijv2_57 {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+._btnOutline_1ijv2_55 {
+    border: 1px solid var(--primary);
+    color: var(--primary);
+    background: transparent;
+}
+
+._btnOutline_1ijv2_55:hover {
+    background: var(--primary);
+    border-color: transparent;
+    color: white;
+}
+
+._btnPrimary_1ijv2_57 {
+    border: none;
+    background: var(--primary);
+    color: white;
+}
+
+._btnPrimary_1ijv2_57:hover {
+    background: var(--primary-dark);
+}
+
+/* ---- Состояние загрузки ---- */
+._loading_1ijv2_129 {
+    text-align: center;
+    padding: 40px 0;
+}
+
+/* ============================================================ */
+/* ==================== АДАПТИВ =============================== */
+/* ============================================================ */
+
+@media (max-width: 1600px) {
+    ._page_1ijv2_9 {
+        width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    ._page_1ijv2_9 {
+        width: 100%;
+    }
+
+    ._pageHeader_1ijv2_17 h2 {
+        font-size: 1.2rem;
+    }
+
+    ._actionsBar_1ijv2_41 {
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+
+    ._btnOutline_1ijv2_55,
+    ._btnPrimary_1ijv2_57 {
+        width: 100%;
+        justify-content: center;
+        font-size: 0.8rem;
+    }
+}

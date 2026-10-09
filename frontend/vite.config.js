@@ -9,18 +9,26 @@ const __dirname = path.dirname(__filename);
 export default defineConfig({
     plugins: [react()],
     build: {
-        // Куда собирать: в static/js/react/ Django-проекта
         outDir: path.resolve(__dirname, '../masters/static/js/react'),
         emptyOutDir: true,
         rollupOptions: {
-            input: path.resolve(__dirname, 'src/main.jsx'),
+            input: {
+                dashboard: path.resolve(__dirname, 'src/entries/dashboard.jsx'),
+                services: path.resolve(__dirname, 'src/entries/services.jsx'),
+            },
             output: {
-                entryFileNames: 'dashboard.js',
-                chunkFileNames: '[name].js',
+                entryFileNames: '[name].js',
+                chunkFileNames: 'chunk-[name].js',
                 assetFileNames: '[name].[ext]',
+                manualChunks(id) {
+                    if (id.includes('node_modules')) {
+                        if (id.includes('react')) return 'react';
+                        return 'vendor';
+                    }
+                    if (id.includes('/components/modals/')) return 'modals';
+                },
             },
         },
-        // Не минифицируем на этапе разработки — легче дебажить
         minify: false,
     },
     server: {

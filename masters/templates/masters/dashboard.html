@@ -2,7 +2,9 @@
 {% load static %}
 
 {% block extra_css %}
-    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">        {# глобальный — статистика, ссылка #}
+    <link rel="stylesheet" href="{% static 'js/react/modals.css' %}">      {# React-модалки #}
+    <link rel="stylesheet" href="{% static 'js/react/dashboard.css' %}">   {# React-дашборд #}
 {% endblock %}
 
 {% block title %}Личный кабинет - {{ master.first_name }} {{ master.last_name }}{% endblock %}
@@ -72,7 +74,7 @@
 
 {% block extra_js %}
 
-<script src="{% static 'js/react/dashboard.js' %}" defer></script>
+<script src="{% static 'js/react/dashboard.js' %}" type="module"></script>
 
 <script>
 // ============================================================
