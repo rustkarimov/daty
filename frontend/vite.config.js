@@ -30,7 +30,7 @@ export default defineConfig({
                 },
             },
         },
-        minify: false,
+        minify: true,
     },
     server: {
         port: 5173,
