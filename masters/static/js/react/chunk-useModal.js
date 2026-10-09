@@ -1,12 +1,1 @@
-import { r as reactExports } from "./chunk-react.js";
-import { a as ModalContext } from "./chunk-modals.js";
-function useModal() {
-  const ctx = reactExports.useContext(ModalContext);
-  if (!ctx) {
-    throw new Error("useModal must be used within ModalProvider");
-  }
-  return ctx;
-}
-export {
-  useModal as u
-};
+import{r}from"./chunk-react.js";import{a as t}from"./chunk-modals.js";function a(){const o=r.useContext(t);if(!o)throw new Error("useModal must be used within ModalProvider");return o}export{a as u};
