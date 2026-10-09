@@ -1,0 +1,228 @@
+/* ============================================================ */
+/* ========== SCHEDULES LIST (CSS Module) ===================== */
+/* ============================================================ */
+
+.loading {
+    text-align: center;
+    padding: 24px 0;
+}
+
+.emptyState {
+    padding: 8px 0;
+}
+
+.emptyText {
+    color: var(--gray-500);
+    margin: 0 0 4px 0;
+    font-size: 0.9rem;
+}
+
+.emptyHint {
+    color: var(--gray-400);
+    font-size: 0.8rem;
+    margin: 0;
+}
+
+/* ---- Таблица ---- */
+.tableWrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.table {
+    width: 100%;
+    font-size: 0.9rem;
+    border-collapse: collapse;
+}
+
+.table thead th {
+    font-weight: 600;
+    color: var(--gray-600);
+    border-bottom: 2px solid var(--gray-200);
+    padding: 8px 12px;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    text-align: left;
+}
+
+.table tbody td {
+    padding: 10px 12px;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--gray-100);
+}
+
+.table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.workTimeMobile {
+    display: none;
+}
+
+.workTimeDesktop {
+    display: inline;
+}
+
+/* ---- Перерывы ---- */
+.breakText {
+    display: block;
+    color: var(--gray-600);
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+.textMuted {
+    color: var(--gray-400);
+}
+
+/* ---- Действия ---- */
+.actionIcons {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.iconBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--gray-500);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.iconBtn:hover {
+    background: var(--gray-100);
+    color: var(--gray-700);
+}
+
+.iconBtnDanger:hover {
+    background: #fef2f2;
+    color: var(--danger);
+}
+
+/* ============================================================ */
+/* ==================== АДАПТИВ =============================== */
+/* ============================================================ */
+
+@media (max-width: 768px) {
+    /* Таблица → карточки */
+    .table,
+    .table tbody,
+    .table tr,
+    .table td {
+        display: block;
+        width: 100%;
+    }
+
+    .table thead {
+        display: none;
+    }
+
+    .table tbody tr {
+        background: white;
+        border-radius: 10px;
+        border: 0.5px solid rgb(124, 124, 124);
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+        padding: 4px 8px;
+        margin-bottom: 5px;
+    }
+
+    .table tbody td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 4px 0;
+        border: none;
+        font-size: 10px;
+    }
+
+    /* Строка 1: День недели */
+    .table tbody td[data-label="day"] {
+        display: block;
+        font-weight: 600;
+        font-size: 14px;
+        color: var(--gray-800);
+        padding-bottom: 3px;
+        border-bottom: 1px solid var(--gray-100);
+    }
+
+    /* Строка 2: Рабочие часы (одна строка) */
+    .table tbody td[data-label="start"],
+    .table tbody td[data-label="end"] {
+        display: inline-flex;
+        font-size: 12px;
+        color: var(--gray-700);
+    }
+
+    .table tbody td[data-label="start"]::before {
+        content: "Рабочие часы";
+        font-weight: 500;
+        color: var(--gray-500);
+        margin-right: 8px;
+    }
+
+    .table tbody td[data-label="end"] {
+        display: none;
+    }
+
+    .workTimeDesktop {
+        display: none;
+    }
+
+    .workTimeMobile {
+        display: inline;
+    }
+
+    /* Строка 3: Перерывы */
+    .table tbody td[data-label="breaks"] {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 2px 16px;
+        width: 100%;
+        padding: 4px 0;
+        align-items: baseline;
+    }
+
+    .table tbody td[data-label="breaks"]::before {
+        content: "Перерыв";
+        font-weight: 500;
+        color: var(--gray-500);
+        grid-column: 1 / 2;
+        grid-row: 1 / -1;
+        font-size: 12px;
+    }
+
+    .breakText {
+        grid-column: 2 / 3;
+        color: var(--gray-600);
+        font-size: 12px;
+    }
+
+    /* Строка 4: Действия */
+    .table tbody td[data-label="actions"] {
+        border-top: 1px solid var(--gray-200);
+        padding-top: 6px;
+        margin-top: 4px;
+        justify-content: flex-start;
+    }
+
+    .actionIcons {
+        gap: 6px;
+    }
+
+    .iconBtn {
+        width: 28px;
+        height: 28px;
+        font-size: 12px;
+    }
+}

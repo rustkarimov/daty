@@ -1,4 +1,5 @@
 import { j as jsxRuntimeExports, r as reactExports, c as client } from "./chunk-react.js";
+import { B as BreaksEditor } from "./chunk-BreaksEditor.js";
 import { u as useModal } from "./chunk-useModal.js";
 import { M as ModalProvider } from "./chunk-modals.js";
 import "./chunk-vendor.js";
@@ -21,7 +22,7 @@ const icons = "_icons_1mdni_311";
 const bookingBadge = "_bookingBadge_1mdni_333";
 const breakBadge = "_breakBadge_1mdni_363";
 const loading$3 = "_loading_1mdni_415";
-const styles$5 = {
+const styles$4 = {
   calendar,
   nav,
   navBtn,
@@ -47,18 +48,18 @@ function DayCell({ day, dateStr, status, bookingCount, hasBreaks, isToday, isPas
   const statusText = (status == null ? void 0 : status.statusText) || "";
   const showIcons = !isPast;
   const className = [
-    styles$5.dateCell,
-    workingClass === "working" ? styles$5.working : "",
-    workingClass === "non-working" ? styles$5.nonWorking : "",
-    isPast ? styles$5.past : "",
-    isToday ? styles$5.today : ""
+    styles$4.dateCell,
+    workingClass === "working" ? styles$4.working : "",
+    workingClass === "non-working" ? styles$4.nonWorking : "",
+    isPast ? styles$4.past : "",
+    isToday ? styles$4.today : ""
   ].filter(Boolean).join(" ");
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className, onClick: () => onClick(dateStr), children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: styles$5.dateNumber, children: day }),
-    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$5.dateTime, children: statusText }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$5.icons, children: [
-      showIcons && bookingCount > 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: styles$5.bookingBadge, children: bookingCount }),
-      showIcons && hasBreaks && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: styles$5.breakBadge, title: "В этот день есть перерывы", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+    /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: styles$4.dateNumber, children: day }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$4.dateTime, children: statusText }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$4.icons, children: [
+      showIcons && bookingCount > 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: styles$4.bookingBadge, children: bookingCount }),
+      showIcons && hasBreaks && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: styles$4.breakBadge, title: "В этот день есть перерывы", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
         "svg",
         {
           width: "10",
@@ -88,7 +89,7 @@ function MonthGrid({ year, month, calendarData, countsData, onDayClick }) {
   const adjustedStartWeekday = startWeekday === 0 ? 6 : startWeekday - 1;
   const emptyCells = [];
   for (let i = 0; i < adjustedStartWeekday; i++) {
-    emptyCells.push(/* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: `${styles$5.dateCell} ${styles$5.empty}` }, `empty-${i}`));
+    emptyCells.push(/* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: `${styles$4.dateCell} ${styles$4.empty}` }, `empty-${i}`));
   }
   function getDayStatus(day) {
     var _a2, _b, _c, _d, _e;
@@ -143,236 +144,10 @@ function MonthGrid({ year, month, calendarData, countsData, onDayClick }) {
     );
   }
   return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$5.weekdays, children: ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"].map((d) => /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$5.weekday, children: d }, d)) }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$5.dates, children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$4.weekdays, children: ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"].map((d) => /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$4.weekday, children: d }, d)) }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$4.dates, children: [
       emptyCells,
       dayCells
-    ] })
-  ] });
-}
-const editor = "_editor_1al4j_11";
-const title$4 = "_title_1al4j_29";
-const breakRow = "_breakRow_1al4j_45";
-const value = "_value_1al4j_85";
-const input = "_input_1al4j_99";
-const separator = "_separator_1al4j_131";
-const actions$1 = "_actions_1al4j_141";
-const iconBtn$2 = "_iconBtn_1al4j_153";
-const iconBtnSuccess$1 = "_iconBtnSuccess_1al4j_197";
-const iconBtnSecondary$1 = "_iconBtnSecondary_1al4j_215";
-const iconBtnDanger = "_iconBtnDanger_1al4j_233";
-const emptyRow = "_emptyRow_1al4j_245";
-const emptyText$1 = "_emptyText_1al4j_263";
-const dot = "_dot_1al4j_275";
-const styles$4 = {
-  editor,
-  title: title$4,
-  breakRow,
-  value,
-  input,
-  separator,
-  actions: actions$1,
-  iconBtn: iconBtn$2,
-  iconBtnSuccess: iconBtnSuccess$1,
-  iconBtnSecondary: iconBtnSecondary$1,
-  iconBtnDanger,
-  emptyRow,
-  emptyText: emptyText$1,
-  dot
-};
-function BreaksEditor({ breaks, onChange }) {
-  const [editingIndex, setEditingIndex] = reactExports.useState(null);
-  const [editValues, setEditValues] = reactExports.useState({ start: "", end: "" });
-  const [newBreak, setNewBreak] = reactExports.useState(null);
-  const { showAlert, showConfirm } = useModal();
-  function handleEditClick(index) {
-    setEditingIndex(index);
-    setEditValues({
-      start: breaks[index].start,
-      end: breaks[index].end
-    });
-  }
-  function handleSaveEdit() {
-    if (!editValues.start || !editValues.end) {
-      showAlert("Заполните оба поля", "warning");
-      return;
-    }
-    if (editValues.start >= editValues.end) {
-      showAlert("Время начала должно быть раньше времени окончания", "warning");
-      return;
-    }
-    const newBreaks = [...breaks];
-    newBreaks[editingIndex] = { ...editValues };
-    onChange(newBreaks);
-    setEditingIndex(null);
-  }
-  function handleCancelEdit() {
-    setEditingIndex(null);
-  }
-  async function handleDelete(index) {
-    const ok = await showConfirm("Удалить этот перерыв?", { type: "danger" });
-    if (!ok) return;
-    const newBreaks = breaks.filter((_, i) => i !== index);
-    onChange(newBreaks);
-  }
-  function handleAdd() {
-    setNewBreak({ start: "", end: "" });
-  }
-  function handleSaveNew() {
-    if (!newBreak.start || !newBreak.end) {
-      showAlert("Заполните оба поля", "warning");
-      return;
-    }
-    if (newBreak.start >= newBreak.end) {
-      showAlert("Время начала должно быть раньше времени окончания", "warning");
-      return;
-    }
-    const newBreaks = [...breaks, newBreak];
-    onChange(newBreaks);
-    setNewBreak(null);
-  }
-  function handleCancelNew() {
-    setNewBreak(null);
-  }
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$4.editor, children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$4.title, children: "Перерывы:" }),
-    breaks.map((br, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$4.breakRow, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: styles$4.dot, children: "•" }),
-      editingIndex === index ? /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          "input",
-          {
-            type: "time",
-            className: styles$4.input,
-            value: editValues.start,
-            onChange: (e) => setEditValues({ ...editValues, start: e.target.value })
-          }
-        ),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: styles$4.separator, children: "—" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          "input",
-          {
-            type: "time",
-            className: styles$4.input,
-            value: editValues.end,
-            onChange: (e) => setEditValues({ ...editValues, end: e.target.value })
-          }
-        ),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          "button",
-          {
-            type: "button",
-            className: `${styles$4.iconBtn} ${styles$4.iconBtnSuccess}`,
-            onClick: handleSaveEdit,
-            title: "Сохранить",
-            children: /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "fas fa-check" })
-          }
-        ),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          "button",
-          {
-            type: "button",
-            className: `${styles$4.iconBtn} ${styles$4.iconBtnSecondary}`,
-            onClick: handleCancelEdit,
-            title: "Отмена",
-            children: /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "fas fa-times" })
-          }
-        )
-      ] }) : /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: styles$4.value, children: [
-          br.start,
-          " — ",
-          br.end
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$4.actions, children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
-            "button",
-            {
-              type: "button",
-              className: styles$4.iconBtn,
-              onClick: () => handleEditClick(index),
-              title: "Редактировать",
-              children: /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "fas fa-edit" })
-            }
-          ),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
-            "button",
-            {
-              type: "button",
-              className: `${styles$4.iconBtn} ${styles$4.iconBtnDanger}`,
-              onClick: () => handleDelete(index),
-              title: "Удалить",
-              children: /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "fas fa-trash" })
-            }
-          ),
-          index === breaks.length - 1 && !newBreak && /* @__PURE__ */ jsxRuntimeExports.jsx(
-            "button",
-            {
-              type: "button",
-              className: styles$4.iconBtn,
-              onClick: handleAdd,
-              title: "Добавить перерыв",
-              children: /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "fas fa-plus" })
-            }
-          )
-        ] })
-      ] })
-    ] }, index)),
-    newBreak && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$4.breakRow, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: styles$4.dot, children: "•" }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(
-        "input",
-        {
-          type: "time",
-          className: styles$4.input,
-          value: newBreak.start,
-          onChange: (e) => setNewBreak({ ...newBreak, start: e.target.value })
-        }
-      ),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: styles$4.separator, children: "—" }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(
-        "input",
-        {
-          type: "time",
-          className: styles$4.input,
-          value: newBreak.end,
-          onChange: (e) => setNewBreak({ ...newBreak, end: e.target.value })
-        }
-      ),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(
-        "button",
-        {
-          type: "button",
-          className: `${styles$4.iconBtn} ${styles$4.iconBtnSuccess}`,
-          onClick: handleSaveNew,
-          title: "Сохранить",
-          children: /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "fas fa-check" })
-        }
-      ),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(
-        "button",
-        {
-          type: "button",
-          className: `${styles$4.iconBtn} ${styles$4.iconBtnSecondary}`,
-          onClick: handleCancelNew,
-          title: "Отмена",
-          children: /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "fas fa-times" })
-        }
-      )
-    ] }),
-    breaks.length === 0 && !newBreak && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$4.emptyRow, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: styles$4.dot, children: "•" }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: styles$4.emptyText, children: "Нет перерывов" }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(
-        "button",
-        {
-          type: "button",
-          className: styles$4.iconBtn,
-          onClick: handleAdd,
-          title: "Добавить перерыв",
-          children: /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "fas fa-plus" })
-        }
-      )
     ] })
   ] });
 }
@@ -488,8 +263,8 @@ async function updateBooking(bookingId, data) {
   });
   return r.json();
 }
-function phoneMask(value2) {
-  let digits = value2.replace(/\D/g, "");
+function phoneMask(value) {
+  let digits = value.replace(/\D/g, "");
   if (digits.length === 0) return "";
   if (digits[0] !== "7" && digits[0] !== "8") {
     digits = "7" + digits;
@@ -1784,9 +1559,9 @@ function Calendar({ masterSlug, onExternalChange }) {
     reloadData();
     if (onExternalChange) onExternalChange(message);
   }
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$5.calendar, children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$5.nav, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("button", { className: styles$5.navBtn, onClick: () => changeMonth(-1), children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$4.calendar, children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$4.nav, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("button", { className: styles$4.navBtn, onClick: () => changeMonth(-1), children: /* @__PURE__ */ jsxRuntimeExports.jsx(
         "svg",
         {
           width: "20",
@@ -1800,12 +1575,12 @@ function Calendar({ masterSlug, onExternalChange }) {
           children: /* @__PURE__ */ jsxRuntimeExports.jsx("polyline", { points: "15 18 9 12 15 6" })
         }
       ) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: styles$5.navTitle, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: styles$4.navTitle, children: [
         MONTH_NAMES[month],
         " ",
         year
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("button", { className: styles$5.navBtn, onClick: () => changeMonth(1), children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+      /* @__PURE__ */ jsxRuntimeExports.jsx("button", { className: styles$4.navBtn, onClick: () => changeMonth(1), children: /* @__PURE__ */ jsxRuntimeExports.jsx(
         "svg",
         {
           width: "20",
@@ -1820,7 +1595,7 @@ function Calendar({ masterSlug, onExternalChange }) {
         }
       ) })
     ] }),
-    loading2 ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$5.loading, children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "spinner-border", style: { color: "#4053d3" } }) }) : /* @__PURE__ */ jsxRuntimeExports.jsx(
+    loading2 ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$4.loading, children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "spinner-border", style: { color: "#4053d3" } }) }) : /* @__PURE__ */ jsxRuntimeExports.jsx(
       MonthGrid,
       {
         year,

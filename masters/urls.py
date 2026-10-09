@@ -46,6 +46,7 @@ urlpatterns = [
     path('schedule/<int:schedule_id>/delete/', views.delete_schedule, name='delete_schedule'),
 
     # API для расписания (AJAX)
+    path('api/schedules/', views.api_get_schedules, name='api_schedules'),
     path('api/schedule/add/', views.api_add_schedule, name='api_add_schedule'),
     path('api/schedule/<int:schedule_id>/edit/', views.api_edit_schedule, name='api_edit_schedule'),
     path('api/schedule/<int:schedule_id>/delete/', views.api_delete_schedule, name='api_delete_schedule'),

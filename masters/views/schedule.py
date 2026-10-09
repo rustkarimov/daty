@@ -38,6 +38,30 @@ def delete_schedule(request, schedule_id):
 
 
 @login_required
+def api_get_schedules(request):
+    """
+    Возвращает список регулярных расписаний мастера (для React).
+    GET /api/schedules/
+    """
+    master = request.user.master
+    schedules = Schedule.objects.filter(master=master).order_by('day_of_week')
+    
+    data = [{
+        'id': s.id,
+        'day_of_week': s.day_of_week,
+        'day_name': s.get_day_of_week_display(),
+        'start_time': s.start_time.strftime('%H:%M'),
+        'end_time': s.end_time.strftime('%H:%M'),
+        'breaks': [{
+            'start': b.start_time.strftime('%H:%M'),
+            'end': b.end_time.strftime('%H:%M'),
+        } for b in s.breaks.all()],
+    } for s in schedules]
+    
+    return JsonResponse({'schedules': data})
+
+
+@login_required
 @require_http_methods(["POST"])
 def api_add_schedule(request):
     """Создаёт регулярное расписание для дня недели (с перерывами)."""

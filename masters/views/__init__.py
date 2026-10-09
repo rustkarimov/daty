@@ -56,6 +56,7 @@ from .schedule import (
     # Регулярное расписание
     schedule,
     delete_schedule,
+    api_get_schedules,
     api_add_schedule,
     api_edit_schedule,
     api_delete_schedule,

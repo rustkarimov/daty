@@ -1,0 +1,125 @@
+/* ============================================================ */
+/* ========== SCHEDULE PAGE (CSS Module) ====================== */
+/* ============================================================ */
+
+.page {
+    width: 60%;
+}
+
+.pageHeader {
+    margin-bottom: 24px;
+}
+
+.pageHeader h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--gray-800);
+    margin: 0;
+}
+
+/* ---- Карточка секции ---- */
+.card {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid var(--gray-200);
+    padding: 16px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    transition: box-shadow 0.2s ease;
+}
+
+.card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+/* ---- Заголовок секции (как в ванильном, с полоской) ---- */
+.sectionTitle {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin: 5px 0 12px 0;
+    display: inline-block;
+    background: var(--primary-light);
+    padding: 6px 14px 6px 10px;
+    border-radius: 0 6px 6px 0;
+    border-left: 4px solid var(--primary);
+    box-shadow: 0 1px 3px rgba(64, 83, 211, 0.15);
+}
+
+/* ---- Кнопка под секцией ---- */
+.sectionActions {
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid var(--gray-200);
+    display: flex;
+    justify-content: flex-start;
+}
+
+.btnPrimary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border-radius: 30px;
+    border: none;
+    background: var(--primary);
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btnPrimary:hover {
+    background: var(--primary-dark);
+}
+
+/* ============================================================ */
+/* ==================== АДАПТИВ =============================== */
+/* ============================================================ */
+
+@media (max-width: 1600px) {
+    .page {
+        width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .page {
+        margin: 0;
+    }
+
+    .pageHeader {
+        margin-bottom: 16px;
+    }
+
+    .pageHeader h2 {
+        font-size: 1.2rem;
+    }
+
+    .card {
+        border-radius: 12px;
+        margin-bottom: 12px;
+        padding: 8px 0;
+    }
+
+    .sectionTitle {
+        font-size: 1rem;
+        padding: 4px 12px 4px 8px;
+        border-left-width: 3px;
+        margin-left: 8px;
+    }
+
+    .sectionActions {
+        margin: 5px 8px 10px 8px;
+        padding-top: 0;
+        border-top: none;
+    }
+
+    .btnPrimary {
+        padding: 4px 12px;
+        font-size: 0.7rem;
+        border-radius: 16px;
+        height: 30px;
+    }
+}
