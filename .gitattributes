@@ -1,0 +1,43 @@
+# Автоматически нормализуем переносы строк
+* text=auto
+
+# JS/TS/CSS/HTML/JSON — Unix-переносы в репозитории
+*.js    text eol=lf
+*.jsx   text eol=lf
+*.ts    text eol=lf
+*.tsx   text eol=lf
+*.css   text eol=lf
+*.html  text eol=lf
+*.json  text eol=lf
+*.md    text eol=lf
+*.txt   text eol=lf
+
+# Python
+*.py    text eol=lf
+
+# Конфигурационные
+*.yml   text eol=lf
+*.yaml  text eol=lf
+*.toml  text eol=lf
+*.ini   text eol=lf
+*.cfg   text eol=lf
+
+# Скрипты
+*.sh    text eol=lf
+
+# Бинарные файлы — не трогать
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.ico   binary
+*.webp  binary
+*.svg   text eol=lf
+*.woff  binary
+*.woff2 binary
+*.ttf   binary
+*.eot   binary
+*.pdf   binary
+*.zip   binary
+*.sqlite3 binary
+*.sqlite3-journal binary
