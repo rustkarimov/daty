@@ -46,3 +46,6 @@ node_modules/
 frontend/node_modules/
 frontend/.vite/
 frontend/dist/
+
+# Собранные Vite-бандлы (собираются на сервере)
+masters/static/js/react/
