@@ -15,6 +15,13 @@
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="{% static 'js/react/main.css' %}">
 
+    <!-- Prefetch основных страниц для быстрого перехода -->
+    <link rel="prefetch" href="{% url 'dashboard' %}">
+    <link rel="prefetch" href="{% url 'services' %}">
+    <link rel="prefetch" href="{% url 'schedule' %}">
+    <link rel="prefetch" href="{% url 'clients_statistics' %}">
+    <link rel="prefetch" href="{% url 'profile' %}">
+
     <link rel="icon" type="image/png" href="{% static 'images/favicon.ico' %}">
 
     <!-- PWA -->
@@ -259,27 +266,6 @@
                         </div> -->
                     </div>
 
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- МОДАЛЬНОЕ ОКНО ДЛЯ СООБЩЕНИЙ (ОШИБКИ/УСПЕХ) -->
-    <div class="modal fade" id="alertModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="alertModalTitle">
-                        <i class="fas fa-info-circle me-2" style="color: var(--primary);"></i>
-                        Уведомление
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <p id="alertModalMessage"></p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
                 </div>
             </div>
         </div>
@@ -1140,51 +1126,7 @@ document.getElementById('chat-send-btn')?.addEventListener('click', sendSupportM
         }
     </script>
 
-<script>
 
-// ============================================================
-// МОДАЛЬНОЕ ОКНО УВЕДОМЛЕНИЯ
-// ============================================================
-
-    function showAlert(message, title = 'Уведомление') {
-        const modalElement = document.getElementById('alertModal');
-        if (!modalElement) {
-            console.error('Модальное окно #alertModal не найдено');
-            return;
-        }
-        document.getElementById('alertModalTitle').innerHTML = title;
-        document.getElementById('alertModalMessage').innerHTML = message;
-        new bootstrap.Modal(modalElement).show();
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-        // Проверяем, есть ли сообщения от Django
-        const messagesContainer = document.getElementById('django-messages-data');
-        if (messagesContainer) {
-            const items = messagesContainer.querySelectorAll('[data-message]');
-            let firstMessage = null;
-            let firstTag = null;
-            
-            items.forEach(el => {
-                if (!firstMessage) {
-                    firstMessage = el.dataset.message;
-                    firstTag = el.dataset.tags || 'info';
-                }
-            });
-            
-            if (firstMessage) {
-                const titles = {
-                    'success': '✅ Готово!',
-                    'error': '❌ Ошибка',
-                    'warning': '⚠️ Внимание',
-                    'info': 'ℹ️ Уведомление'
-                };
-                const title = titles[firstTag] || 'ℹ️ Уведомление';
-                showAlert(firstMessage, title);
-            }
-        }
-    });
-</script>
 
 <!-- SW PWA -->
 <script>
