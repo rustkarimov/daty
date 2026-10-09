@@ -1,4 +1,4 @@
-const CACHE_NAME = 'daty-v11';
+const CACHE_NAME = 'daty-v12';
 const OFFLINE_URL = '/static/offline.html';
 
 // Что кешируем при установке
@@ -6,7 +6,6 @@ const STATIC_ASSETS = [
     '/static/css/bootstrap.min.css',
     '/static/css/all.min.css',
     '/static/css/style.css',
-    '/static/css/dashboard.css',
     '/static/css/promo.css',
     '/static/js/bootstrap.bundle.min.js',
     '/static/manifest.json',
@@ -14,7 +13,7 @@ const STATIC_ASSETS = [
 ];
 
 // ============================================================
-// INSTALL — кешируем статику
+// INSTALL — кешируем базовую статику
 // ============================================================
 self.addEventListener('install', event => {
     event.waitUntil(
@@ -66,22 +65,39 @@ self.addEventListener('fetch', event => {
     if (url.origin !== location.origin) return;
 
     // --------------------------------------------------------
-    // HTML-страницы — Network First с ТАЙМАУТОМ и ПОВТОРОМ.
-    // offline.html показываем только если сеть реально не работает.
+    // HTML — Network First
     // --------------------------------------------------------
     if (request.mode === 'navigate' || request.headers.get('accept')?.includes('text/html')) {
         event.respondWith(
-            fetchWithTimeout(request, 8000)              // 1-я попытка: 8 секунд
-                .catch(() => fetchWithTimeout(request, 15000))  // 2-я попытка: 15 секунд
-                .catch(() => caches.match(OFFLINE_URL))         // offline.html, если обе не прошли
+            fetchWithTimeout(request, 8000)
+                .catch(() => fetchWithTimeout(request, 15000))
+                .catch(() => caches.match(OFFLINE_URL))
         );
         return;
     }
 
     // --------------------------------------------------------
-    // Статика (CSS, JS, шрифты, картинки) — Cache First.
+    // JS, CSS — Network First (свежие бандлы всегда с сервера,
+    // кеш используется только при отсутствии сети)
     // --------------------------------------------------------
-    if (url.pathname.startsWith('/static/') || url.pathname.startsWith('/media/')) {
+    if (url.pathname.match(/\.(js|css)$/)) {
+        event.respondWith(
+            fetch(request)
+                .then(response => {
+                    const clone = response.clone();
+                    caches.open(CACHE_NAME).then(cache => cache.put(request, clone));
+                    return response;
+                })
+                .catch(() => caches.match(request))
+        );
+        return;
+    }
+
+    // --------------------------------------------------------
+    // Картинки, шрифты, иконки — Cache First
+    // (меняются редко, ускоряем загрузку)
+    // --------------------------------------------------------
+    if (url.pathname.match(/\.(png|jpg|jpeg|gif|svg|webp|ico|woff|woff2|ttf|eot)$/)) {
         event.respondWith(
             caches.match(request).then(cached => {
                 if (cached) return cached;
@@ -95,11 +111,18 @@ self.addEventListener('fetch', event => {
         return;
     }
 
-
+    // --------------------------------------------------------
+    // Manifest, offline.html — Cache First
+    // --------------------------------------------------------
+    if (url.pathname.match(/\/(manifest\.json|offline\.html)$/)) {
+        event.respondWith(
+            caches.match(request).then(cached => cached || fetch(request))
+        );
+        return;
+    }
 
     // --------------------------------------------------------
-    // Всё остальное (API, AJAX) — ТОЛЬКО из сети, без кеша.
-    // Если сеть упала — отдаём понятную ошибку.
+    // Всё остальное (API, AJAX) — только из сети
     // --------------------------------------------------------
     event.respondWith(
         fetch(request).catch(() => {
@@ -124,7 +147,6 @@ self.addEventListener('fetch', event => {
 
 self.addEventListener('push', function(event) {
     console.log('🔔 PUSH ПОЛУЧЕН');
-    console.log('event.data:', event.data);
     
     let data = {
         title: 'ДАТЫ',
@@ -134,17 +156,11 @@ self.addEventListener('push', function(event) {
     
     if (event.data) {
         try {
-            // Пытаемся распарсить JSON
             const text = event.data.text();
-            console.log('Сырой текст:', text);
-            
             try {
                 data = JSON.parse(text);
-                console.log('Распарсенные data:', data);
             } catch (e) {
-                // Если не JSON — используем как body
                 data.body = text;
-                console.log('Не JSON, используем как body');
             }
         } catch (e) {
             console.error('Ошибка чтения event.data:', e);
@@ -161,11 +177,8 @@ self.addEventListener('push', function(event) {
         tag: data.tag || 'daty-notification'
     };
     
-    console.log('Показываем уведомление:', data.title, options);
-    
     event.waitUntil(
         self.registration.showNotification(data.title, options)
-            .then(() => console.log('✅ showNotification выполнен'))
             .catch((err) => console.error('❌ Ошибка showNotification:', err))
     );
 });
@@ -174,7 +187,6 @@ self.addEventListener('push', function(event) {
 // КЛИК ПО УВЕДОМЛЕНИЮ
 // ============================================================
 self.addEventListener('notificationclick', function(event) {
-    console.log('👆 Клик по уведомлению');
     event.notification.close();
     
     event.waitUntil(
