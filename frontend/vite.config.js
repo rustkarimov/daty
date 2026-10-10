@@ -18,6 +18,7 @@ export default defineConfig({
                 schedule: path.resolve(__dirname, 'src/entries/schedule.jsx'),
                 clients: path.resolve(__dirname, 'src/entries/clients.jsx'),
                 profile: path.resolve(__dirname, 'src/entries/profile.jsx'),
+                'topbar-modals': path.resolve(__dirname, 'src/entries/topbar-modals.jsx'),
             },
             output: {
                 entryFileNames: '[name].js',

@@ -438,6 +438,60 @@
     cursor: not-allowed;
 }
 
+/* ============================================================ */
+/* ========== ЭКРАН УСПЕХА (после создания записи) ============ */
+/* ============================================================ */
+
+.successBox {
+    text-align: center;
+    padding: 40px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    animation: fadeInUp 0.4s ease;
+}
+
+.successIcon {
+    font-size: 4rem;
+    color: #10b929;
+    line-height: 1;
+}
+
+.successTitle {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--gray-800);
+    margin: 0;
+}
+
+.successDetails {
+    margin-top: 8px;
+    color: var(--gray-700);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    max-width: 400px;
+}
+
+.successDetails p {
+    margin: 4px 0;
+}
+
+.successDetails strong {
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.successServices {
+    font-size: 0.9rem;
+    color: var(--gray-600);
+}
+
+.successMeta {
+    font-size: 0.85rem;
+    color: var(--gray-500);
+}
+
 /* ---- Анимация ---- */
 @keyframes fadeInUp {
     from {
@@ -508,6 +562,23 @@
     .formInput,
     .formTextarea {
         font-size: 16px;
+    }
+
+
+    .successBox {
+        padding: 30px 16px;
+    }
+
+    .successIcon {
+        font-size: 3rem;
+    }
+
+    .successTitle {
+        font-size: 1.1rem;
+    }
+
+    .successDetails {
+        font-size: 0.9rem;
     }
 }
 

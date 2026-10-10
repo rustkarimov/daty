@@ -24,7 +24,13 @@ function formatDate(dateStr) {
     return `${dObj.getDate()} ${MONTH_NAMES[dObj.getMonth()]} (${WEEKDAY_NAMES[dObj.getDay()]})`;
 }
 
-export default function AddBookingModal({ masterSlug, defaultDate, onClose, onCreated }) {
+export default function AddBookingModal({
+    masterSlug,
+    defaultDate,
+    onClose,
+    onCreated,
+    allowCreateAnother = true,   // ← новый проп
+}) {
     const [categories, setCategories] = useState([]);
     const [uncategorized, setUncategorized] = useState([]);
     const [selectedServices, setSelectedServices] = useState([]);
@@ -39,6 +45,10 @@ export default function AddBookingModal({ masterSlug, defaultDate, onClose, onCr
     const [loadingDates, setLoadingDates] = useState(false);
     const [loadingSlots, setLoadingSlots] = useState(false);
     const [saving, setSaving] = useState(false);
+
+    // ← Новое: результат созданной записи
+    const [createdBooking, setCreatedBooking] = useState(null);
+
     const { showAlert } = useModal();
     const slotsRef = useRef(null);
     const summaryRef = useRef(null);
@@ -185,8 +195,19 @@ export default function AddBookingModal({ masterSlug, defaultDate, onClose, onCr
                 created_by: 'master',
             });
             if (data.success) {
-                if (onCreated) onCreated();
-                onClose();
+                // ← Было: onCreated(); onClose();
+                // ← Стало: показываем экран успеха
+                setCreatedBooking({
+                    clientName: clientName.trim(),
+                    date: selectedDate,
+                    time: selectedTime,
+                    services: selectedServices.map(s => ({
+                        name: s.name,
+                        category: s.category_name || null,
+                    })),
+                    totalDuration,
+                    totalPrice,
+                });
             } else {
                 showAlert(data.error || 'Ошибка создания записи', 'error');
             }
@@ -196,6 +217,29 @@ export default function AddBookingModal({ masterSlug, defaultDate, onClose, onCr
         } finally {
             setSaving(false);
         }
+    }
+
+    // ← Новое: «Записать ещё»
+    function handleCreateAnother() {
+        setCreatedBooking(null);
+        setSelectedServices([]);
+        setSelectedDate(defaultDate || '');
+        setSelectedTime('');
+        setClientName('');
+        setClientPhone('');
+        setComment('');
+
+        // Прокрутить наверх через 100мс, чтобы React успел отрисовать форму
+        setTimeout(() => {
+            const body = document.querySelector(`.${shared.body}`);
+            if (body) body.scrollTop = 0;
+        }, 100);
+    }
+
+    // ← Новое: «Готово»
+    function handleFinish() {
+        if (onCreated) onCreated();
+        onClose();
     }
 
     function renderServiceCard(s, categoryName) {
@@ -250,146 +294,179 @@ export default function AddBookingModal({ masterSlug, defaultDate, onClose, onCr
                 </div>
 
                 <div className={shared.body}>
-                    {loading ? (
-                        <div className={shared.loading}>
-                            <div className="spinner-border" style={{ color: '#4053d3' }} />
+                    {/* ← Новое: если запись создана — показываем экран успеха */}
+                    {createdBooking ? (
+                        <div className={shared.successBox}>
+                            <div className={shared.successIcon}>
+                                <i className="fas fa-check-circle" />
+                            </div>
+                            <h4 className={shared.successTitle}>Запись создана!</h4>
+                            <div className={shared.successDetails}>
+                                <p>
+                                    <strong>{createdBooking.clientName}</strong> записан(а) на{' '}
+                                    <strong>{formatDate(createdBooking.date)}</strong> в{' '}
+                                    <strong>{createdBooking.time}</strong>
+                                </p>
+                                <p className={shared.successServices}>
+                                    {createdBooking.services.map((s, i) => (
+                                        <span key={i}>
+                                            {s.category && (
+                                                <span className={shared.successCategory}>{s.category}: </span>
+                                            )}
+                                            {s.name}
+                                            {i < createdBooking.services.length - 1 && ', '}
+                                        </span>
+                                    ))}
+                                </p>
+                                <p className={shared.successMeta}>
+                                    {createdBooking.totalDuration} мин · {createdBooking.totalPrice} ₽
+                                </p>
+                            </div>
                         </div>
                     ) : (
                         <>
-                            {/* Шаг 1: Услуги */}
-                            <label className={shared.sectionLabel}>
-                                Шаг 1: Выберите услуги (до 3)
-                            </label>
-
-                            {categories.map(cat => (
-                                <div key={cat.id} style={{ marginBottom: '12px' }}>
-                                    <div className={shared.categoryLabel}>{cat.name}</div>
-                                    <div className={shared.grid}>
-                                        {cat.services.map(s => renderServiceCard(s, cat.name))}
-                                    </div>
+                            {loading ? (
+                                <div className={shared.loading}>
+                                    <div className="spinner-border" style={{ color: '#4053d3' }} />
                                 </div>
-                            ))}
-
-                            {uncategorized.length > 0 && (
-                                <div style={{ marginBottom: '12px' }}>
-                                    <div className={shared.categoryLabel}>Без категории</div>
-                                    <div className={shared.grid}>
-                                        {uncategorized.map(s => renderServiceCard(s, null))}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Шаг 2: Дата и время */}
-                            {selectedServices.length > 0 && (
+                            ) : (
                                 <>
-                                    <label className={`${shared.sectionLabel} ${shared.sectionLabelTop}`}>
-                                        Шаг 2: Дата и время
+                                    {/* Шаг 1: Услуги */}
+                                    <label className={shared.sectionLabel}>
+                                        Шаг 1: Выберите услуги (до 3)
                                     </label>
 
-                                    {loadingDates ? (
-                                        <div className={shared.loading}>
-                                            <div className="spinner-border spinner-border-sm" style={{ color: '#4053d3' }} />
+                                    {categories.map(cat => (
+                                        <div key={cat.id} style={{ marginBottom: '12px' }}>
+                                            <div className={shared.categoryLabel}>{cat.name}</div>
+                                            <div className={shared.grid}>
+                                                {cat.services.map(s => renderServiceCard(s, cat.name))}
+                                            </div>
                                         </div>
-                                    ) : (
-                                        <div className={shared.dateGrid}>
-                                            {availableDates.map(d => (
-                                                <div
-                                                    key={d.date}
-                                                    className={`${shared.dateCard} ${selectedDate === d.date ? shared.dateCardSelected : ''}`}
-                                                    onClick={() => handleDateClick(d.date)}
-                                                >
-                                                    <div className={shared.dateCardWeekday}>{d.day_of_week}</div>
-                                                    <div className={shared.dateCardDay}>{d.display}</div>
-                                                </div>
-                                            ))}
+                                    ))}
+
+                                    {uncategorized.length > 0 && (
+                                        <div style={{ marginBottom: '12px' }}>
+                                            <div className={shared.categoryLabel}>Без категории</div>
+                                            <div className={shared.grid}>
+                                                {uncategorized.map(s => renderServiceCard(s, null))}
+                                            </div>
                                         </div>
                                     )}
 
-                                    {selectedDate && (
-                                        <div ref={slotsRef}>
-                                            {loadingSlots ? (
+                                    {/* Шаг 2: Дата и время */}
+                                    {selectedServices.length > 0 && (
+                                        <>
+                                            <label className={`${shared.sectionLabel} ${shared.sectionLabelTop}`}>
+                                                Шаг 2: Дата и время
+                                            </label>
+
+                                            {loadingDates ? (
                                                 <div className={shared.loading}>
                                                     <div className="spinner-border spinner-border-sm" style={{ color: '#4053d3' }} />
                                                 </div>
-                                            ) : availableSlots.length === 0 ? (
-                                                <p className={shared.emptyText}>Нет свободных слотов</p>
                                             ) : (
-                                                <div className={shared.slotGrid}>
-                                                    {availableSlots.map(slot => (
+                                                <div className={shared.dateGrid}>
+                                                    {availableDates.map(d => (
                                                         <div
-                                                            key={slot.start}
-                                                            className={`${shared.slotCard} ${selectedTime === slot.start ? shared.slotCardSelected : ''}`}
-                                                            onClick={() => handleTimeClick(slot.start)}
+                                                            key={d.date}
+                                                            className={`${shared.dateCard} ${selectedDate === d.date ? shared.dateCardSelected : ''}`}
+                                                            onClick={() => handleDateClick(d.date)}
                                                         >
-                                                            {slot.start}
+                                                            <div className={shared.dateCardWeekday}>{d.day_of_week}</div>
+                                                            <div className={shared.dateCardDay}>{d.display}</div>
                                                         </div>
                                                     ))}
                                                 </div>
                                             )}
-                                        </div>
+
+                                            {selectedDate && (
+                                                <div ref={slotsRef}>
+                                                    {loadingSlots ? (
+                                                        <div className={shared.loading}>
+                                                            <div className="spinner-border spinner-border-sm" style={{ color: '#4053d3' }} />
+                                                        </div>
+                                                    ) : availableSlots.length === 0 ? (
+                                                        <p className={shared.emptyText}>Нет свободных слотов</p>
+                                                    ) : (
+                                                        <div className={shared.slotGrid}>
+                                                            {availableSlots.map(slot => (
+                                                                <div
+                                                                    key={slot.start}
+                                                                    className={`${shared.slotCard} ${selectedTime === slot.start ? shared.slotCardSelected : ''}`}
+                                                                    onClick={() => handleTimeClick(slot.start)}
+                                                                >
+                                                                    {slot.start}
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </>
                                     )}
-                                </>
-                            )}
 
-                            {/* Шаг 3: Сводка и данные клиента */}
-                            {selectedTime && (
-                                <>
-                                    <div className={shared.summaryBox} ref={summaryRef}>
-                                        <div className={shared.summaryTitle}>
-                                            <i className="fas fa-list" />
-                                            Выбранные услуги
-                                        </div>
+                                    {/* Шаг 3: Сводка и данные клиента */}
+                                    {selectedTime && (
+                                        <>
+                                            <div className={shared.summaryBox} ref={summaryRef}>
+                                                <div className={shared.summaryTitle}>
+                                                    <i className="fas fa-list" />
+                                                    Выбранные услуги
+                                                </div>
 
-                                        {selectedServices.map(s => (
-                                            <div key={s.id} className={shared.summaryRow}>
-                                                <span>{s.name}</span>
-                                                <span className={shared.summaryRowMeta}>
-                                                    {s.duration} мин · {s.price} ₽
-                                                </span>
+                                                {selectedServices.map(s => (
+                                                    <div key={s.id} className={shared.summaryRow}>
+                                                        <span>{s.name}</span>
+                                                        <span className={shared.summaryRowMeta}>
+                                                            {s.duration} мин · {s.price} ₽
+                                                        </span>
+                                                    </div>
+                                                ))}
+
+                                                <div className={shared.summaryTotal}>
+                                                    <span>Итого</span>
+                                                    <span className={shared.summaryTotalValue}>
+                                                        {totalDuration} мин · {totalPrice} ₽
+                                                    </span>
+                                                </div>
+
+                                                <div className={shared.summaryMeta}>
+                                                    <span className={shared.summaryMetaItem}>
+                                                        <i className="far fa-calendar-alt" />
+                                                        {formatDate(selectedDate)}
+                                                    </span>
+                                                    <span className={shared.summaryMetaItem}>
+                                                        <i className="far fa-clock" />
+                                                        {selectedTime}
+                                                    </span>
+                                                </div>
                                             </div>
-                                        ))}
 
-                                        <div className={shared.summaryTotal}>
-                                            <span>Итого</span>
-                                            <span className={shared.summaryTotalValue}>
-                                                {totalDuration} мин · {totalPrice} ₽
-                                            </span>
-                                        </div>
-
-                                        <div className={shared.summaryMeta}>
-                                            <span className={shared.summaryMetaItem}>
-                                                <i className="far fa-calendar-alt" />
-                                                {formatDate(selectedDate)}
-                                            </span>
-                                            <span className={shared.summaryMetaItem}>
-                                                <i className="far fa-clock" />
-                                                {selectedTime}
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    <label className={shared.sectionLabel}>Шаг 3: Данные клиента</label>
-                                    <input
-                                        type="text"
-                                        className={shared.formInput}
-                                        placeholder="Имя клиента"
-                                        value={clientName}
-                                        onChange={e => setClientName(e.target.value)}
-                                    />
-                                    <input
-                                        type="tel"
-                                        className={shared.formInput}
-                                        placeholder="7 999 123-45-67"
-                                        value={clientPhone}
-                                        onChange={e => setClientPhone(phoneMask(e.target.value))}
-                                    />
-                                    <textarea
-                                        className={shared.formTextarea}
-                                        rows="2"
-                                        placeholder="Комментарий (необязательно)"
-                                        value={comment}
-                                        onChange={e => setComment(e.target.value)}
-                                    />
+                                            <label className={shared.sectionLabel}>Шаг 3: Данные клиента</label>
+                                            <input
+                                                type="text"
+                                                className={shared.formInput}
+                                                placeholder="Имя клиента"
+                                                value={clientName}
+                                                onChange={e => setClientName(e.target.value)}
+                                            />
+                                            <input
+                                                type="tel"
+                                                className={shared.formInput}
+                                                placeholder="7 999 123-45-67"
+                                                value={clientPhone}
+                                                onChange={e => setClientPhone(phoneMask(e.target.value))}
+                                            />
+                                            <textarea
+                                                className={shared.formTextarea}
+                                                rows="2"
+                                                placeholder="Комментарий (необязательно)"
+                                                value={comment}
+                                                onChange={e => setComment(e.target.value)}
+                                            />
+                                        </>
+                                    )}
                                 </>
                             )}
                         </>
@@ -397,22 +474,47 @@ export default function AddBookingModal({ masterSlug, defaultDate, onClose, onCr
                 </div>
 
                 <div className={shared.footer}>
-                    <button
-                        type="button"
-                        className={shared.btnSecondary}
-                        onClick={onClose}
-                        disabled={saving}
-                    >
-                        Отмена
-                    </button>
-                    <button
-                        type="button"
-                        className={shared.btnPink}
-                        onClick={handleSave}
-                        disabled={saving || selectedServices.length === 0 || !selectedTime || !clientName}
-                    >
-                        {saving ? 'Сохранение...' : 'Создать запись'}
-                    </button>
+                    {createdBooking ? (
+                        // ← Экран успеха: две кнопки
+                        <>
+                            {allowCreateAnother && (
+                                <button
+                                    type="button"
+                                    className={shared.btnSecondary}
+                                    onClick={handleCreateAnother}
+                                >
+                                    Записать ещё
+                                </button>
+                            )}
+                            <button
+                                type="button"
+                                className={shared.btnPink}
+                                onClick={handleFinish}
+                            >
+                                Готово
+                            </button>
+                        </>
+                    ) : (
+                        // ← Обычные кнопки
+                        <>
+                            <button
+                                type="button"
+                                className={shared.btnSecondary}
+                                onClick={onClose}
+                                disabled={saving}
+                            >
+                                Отмена
+                            </button>
+                            <button
+                                type="button"
+                                className={shared.btnPink}
+                                onClick={handleSave}
+                                disabled={saving || selectedServices.length === 0 || !selectedTime || !clientName}
+                            >
+                                {saving ? 'Сохранение...' : 'Создать запись'}
+                            </button>
+                        </>
+                    )}
                 </div>
             </div>
         </div>

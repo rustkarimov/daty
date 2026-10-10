@@ -415,6 +415,7 @@ export default function DayModal({ dateStr, masterSlug, onClose, onDataChanged }
                     defaultDate={dateStr}
                     onClose={handleCloseAddBooking}
                     onCreated={handleBookingCreated}
+                    allowCreateAnother={false}
                 />
             )}
         </>
