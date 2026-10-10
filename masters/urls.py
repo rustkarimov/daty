@@ -121,6 +121,7 @@ urlpatterns = [
 
     path('api/upload-avatar/', views.upload_avatar, name='upload_avatar'),
 
+    path('api/blacklist/list/', views.api_get_blacklist, name='api_blacklist_list'),
     path('api/blacklist/add/', views.api_blacklist_add, name='api_blacklist_add'),
     path('api/blacklist/<int:client_id>/delete/', views.api_blacklist_delete, name='api_blacklist_delete'),
 

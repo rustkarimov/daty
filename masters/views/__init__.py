@@ -115,11 +115,12 @@ from .client_api import (
 )
 
 
-from .clients import (  # noqa
+from .clients import (  
     clients_statistics,
     get_clients_statistics_api,
     search_clients_api,
     get_decrypted_phone,
+    api_get_blacklist,
     api_blacklist_add,
     api_blacklist_delete,
 )
