@@ -1,0 +1,278 @@
+/* ============================================================ */
+/* ========== CLIENT DETAILS MODAL (CSS Module) =============== */
+/* ============================================================ */
+
+.backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 1080;
+    overflow-y: auto;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 24px 16px;
+}
+
+.modal {
+    background: white;
+    border-radius: 20px;
+    border: 1px solid var(--gray-200);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 700px;
+    max-height: calc(100vh - 48px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: fadeInUp 0.3s ease;
+}
+
+.header {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--gray-800);
+    margin: 0;
+}
+
+.closeBtn {
+    background: transparent;
+    border: none;
+    font-size: 1.2rem;
+    color: var(--gray-500);
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    line-height: 1;
+}
+
+.closeBtn:hover {
+    background: var(--gray-100);
+    color: var(--gray-800);
+}
+
+.body {
+    padding: 20px 24px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.loading {
+    text-align: center;
+    padding: 40px 0;
+}
+
+.grid {
+    display: flex;
+    gap: 24px;
+}
+
+.column {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.detailItem {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--gray-100);
+    width: 100%;
+}
+
+.detailItem:last-child {
+    border-bottom: none;
+}
+
+.detailLabel {
+    font-weight: 500;
+    color: var(--gray-500);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.detailValue {
+    color: var(--gray-800);
+    font-size: 0.95rem;
+}
+
+.namesList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+}
+
+.namesList li {
+    padding: 2px 0;
+    color: var(--gray-700);
+    font-size: 0.9rem;
+}
+
+.servicesList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+}
+
+.serviceItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 12px;
+    background: var(--gray-50);
+    border-radius: 8px;
+    margin-bottom: 4px;
+    font-size: 0.9rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.serviceItem:last-child {
+    margin-bottom: 0;
+}
+
+.badgeVisits {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    height: 24px;
+    padding: 0 10px;
+    background: var(--gray-100);
+    color: var(--gray-700);
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 30px;
+}
+
+.badgeDanger {
+    display: inline-block;
+    font-size: 0.75rem;
+    padding: 4px 12px;
+    background: var(--danger);
+    color: white;
+    border-radius: 30px;
+}
+
+.emptyText {
+    color: var(--gray-500);
+    font-size: 0.9rem;
+    margin: 8px 0;
+}
+
+.footer {
+    padding: 12px 24px;
+    border-top: 1px solid var(--gray-200);
+    background: var(--gray-50);
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.btnSecondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border-radius: 30px;
+    border: none;
+    background: var(--gray-200);
+    color: var(--gray-700);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btnSecondary:hover {
+    background: var(--gray-300);
+    color: var(--gray-800);
+}
+
+.btnDanger {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border-radius: 30px;
+    border: 1px solid var(--danger);
+    background: transparent;
+    color: var(--danger);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btnDanger:hover {
+    background: var(--danger);
+    color: white;
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+    .backdrop {
+        padding: 0;
+        align-items: stretch;
+    }
+
+    .modal {
+        max-width: 100%;
+        border-radius: 0;
+        max-height: none;
+        height: 100%;
+        border: none;
+        box-shadow: none;
+    }
+
+    .header {
+        padding: 14px 16px;
+    }
+
+    .title {
+        font-size: 1rem;
+    }
+
+    .body {
+        padding: 16px;
+    }
+
+    .grid {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .footer {
+        padding: 12px 16px;
+        flex-direction: column-reverse;
+    }
+
+    .footer .btnPrimary,
+    .footer .btnSecondary,
+    .footer .btnDanger {
+        width: 100%;
+        justify-content: center;
+    }
+}
