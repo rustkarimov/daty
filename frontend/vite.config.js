@@ -17,6 +17,7 @@ export default defineConfig({
                 services: path.resolve(__dirname, 'src/entries/services.jsx'),
                 schedule: path.resolve(__dirname, 'src/entries/schedule.jsx'),
                 clients: path.resolve(__dirname, 'src/entries/clients.jsx'),
+                profile: path.resolve(__dirname, 'src/entries/profile.jsx'),
             },
             output: {
                 entryFileNames: '[name].js',

@@ -26,7 +26,7 @@ from .push import (
     api_push_check,
 )
 
-from .profile import profile, upload_avatar
+from .profile import profile, api_profile_update, upload_avatar
 
 from .auth import (
     mobile_login,

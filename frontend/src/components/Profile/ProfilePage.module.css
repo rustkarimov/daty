@@ -1,0 +1,290 @@
+/* ============================================================ */
+/* ========== PROFILE PAGE (CSS Module) ======================= */
+/* ============================================================ */
+
+.page {
+    width: 60%;
+}
+
+.pageHeader {
+    margin-bottom: 16px;
+}
+
+.pageHeader h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--gray-800);
+    margin: 0;
+}
+
+.card {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid var(--gray-200);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.cardBody {
+    padding: 20px;
+}
+
+/* ---- Аватар ---- */
+.avatarSection {
+    text-align: center;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--gray-200);
+    margin-bottom: 20px;
+}
+
+.avatarPreview {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 12px;
+}
+
+.avatarImage {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--gray-200);
+}
+
+.avatarPlaceholder {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: var(--primary-gradient);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    font-weight: 600;
+}
+
+.avatarUpload {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+/* ---- Поля формы ---- */
+.formField {
+    margin-bottom: 14px;
+}
+
+.formLabel {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--gray-700);
+    margin-bottom: 4px;
+}
+
+.formInput,
+.formTextarea {
+    width: 100%;
+    border-radius: 10px;
+    border: 1px solid var(--gray-300);
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    background: white;
+    box-sizing: border-box;
+    font-family: inherit;
+    transition: border-color 0.2s ease;
+}
+
+.formInput {
+    height: 40px;
+}
+
+.formTextarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.formInput:focus,
+.formTextarea:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.formInput:disabled {
+    background-color: #f3f4f6;
+    cursor: not-allowed;
+}
+
+.hint {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--gray-500);
+    margin-top: 4px;
+}
+
+.linkPreview {
+    color: var(--primary);
+    font-weight: 500;
+    word-break: break-all;
+}
+
+/* ---- Две колонки ---- */
+.row {
+    display: flex;
+    gap: 12px;
+}
+
+.row .formField {
+    flex: 1;
+    min-width: 0;
+}
+
+/* ---- Кнопки ---- */
+.btnPrimary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 24px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border-radius: 30px;
+    border: none;
+    background: var(--primary);
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btnPrimary:hover:not(:disabled) {
+    background: var(--primary-dark);
+}
+
+.btnPrimary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btnOutline {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 16px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    border-radius: 30px;
+    border: 1px solid var(--primary);
+    color: var(--primary);
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btnOutline:hover:not(:disabled) {
+    background: var(--primary);
+    color: white;
+}
+
+.btnOutline:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* ---- Действия ---- */
+.formActions {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--gray-200);
+}
+
+/* ============================================================ */
+/* ==================== АДАПТИВ =============================== */
+/* ============================================================ */
+
+@media (max-width: 1600px) {
+    .page {
+        width: 80%;
+    }
+}
+
+@media (max-width: 768px) {
+    .page {
+        width: 100%;
+    }
+
+    .pageHeader h2 {
+        font-size: 1.2rem;
+        margin-left: 10px;
+    }
+
+    .cardBody {
+        padding: 16px;
+    }
+
+    .avatarImage,
+    .avatarPlaceholder {
+        width: 100px;
+        height: 100px;
+    }
+
+    .avatarPlaceholder {
+        font-size: 2.5rem;
+    }
+
+    .formInput,
+    .formTextarea {
+        font-size: 16px;
+    }
+
+    .row {
+        flex-direction: column;
+        gap: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .pageHeader h2 {
+        font-size: 1.2rem;
+        margin-left: 10px;
+    }
+
+    .cardBody {
+        padding: 12px;
+    }
+
+    .avatarImage,
+    .avatarPlaceholder {
+        width: 80px;
+        height: 80px;
+    }
+
+    .avatarPlaceholder {
+        font-size: 2rem;
+    }
+
+    .formLabel {
+        font-size: 0.75rem;
+    }
+
+    .formInput,
+    .formTextarea {
+        font-size: 14px;
+        padding: 6px 10px;
+        height: 36px;
+    }
+
+    .formTextarea {
+        height: auto;
+        min-height: 80px;
+    }
+
+    .hint {
+        font-size: 0.6rem;
+        line-height: 1.25;
+    }
+
+    .btnPrimary {
+        width: 100%;
+    }
+}

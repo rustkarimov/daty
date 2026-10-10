@@ -19,6 +19,8 @@ urlpatterns = [
     # Личный кабинет
     path('dashboard/', views.dashboard, name='dashboard'),
     path('profile/', views.profile, name='profile'),
+    path('api/profile/update/', views.api_profile_update, name='api_profile_update'),
+    
     path('api/schedule/calendar/', views.get_calendar_schedule, name='api_calendar_schedule'),
     path('api/bookings/', views.get_bookings_api, name='api_bookings'),
 
