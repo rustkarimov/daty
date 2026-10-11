@@ -1290,14 +1290,21 @@ body {
         height: 8px;
     }
 
-    /* Правая часть */
+
     .top-bar-right {
         display: flex !important;
         align-items: center !important;
-        gap: 6px !important;
+        gap: 2px !important;
         flex: 0 0 auto !important;
         order: 2 !important;
         z-index: 1 !important;
+    }
+
+    /* Контейнер для React-колокольчика */
+    #react-notification-bell {
+        display: flex !important;
+        align-items: center !important;
+        flex-shrink: 0 !important;
     }
 
     /* Скрываем кошелёк на мобильных */
@@ -1353,10 +1360,6 @@ body {
         color: var(--gray-600) !important;
     }
 
-    /* Колокольчик скрыт на мобильных (есть в нижнем меню) */
-    .notification-bell {
-        display: none !important;
-    }
 
     /* Убираем градиентный фон */
     .top-bar .logo a,
@@ -1641,6 +1644,8 @@ body {
     #notificationsModal .modal-content {
         animation: slideUp 0.3s ease-out;
     }
+
+    
 }
 
 @keyframes slideUp {
@@ -1768,6 +1773,8 @@ body {
     font-size: 0.7rem !important;
 }
 
+
+
 @media (max-width: 768px) {
     #supportChatModal .modal-dialog {
         margin: 0 !important;
@@ -1879,10 +1886,7 @@ body {
     .content-wrapper {
         padding: 20px 0 80px 0;
     }
-    
-    .notification-bell {
-        display: none !important;
-    }
+
     
     .user-name {
         display: none;
@@ -1954,103 +1958,6 @@ body {
     }
 }
 
-
-/* ============================================================ */
-/* ========== СТРАНИЦА ДОБАВЛЕНИЯ ЗАПИСИ ====================== */
-/* ========== (add_manual_booking) — ТОЛЬКО СПЕЦИФИКА ========= */
-/* ============================================================ */
-
-.add-booking-page .col-lg-8 {
-    flex: 0 0 80% !important;
-    max-width: 80% !important;
-    margin-left: 0 !important;
-}
-
-.add-booking-page .page-header {
-    margin-bottom: 16px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    flex-wrap: wrap;
-}
-
-.add-booking-page .page-header h2 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--gray-800);
-    margin: 0;
-}
-
-/* Кнопка — компактная, слева */
-.add-booking-page #manual-booking-form .btn-pink {
-    width: auto !important;
-    min-width: 200px !important;
-    margin: 8px auto 0 0 !important;
-    padding: 10px 28px !important;
-}
-
-/* Мобильные стили для /add-booking */
-@media (max-width: 768px) {
-    .add-booking-page {
-        padding: 0 !important;
-        margin: 0 !important;
-        width: 100% !important;
-        max-width: 100% !important;
-    }
-
-    .add-booking-page .col-lg-8 {
-        flex: 0 0 100% !important;
-        max-width: 100% !important;
-        padding: 0 !important;
-        margin: 0 !important;
-    }
-
-    .add-booking-page .page-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-        margin-bottom: 12px;
-        margin-left: 10px;
-    }
-
-    .add-booking-page .page-header h2 {
-        font-size: 1.2rem;
-    }
-
-    /* Форма — компактные поля */
-    .add-booking-page #manual-booking-form .mb-3 {
-        margin-bottom: 10px !important;
-    }
-
-    .add-booking-page #manual-booking-form .form-label {
-        font-size: 0.8rem !important;
-        font-weight: 600 !important;
-        color: var(--gray-700) !important;
-        margin-bottom: 4px !important;
-    }
-
-    .add-booking-page #manual-booking-form .form-control {
-        font-size: 14px !important;
-        padding: 0 12px !important;
-        border-radius: 10px !important;
-        height: 38px !important;
-        line-height: 38px !important;
-    }
-
-    .add-booking-page #manual-booking-form textarea.form-control {
-        height: auto !important;
-        min-height: 60px !important;
-        line-height: 1.4 !important;
-        padding: 10px 12px !important;
-    }
-
-    .add-booking-page #manual-booking-form .btn-pink {
-        width: 100% !important;
-        min-width: auto !important;
-        margin: 4px 0 0 0 !important;
-        padding: 12px 20px !important;
-    }
-}
 
 
 /* ============================================================ */

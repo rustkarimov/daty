@@ -74,7 +74,6 @@ from .schedule import (
 )
 
 from .bookings import (  
-    add_manual_booking,
     get_booking_slots_for_master,
     get_booking_for_edit,
     api_update_booking,

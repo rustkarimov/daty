@@ -13,6 +13,10 @@
     <link rel="stylesheet" href="{% static 'css/all.min.css' %}">
     <!-- Наш CSS -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <!-- React-модалки (глобальные) -->
+    <link rel="stylesheet" href="{% static 'js/react/modals.css' %}">
+    <link rel="stylesheet" href="{% static 'js/react/AddBookingModal.css' %}">
+    <link rel="stylesheet" href="{% static 'js/react/topbar-modals.css' %}">
 
     <!-- Prefetch основных страниц для быстрого перехода -->
     <link rel="prefetch" href="{% url 'dashboard' %}">
@@ -131,11 +135,8 @@
             <span>0 ₽</span>
         </div>
 
-        <!-- Колокольчик (уведомления) -->
-        <div class="notification-bell" onclick="toggleNotifications()" style="position: relative; cursor: pointer">
-            <i class="fas fa-bell" style="color: white; font-size: 1.3rem;"></i>
-            <span class="notification-dot" id="notification-dot"></span>
-        </div>
+        <!-- Колокольчик (React) -->
+        <div id="react-notification-bell"></div>
 
         
 
@@ -147,10 +148,10 @@
         </a>
 
         <!-- Кнопка "Добавить запись" -->
-        <a href="{% url 'add_manual_booking' %}" class="add-booking-header-btn">
+        <button type="button" class="add-booking-header-btn" onclick="window.dispatchEvent(new Event('openAddBooking'))">
             <i class="fas fa-plus"></i>
             <span>Добавить запись</span>
-        </a>
+        </button>
 
         <!-- Десктопный аватар (скрыт на мобильных) -->
         <div class="user-menu desktop-avatar">
@@ -200,11 +201,9 @@
             <i class="fas fa-chart-line"></i>
             <span>Статистика</span>
         </a>
-        <a href="#" onclick="toggleNotifications(); return false;" class="mobile-notification-link" style="position: relative;">
-            <i class="fas fa-bell"></i>
-            <!-- 👇 ТОЧКА ДЛЯ МОБИЛЬНОЙ ВЕРСИИ -->
-            <span class="mobile-notification-dot" id="mobile-notification-dot" style="display: none;"></span>
-            <span>Уведомления</span>
+        <a href="{% url 'profile' %}" class="{% if request.resolver_match.url_name == 'profile' %}active{% endif %}">
+            <i class="fas fa-user"></i>
+            <span>Профиль</span>
         </a>
     </div>
 
@@ -1430,6 +1429,11 @@ document.addEventListener('DOMContentLoaded', async function() {
     setTimeout(hideLoader, 5000);
 })();
 </script>
+
+
+<!-- React: глобальные модалки (для всех страниц) -->
+<div id="react-topbar-modals" data-master-slug="{{ request.user.master.public_slug }}"></div>
+<script src="{% static 'js/react/topbar-modals.js' %}" type="module"></script>
 
 
 </body>

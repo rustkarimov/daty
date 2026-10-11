@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
 import AddBookingModal from '../components/Calendar/AddBookingModal';
+import NotificationBell from '../components/Notifications/NotificationBell';
+import NotificationsProvider, { useNotifications } from '../components/Notifications/NotificationsProvider';
 import { ModalProvider } from '../components/modals';
+import NotificationsModal from '../components/Notifications/NotificationsModal';
 
-/**
- * Глобальный компонент модалок, который живёт на всех страницах.
- * Открывается через CustomEvent 'openAddBooking' (см. base.html).
- */
 function TopbarModals({ masterSlug }) {
     const [addBookingOpen, setAddBookingOpen] = useState(false);
+    const { isModalOpen } = useNotifications();
 
     useEffect(() => {
         function handleOpenAddBooking() {
@@ -23,12 +23,15 @@ function TopbarModals({ masterSlug }) {
 
     function handleCreated() {
         setAddBookingOpen(false);
-        // Перезагружаем страницу, чтобы обновить данные на ней
         window.location.reload();
     }
 
     return (
         <>
+            <NotificationBell />
+
+            {isModalOpen && <NotificationsModal />}
+
             {addBookingOpen && (
                 <AddBookingModal
                     masterSlug={masterSlug}
@@ -45,7 +48,9 @@ if (el) {
     const masterSlug = el.dataset.masterSlug || '';
     ReactDOM.createRoot(el).render(
         <ModalProvider>
-            <TopbarModals masterSlug={masterSlug} />
+            <NotificationsProvider>
+                <TopbarModals masterSlug={masterSlug} />
+            </NotificationsProvider>
         </ModalProvider>
     );
 }

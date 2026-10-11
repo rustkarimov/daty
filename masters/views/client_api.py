@@ -169,11 +169,15 @@ def api_client_cancel_booking(request, identifier, token):
     logger.info(f"Клиент {booking.client_name} отменил запись #{booking.id} у мастера {booking.master.id}")
     
     # Уведомление мастеру
+    service_name = booking.service.name
+    if booking.service.category:
+        service_name = f"{booking.service.category.name}: {service_name}"
+
     Notification.objects.create(
         master=booking.master,
         type='cancelled_booking',
         title=f'{booking.client_name}',
-        message=f"📅 {booking.date.strftime('%d.%m.%Y')}\n⏰ {booking.time.strftime('%H:%M')} - {booking.service.name}",
+        message=f"📅 {booking.date.strftime('%Y-%m-%d')}\n⏰ {booking.time.strftime('%H:%M')}|{service_name}",
         content_object=booking
     )
     
@@ -261,11 +265,19 @@ def api_client_update_booking(request, identifier, token):
     )
     
     # Уведомление мастеру
+    service_name = booking.service.name
+    if booking.service.category:
+        service_name = f"{booking.service.category.name}: {service_name}"
+
     Notification.objects.create(
         master=booking.master,
         type='changed_booking',
         title=f'{booking.client_name}',
-        message=f"📅 Стало: {new_date.strftime('%d.%m.%Y')} {new_time.strftime('%H:%M')}\n⏰ {booking.service.name}\n📅 Было: {old_date.strftime('%d.%m.%Y')} {old_time.strftime('%H:%M')}",
+        message=(
+            f"📅 Было: {old_date.strftime('%Y-%m-%d')} {old_time.strftime('%H:%M')}\n"
+            f"📅 Стало: {new_date.strftime('%Y-%m-%d')} {new_time.strftime('%H:%M')}\n"
+            f"⏰ {new_time.strftime('%H:%M')}|{service_name}"
+        ),
         content_object=booking
     )
     

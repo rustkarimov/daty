@@ -325,22 +325,30 @@ def create_multiple_bookings(request, identifier):
         if created_by == 'client':
             from ..models import Notification
             notification_lines = []
-            notification_lines.append(f"📅 {booking_date.strftime('%d.%m.%Y')}")
-            
+            notification_lines.append(f"📅 {booking_date.strftime('%Y-%m-%d')}")
+
             time_offset = 0
             for i, service in enumerate(services):
                 booking_time = (datetime.combine(date.today(), start_time) + timedelta(minutes=time_offset)).strftime('%H:%M')
-                notification_lines.append(f"⏰ {booking_time} - {service.name}")
+                # Формируем название с категорией
+                service_name = service.name
+                if service.category:
+                    service_name = f"{service.category.name}: {service_name}"
+                notification_lines.append(f"⏰ {booking_time}|{service_name}")
                 time_offset += service.duration
             
             notification_message = "\n".join(notification_lines)
             
+            service_name = service.name
+            if service.category:
+                service_name = f"{service.category.name}: {service_name}"
+
             Notification.objects.create(
                 master=master,
                 type='new_booking',
-                title=f"{client_name}" + (f" ({len(services_list)} услуги)" if len(services_list) > 1 else ""),
-                message=notification_message,
-                content_object=created_bookings[0]
+                title=f"{client_name}",
+                message=f"📅 {booking_date.strftime('%Y-%m-%d')}\n⏰ {booking_time.strftime('%H:%M')}|{service_name}",
+                content_object=booking
             )
 
             from ..utils.push_utils import send_push_to_master

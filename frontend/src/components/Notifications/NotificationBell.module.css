@@ -1,0 +1,65 @@
+/* ============================================================ */
+/* ========== NOTIFICATION BELL (CSS Module) ================== */
+/* ============================================================ */
+
+.bell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    padding: 8px 14px;
+    border-radius: 30px;
+    background: rgba(255, 255, 255, 0.15);
+    transition: background 0.2s ease;
+    flex-shrink: 0;
+}
+
+.bell:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.icon {
+    color: white;
+    font-size: 1.1rem;
+}
+
+.dot {
+    position: absolute;
+    top: 2px;
+    right: 4px;
+    width: 10px;
+    height: 10px;
+    background: #ff4444;
+    border-radius: 50%;
+    border: 1px solid white;
+}
+
+/* ============================================================ */
+/* ========== МОБИЛЬНАЯ ВЕРСИЯ (в шапке) ====================== */
+/* ============================================================ */
+
+@media (max-width: 768px) {
+    .bell {
+        padding: 6px 8px;
+        border-radius: 0;
+        background: transparent;
+    }
+
+    .bell:hover {
+        background: transparent;
+    }
+
+    .icon {
+        color: var(--gray-900);
+        font-size: 1.2rem;
+    }
+
+    .dot {
+        top: 2px;
+        right: 4px;
+        width: 8px;
+        height: 8px;
+        border-width: 2px;
+    }
+}
