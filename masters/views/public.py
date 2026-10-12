@@ -325,7 +325,7 @@ def create_multiple_bookings(request, identifier):
         if created_by == 'client':
             from ..models import Notification
             notification_lines = []
-            notification_lines.append(f"📅 {booking_date.strftime('%Y-%m-%d')}")
+            notification_lines.append(f"{booking_date.strftime('%Y-%m-%d')}")
 
             time_offset = 0
             for i, service in enumerate(services):
@@ -334,20 +334,17 @@ def create_multiple_bookings(request, identifier):
                 service_name = service.name
                 if service.category:
                     service_name = f"{service.category.name}: {service_name}"
-                notification_lines.append(f"⏰ {booking_time}|{service_name}")
+                notification_lines.append(f"{booking_time}|{service_name}")
                 time_offset += service.duration
             
             notification_message = "\n".join(notification_lines)
             
-            service_name = service.name
-            if service.category:
-                service_name = f"{service.category.name}: {service_name}"
 
             Notification.objects.create(
                 master=master,
                 type='new_booking',
                 title=f"{client_name}",
-                message=f"📅 {booking_date.strftime('%Y-%m-%d')}\n⏰ {booking_time.strftime('%H:%M')}|{service_name}",
+                message=notification_message,
                 content_object=booking
             )
 
@@ -359,7 +356,7 @@ def create_multiple_bookings(request, identifier):
             else:
                 service_text = f'{len(services)} услуги'
             
-            push_title = '📅 Новая запись'
+            push_title = 'Новая запись'
             push_body = f'{client_name} · {start_time_str} · {service_text}'
             
             import logging

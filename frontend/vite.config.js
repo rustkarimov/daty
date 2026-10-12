@@ -8,6 +8,9 @@ const __dirname = path.dirname(__filename);
 
 export default defineConfig({
     plugins: [react()],
+    esbuild: {
+        charset: 'utf8',      // ← ВОТ ЭТО
+    },
     build: {
         outDir: path.resolve(__dirname, '../masters/static/js/react'),
         emptyOutDir: true,

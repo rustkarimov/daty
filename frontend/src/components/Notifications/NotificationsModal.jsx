@@ -197,22 +197,49 @@ export default function NotificationsModal() {
     function renderMessage(message) {
         const lines = message.split('\n').filter(line => line.trim() !== '');
         const result = [];
-        let currentDate = null;
 
         lines.forEach((line, i) => {
-            // Дата
+            // ---- Дата (📅) ----
             if (line.startsWith('📅')) {
                 const raw = line.slice(1).trim();
-                currentDate = formatDate(raw);
-                return; // не рендерим отдельно
+                const prefixMatch = raw.match(/^(Было|Стало):\s*/);
+                let prefix = null;
+                let rest = raw;
+                if (prefixMatch) {
+                    prefix = prefixMatch[1];
+                    rest = raw.slice(prefixMatch[0].length);
+                }
+
+                const parts = rest.split(/\s+/);
+                const rawDate = parts[0] || '';
+                const time = parts[1] || '';
+
+                let dateFormatted = rawDate;
+                if (/^\d{4}-\d{2}-\d{2}$/.test(rawDate)) {
+                    dateFormatted = formatDate(rawDate);
+                } else if (/^\d{2}\.\d{2}\.\d{4}$/.test(rawDate)) {
+                    dateFormatted = formatDate(rawDate);
+                }
+
+                result.push(
+                    <div key={`date-${i}`} className={styles.messageRow}>
+                        <div className={styles.messageRowTop}>
+                            <span className={styles.messageDate}>
+                                {prefix ? `${prefix} ` : ''}
+                                {dateFormatted}
+                                {time ? ` ${time}` : ''}
+                            </span>
+                        </div>
+                    </div>
+                );
+                return;
             }
 
-            // Время + услуга
+            // ---- Время + услуга (⏰) ----
             if (line.startsWith('⏰')) {
-                const raw = line.slice(1).trim(); // "10:00|Маникюр: Классический"
+                const raw = line.slice(1).trim();
                 const [time, serviceName] = raw.split('|').map(s => s.trim());
 
-                // Разбиваем serviceName на категорию и услугу
                 let category = '';
                 let service = serviceName || '';
                 if (serviceName && serviceName.includes(':')) {
@@ -221,21 +248,13 @@ export default function NotificationsModal() {
                     service = parts.slice(1).join(':').trim();
                 }
 
-                // Если есть дата — включаем её в первую строку
-                const showDate = currentDate && (i === 1 || result.length === 0);
-
                 result.push(
-                    <div key={`row-${i}`} className={styles.messageRow}>
-                        <div className={styles.messageRowTop}>
-                            {showDate ? (
-                                <>
-                                    <span className={styles.messageDate}>{currentDate}</span>
-                                    <span className={styles.messageTime}>{time}</span>
-                                </>
-                            ) : (
-                                <span className={styles.messageTime}>{time}</span>
-                            )}
-                        </div>
+                    <div key={`time-${i}`} className={styles.messageRow}>
+                        {time && (
+                            <div className={styles.messageRowTop}>
+                                <span className={styles.messageTimeOnly}>{time}</span>
+                            </div>
+                        )}
                         {(category || service) && (
                             <div className={styles.messageService}>
                                 {category ? (
@@ -250,19 +269,19 @@ export default function NotificationsModal() {
                 return;
             }
 
-            // Старый формат через дефис (на всякий случай)
+            // ---- Информация (🕐) ----
             if (line.startsWith('🕐')) {
                 result.push(
-                    <div key={`row-${i}`} className={styles.messageInfo}>
+                    <div key={`info-${i}`} className={styles.messageInfo}>
                         {line.slice(1).trim()}
                     </div>
                 );
                 return;
             }
 
-            // Прочие строки — как есть
+            // ---- Прочие строки ----
             result.push(
-                <div key={`row-${i}`} className={styles.messageInfo}>
+                <div key={`text-${i}`} className={styles.messageInfo}>
                     {line}
                 </div>
             );
