@@ -49,3 +49,4 @@ frontend/dist/
 
 # Собранные Vite-бандлы (собираются на сервере)
 masters/static/js/react/
+static/js/react/
