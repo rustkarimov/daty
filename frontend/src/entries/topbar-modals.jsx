@@ -3,12 +3,16 @@ import ReactDOM from 'react-dom/client';
 import AddBookingModal from '../components/Calendar/AddBookingModal';
 import NotificationBell from '../components/Notifications/NotificationBell';
 import NotificationsProvider, { useNotifications } from '../components/Notifications/NotificationsProvider';
-import { ModalProvider } from '../components/modals';
 import NotificationsModal from '../components/Notifications/NotificationsModal';
+import SupportButton from '../components/Support/SupportButton';
+import SupportChatModal from '../components/Support/SupportChatModal';
+import SupportProvider, { useSupport } from '../components/Support/SupportProvider';
+import { ModalProvider } from '../components/modals';
 
 function TopbarModals({ masterSlug }) {
     const [addBookingOpen, setAddBookingOpen] = useState(false);
     const { isModalOpen } = useNotifications();
+    const { isModalOpen: isSupportOpen } = useSupport();
 
     useEffect(() => {
         function handleOpenAddBooking() {
@@ -29,8 +33,10 @@ function TopbarModals({ masterSlug }) {
     return (
         <>
             <NotificationBell />
+            <SupportButton />
 
             {isModalOpen && <NotificationsModal />}
+            {isSupportOpen && <SupportChatModal />}
 
             {addBookingOpen && (
                 <AddBookingModal
@@ -49,7 +55,9 @@ if (el) {
     ReactDOM.createRoot(el).render(
         <ModalProvider>
             <NotificationsProvider>
-                <TopbarModals masterSlug={masterSlug} />
+                <SupportProvider>
+                    <TopbarModals masterSlug={masterSlug} />
+                </SupportProvider>
             </NotificationsProvider>
         </ModalProvider>
     );

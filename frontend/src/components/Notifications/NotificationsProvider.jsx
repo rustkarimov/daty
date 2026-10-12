@@ -31,6 +31,19 @@ export default function NotificationsProvider({ children }) {
         return () => clearInterval(interval);
     }, [refreshUnreadCount]);
 
+    // Открытие модалки по событию (из SW)
+    useEffect(() => {
+        function handleOpen() {
+            setIsModalOpen(true);
+            refreshUnreadCount();
+        }
+
+        window.addEventListener('openNotifications', handleOpen);
+        return () => {
+            window.removeEventListener('openNotifications', handleOpen);
+        };
+    }, [refreshUnreadCount]);
+
     function openModal() {
         setIsModalOpen(true);
         refreshUnreadCount();
