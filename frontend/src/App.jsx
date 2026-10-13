@@ -6,6 +6,9 @@ import SupportProvider from './components/Support/SupportProvider';
 import PushProvider from './components/Push/PushProvider';
 import TopbarModals from './TopbarModals';
 import DashboardPage from './components/Dashboard/DashboardPage';
+import ServicesPage from './components/Services/ServicesPage';
+import SchedulePage from './components/Schedule/SchedulePage';
+
 
 /**
  * Корневой компонент приложения.
@@ -14,6 +17,7 @@ import DashboardPage from './components/Dashboard/DashboardPage';
  * Страницы (Dashboard, Services, Schedule, ...) рендерит через порталы
  * в соответствующие контейнеры, если они есть в DOM.
  */
+
 export default function App() {
     return (
         <ModalProvider>
@@ -35,6 +39,8 @@ export default function App() {
  */
 function PagePortals() {
     const dashboardEl = document.getElementById('react-dashboard');
+    const servicesEl = document.getElementById('react-services');
+    const scheduleEl = document.getElementById('react-schedule');
 
     return (
         <>
@@ -48,6 +54,16 @@ function PagePortals() {
                     publicLink={dashboardEl.dataset.publicLink || ''}
                 />,
                 dashboardEl
+            )}
+
+            {servicesEl && createPortal(
+                <ServicesPage />,
+                servicesEl
+            )}
+
+            {scheduleEl && createPortal(
+                <SchedulePage />,
+                scheduleEl
             )}
         </>
     );

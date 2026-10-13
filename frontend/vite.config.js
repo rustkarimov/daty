@@ -19,8 +19,6 @@ export default defineConfig({
 
             input: {
                 app: path.resolve(__dirname, 'src/entries/app.jsx'),
-                services: path.resolve(__dirname, 'src/entries/services.jsx'),
-                schedule: path.resolve(__dirname, 'src/entries/schedule.jsx'),
                 clients: path.resolve(__dirname, 'src/entries/clients.jsx'),
                 profile: path.resolve(__dirname, 'src/entries/profile.jsx'),
             },

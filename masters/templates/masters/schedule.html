@@ -5,14 +5,9 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'js/react/BreaksEditor.css' %}">
-<link rel="stylesheet" href="{% static 'js/react/schedule.css' %}">
 {% endblock %}
 
 {% block content %}
 <div id="react-schedule"></div>
 {% csrf_token %}
-{% endblock %}
-
-{% block extra_js %}
-<script src="{% static 'js/react/schedule.js' %}" type="module"></script>
 {% endblock %}
