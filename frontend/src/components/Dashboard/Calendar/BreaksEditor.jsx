@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import useModal from '../../hooks/useModal';
+import useModal from '../../../hooks/useModal';
 import styles from './BreaksEditor.module.css';
 
 export default function BreaksEditor({ breaks, onChange }) {

@@ -1,0 +1,180 @@
+/* ============================================================ */
+/* ========== PUSH PRE-PROMPT (CSS Module) ==================== */
+/* ============================================================ */
+
+.backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1100;  /* выше обычных модалок */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+}
+
+.modal {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid var(--gray-200);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    width: 100%;
+    max-width: 420px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: fadeInUp 0.3s ease;
+}
+
+.header {
+    padding: 16px 20px;
+    background: white;
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--gray-800);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.title i {
+    color: var(--primary);
+    font-size: 1rem;
+}
+
+.closeBtn {
+    background: transparent;
+    border: none;
+    font-size: 1.1rem;
+    color: var(--gray-500);
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    line-height: 1;
+}
+
+.closeBtn:hover {
+    background: var(--gray-100);
+    color: var(--gray-800);
+}
+
+.body {
+    padding: 20px;
+    font-size: 0.95rem;
+    color: var(--gray-700);
+    line-height: 1.5;
+}
+
+.body p {
+    margin: 0 0 8px 0;
+}
+
+.hint {
+    font-size: 0.85rem;
+    color: var(--gray-500);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.hint i {
+    color: var(--primary);
+    flex-shrink: 0;
+}
+
+.footer {
+    padding: 12px 20px;
+    background: var(--gray-50);
+    border-top: 1px solid var(--gray-200);
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.btnPrimary,
+.btnSecondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 20px;
+    border-radius: 30px;
+    border: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 110px;
+}
+
+.btnPrimary {
+    background: var(--primary);
+    color: white;
+}
+
+.btnPrimary:hover:not(:disabled) {
+    background: var(--primary-dark);
+}
+
+.btnPrimary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btnSecondary {
+    background: var(--gray-200);
+    color: var(--gray-700);
+}
+
+.btnSecondary:hover:not(:disabled) {
+    background: var(--gray-300);
+    color: var(--gray-800);
+}
+
+.btnSecondary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 768px) {
+    .backdrop {
+        padding: 16px;
+    }
+
+    .modal {
+        max-width: 100%;
+    }
+
+    .body {
+        padding: 16px;
+    }
+
+    .footer {
+        flex-direction: column-reverse;
+    }
+
+    .footer .btnPrimary,
+    .footer .btnSecondary {
+        width: 100%;
+    }
+}

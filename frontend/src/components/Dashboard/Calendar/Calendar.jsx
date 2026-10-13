@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import MonthGrid from './MonthGrid';
 import DayModal from './DayModal';
-import { loadCalendar, loadCounts } from '../../api/calendar';
+import { loadCalendar, loadCounts } from '../../../api/calendar';
 import styles from './Calendar.module.css';
 
 const MONTH_NAMES = [

@@ -1,12 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import {
-    loadMasterCategories,
-    loadAvailableDates,
-    createMultipleBookings,
-} from '../../api/booking';
-import { phoneMask } from '../../utils/phoneMask';
+import { loadMasterCategories, loadAvailableDates, createMultipleBookings } from '../../../api/booking';
+import { phoneMask } from '../../../utils/phoneMask';
 import shared from './BookingModalShared.module.css';
-import useModal from '../../hooks/useModal';
+import useModal from '../../../hooks/useModal';
 
 const MONTH_NAMES = [
     'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',

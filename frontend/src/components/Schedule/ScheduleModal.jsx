@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import BreaksEditor from '../Calendar/BreaksEditor';
+import BreaksEditor from '../Dashboard/Calendar/BreaksEditor';
 import useModal from '../../hooks/useModal';
 import { addSchedule, editSchedule } from '../../api/schedule';
 import styles from './ScheduleModal.module.css';

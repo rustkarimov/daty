@@ -2,14 +2,8 @@ import React, { useState, useEffect } from 'react';
 import BreaksEditor from './BreaksEditor';
 import EditBookingModal from './EditBookingModal';
 import AddBookingModal from './AddBookingModal';
-import useModal from '../../hooks/useModal';
-import {
-    loadDayStatus,
-    loadBookingsByDate,
-    makeDayOff,
-    makeDayWorking,
-    deleteBooking,
-} from '../../api/day';
+import useModal from '../../../hooks/useModal';
+import { loadDayStatus, loadBookingsByDate, makeDayOff, makeDayWorking, deleteBooking } from '../../../api/day';
 import styles from './DayModal.module.css';
 
 const MONTH_NAMES = [

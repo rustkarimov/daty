@@ -1,58 +1,27 @@
-import React, { useState, useEffect } from 'react';
-import {
-    isPushSupported,
-    isIOSWithoutPWA,
-    subscribeToPush,
-    unsubscribeFromPush,
-    checkPushSubscription,
-} from '../utils/pushUtils';
+import React from 'react';
+import { usePush } from './PushProvider';
+import useModal from '../../hooks/useModal';
 import styles from './PushSettings.module.css';
 
 export default function PushSettings() {
-    const [subscribed, setSubscribed] = useState(false);
-    const [loading, setLoading] = useState(true);
-    const [busy, setBusy] = useState(false);
-
-    const supported = isPushSupported();
-    const iosHint = isIOSWithoutPWA();
-
-    useEffect(() => {
-        if (!supported || iosHint) {
-            setLoading(false);
-            return;
-        }
-
-        checkPushSubscription()
-            .then(result => {
-                setSubscribed(result);
-                setLoading(false);
-            })
-            .catch(() => {
-                setLoading(false);
-            });
-    }, [supported, iosHint]);
+    const { supported, iosHint, subscribed, loading, busy, subscribe, unsubscribe } = usePush();
+    const { showAlert } = useModal();
 
     async function handleEnable() {
-        setBusy(true);
         try {
-            await subscribeToPush();
-            setSubscribed(true);
+            await subscribe();
+            showAlert('Push-уведомления включены', 'success');
         } catch (error) {
-            alert(error.message || 'Ошибка подписки');
-        } finally {
-            setBusy(false);
+            showAlert(error.message || 'Не удалось подписаться', 'error');
         }
     }
 
     async function handleDisable() {
-        setBusy(true);
         try {
-            await unsubscribeFromPush();
-            setSubscribed(false);
+            await unsubscribe();
+            showAlert('Push-уведомления отключены', 'success');
         } catch (error) {
-            alert(error.message || 'Ошибка отписки');
-        } finally {
-            setBusy(false);
+            showAlert(error.message || 'Не удалось отписаться', 'error');
         }
     }
 

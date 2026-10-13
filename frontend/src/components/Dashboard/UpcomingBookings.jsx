@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { loadBookings, confirmBooking, unconfirmBooking } from '../api/bookingsList';
-import { deleteBooking } from '../api/day';
+import { loadBookings, confirmBooking, unconfirmBooking } from '../../api/bookingsList';
+import { deleteBooking } from '../../api/day';
 import BookingDetailsModal from './BookingDetailsModal';
 import styles from './UpcomingBookings.module.css';
-import useModal from '../hooks/useModal';
+import useModal from '../../hooks/useModal';
 
 export default function UpcomingBookings({ masterSlug, masterMaxLink, onEdit, onDataChanged }) {
     const [bookings, setBookings] = useState([]);

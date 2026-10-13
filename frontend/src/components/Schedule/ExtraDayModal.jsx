@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import BreaksEditor from '../Calendar/BreaksEditor';
+import BreaksEditor from '../Dashboard/Calendar/BreaksEditor';
 import useModal from '../../hooks/useModal';
 import { addExtraDay } from '../../api/schedule';
 import styles from './ExtraDayModal.module.css';
+
 
 export default function ExtraDayModal({ schedules = [], onClose, onSaved }) {
     const [date, setDate] = useState('');

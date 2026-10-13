@@ -1,12 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import {
-    loadMasterCategories,
-    loadAvailableDates,
-} from '../../api/booking';
-import { loadBookingForEdit, updateBooking } from '../../api/day';
-import { phoneMask } from '../../utils/phoneMask';
 import shared from './BookingModalShared.module.css';
-import useModal from '../../hooks/useModal';
+import { loadMasterCategories, loadAvailableDates } from '../../../api/booking';
+import { loadBookingForEdit, updateBooking } from '../../../api/day';
+import { phoneMask } from '../../../utils/phoneMask';
+import useModal from '../../../hooks/useModal';
 
 const MONTH_NAMES = [
     'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',

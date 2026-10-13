@@ -1,10 +1,20 @@
 import React, { useState } from 'react';
-import Calendar from './Calendar/Calendar';
+import StatsGrid from './StatsGrid';
+import PublicLinkCard from './PublicLinkCard';
 import UpcomingBookings from './UpcomingBookings';
+import Calendar from './Calendar/Calendar';
 import EditBookingModal from './Calendar/EditBookingModal';
-import useModal from '../hooks/useModal';
+import PushSettings from '../Push/PushSettings';
+import useModal from '../../hooks/useModal';
 
-export default function Dashboard({ masterSlug, masterMaxLink }) {
+export default function DashboardPage({
+    masterSlug,
+    masterMaxLink,
+    totalBookings,
+    totalServices,
+    totalClients,
+    publicLink,
+}) {
     const [editingBookingId, setEditingBookingId] = useState(null);
     const [refreshKey, setRefreshKey] = useState(0);
     const { showAlert } = useModal();
@@ -45,6 +55,16 @@ export default function Dashboard({ masterSlug, masterMaxLink }) {
                     </div>
                 </div>
             </div>
+
+            <StatsGrid
+                totalBookings={totalBookings}
+                totalServices={totalServices}
+                totalClients={totalClients}
+            />
+
+            <PublicLinkCard publicLink={publicLink} />
+
+            <PushSettings />
 
             {editingBookingId && (
                 <EditBookingModal

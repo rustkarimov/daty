@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { loadBookingDetails } from '../api/bookingDetails';
+import { loadBookingDetails } from '../../api/bookingDetails';
 import styles from './BookingDetailsModal.module.css';
 
 export default function BookingDetailsModal({ bookingId, onClose }) {

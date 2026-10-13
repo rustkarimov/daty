@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -15,13 +16,13 @@ export default defineConfig({
         outDir: path.resolve(__dirname, '../masters/static/js/react'),
         emptyOutDir: true,
         rollupOptions: {
+
             input: {
-                dashboard: path.resolve(__dirname, 'src/entries/dashboard.jsx'),
+                app: path.resolve(__dirname, 'src/entries/app.jsx'),
                 services: path.resolve(__dirname, 'src/entries/services.jsx'),
                 schedule: path.resolve(__dirname, 'src/entries/schedule.jsx'),
                 clients: path.resolve(__dirname, 'src/entries/clients.jsx'),
                 profile: path.resolve(__dirname, 'src/entries/profile.jsx'),
-                'topbar-modals': path.resolve(__dirname, 'src/entries/topbar-modals.jsx'),
             },
             output: {
                 entryFileNames: '[name].js',
