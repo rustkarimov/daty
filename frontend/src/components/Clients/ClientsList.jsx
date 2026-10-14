@@ -1,31 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styles from './ClientsList.module.css';
 
-function applyPhoneMask(value) {
-    // Если есть буквы — это не телефон, не трогаем
-    if (/[a-zA-Zа-яА-Я]/.test(value)) return value;
-
-    // Если нет ни одной цифры — не трогаем
-    if (!/\d/.test(value)) return value;
-
-    // Иначе — применяем маску
-    let digits = value.replace(/\D/g, '');
-    if (digits.length === 0) return '';
-
-    // Нормализуем: с 8 → 7
-    if (digits[0] === '8') digits = '7' + digits.slice(1);
-    if (digits[0] !== '7') digits = '7' + digits;
-
-    if (digits.length > 11) digits = digits.slice(0, 11);
-
-    let formatted = digits[0];
-    if (digits.length > 1) formatted += ' ' + digits.slice(1, 4);
-    if (digits.length > 4) formatted += ' ' + digits.slice(4, 7);
-    if (digits.length > 7) formatted += '-' + digits.slice(7, 9);
-    if (digits.length > 9) formatted += '-' + digits.slice(9, 11);
-    return formatted;
-}
-
 export default function ClientsList({
     clients,
     totalClients,
@@ -61,7 +36,7 @@ export default function ClientsList({
                         className={styles.searchInput}
                         placeholder="Поиск по имени или телефону..."
                         value={query}
-                        onChange={e => setQuery(applyPhoneMask(e.target.value))}
+                        onChange={e => setQuery(e.target.value)}
                     />
                 </div>
             </div>
