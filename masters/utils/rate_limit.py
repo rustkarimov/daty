@@ -15,17 +15,31 @@ def get_client_ip(request):
 def check_rate_limit(key, max_attempts, timeout_seconds):
     """
     Проверяет и увеличивает счётчик попыток.
+    TTL устанавливается один раз — при первом запросе.
     
     Returns:
         (bool, int): (разрешено?, сколько попыток осталось)
     """
-    count = cache.get(key, 0)
+    # Пытаемся создать ключ со значением 1 и TTL.
+    # Если ключ уже есть — add вернёт False, TTL не тронется.
+    created = cache.add(key, 1, timeout_seconds)
     
-    if count >= max_attempts:
+    if created:
+        # Первый запрос
+        return True, max_attempts - 1
+    
+    # Ключ уже есть — увеличиваем счётчик, TTL не трогаем.
+    try:
+        count = cache.incr(key)
+    except ValueError:
+        # Ключ исчез между add и incr (редкий случай) — считаем как первый
+        cache.set(key, 1, timeout_seconds)
+        return True, max_attempts - 1
+    
+    if count > max_attempts:
         return False, 0
     
-    cache.set(key, count + 1, timeout_seconds)
-    return True, max_attempts - count - 1
+    return True, max_attempts - count
 
 
 def check_call_limits(request, phone):
