@@ -1,13 +1,11 @@
 // Базовые API-функции для календаря
 
+import { getJson } from '../utils/api';
+
 export async function loadCalendar() {
-    const r = await fetch('/api/schedule/calendar/');
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    return r.json();
+    return getJson('/api/schedule/calendar/');
 }
 
 export async function loadCounts() {
-    const r = await fetch('/api/bookings/counts/');
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    return r.json();
+    return getJson('/api/bookings/counts/');
 }

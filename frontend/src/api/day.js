@@ -1,36 +1,25 @@
 // API-функции для работы с днём
 
+import { request, getJson } from '../utils/api';
+
 export async function loadDayStatus(date) {
-    const r = await fetch(`/api/day-status/?date=${date}`);
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    return r.json();
+    return getJson(`/api/day-status/?date=${date}`);
 }
 
 export async function loadBookingsByDate(date) {
-    const r = await fetch(`/api/bookings/by-date/?date=${date}`);
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    return r.json();
+    return getJson(`/api/bookings/by-date/?date=${date}`);
 }
 
 export async function makeDayOff(date) {
-    const r = await fetch('/api/days-off/add/', {
+    return request('/api/days-off/add/', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCookie('csrftoken'),
-        },
         body: JSON.stringify({ date, reason: 'Выходной' }),
     });
-    return r.json();
 }
 
 export async function makeDayWorking(date) {
-    const r = await fetch('/api/extra-days/add/', {
+    return request('/api/extra-days/add/', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCookie('csrftoken'),
-        },
         body: JSON.stringify({
             date: date,
             start_time: '09:00',
@@ -38,49 +27,19 @@ export async function makeDayWorking(date) {
             breaks: [],
         }),
     });
-    return r.json();
-}
-
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
 }
 
 export async function deleteBooking(bookingId) {
-    const r = await fetch(`/api/booking/${bookingId}/delete/`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCookie('csrftoken'),
-        },
-    });
-    return r.json();
+    return request(`/api/booking/${bookingId}/delete/`, { method: 'POST' });
 }
 
 export async function loadBookingForEdit(bookingId) {
-    const r = await fetch(`/api/booking/${bookingId}/get/`);
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    return r.json();
+    return getJson(`/api/booking/${bookingId}/get/`);
 }
 
 export async function updateBooking(bookingId, data) {
-    const r = await fetch(`/api/booking/${bookingId}/update/`, {
+    return request(`/api/booking/${bookingId}/update/`, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCookie('csrftoken'),
-        },
         body: JSON.stringify(data),
     });
-    return r.json();
 }

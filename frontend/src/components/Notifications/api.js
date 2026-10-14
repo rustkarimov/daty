@@ -2,33 +2,7 @@
 // API для уведомлений
 // ============================================================
 
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
-
-async function request(url, options = {}) {
-    const config = {
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCookie('csrftoken'),
-            ...(options.headers || {}),
-        },
-        ...options,
-    };
-    const response = await fetch(url, config);
-    return response.json();
-}
+import { request } from '../../utils/api';
 
 export function loadNotifications(offset = 0, limit = 10) {
     return request(`/api/notifications/?offset=${offset}&limit=${limit}`, { method: 'GET' });

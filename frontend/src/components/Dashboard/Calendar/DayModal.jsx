@@ -3,8 +3,10 @@ import BreaksEditor from './BreaksEditor';
 import EditBookingModal from './EditBookingModal';
 import AddBookingModal from './AddBookingModal';
 import useModal from '../../../hooks/useModal';
+import { request } from '../../../utils/api';
 import { loadDayStatus, loadBookingsByDate, makeDayOff, makeDayWorking, deleteBooking } from '../../../api/day';
 import styles from './DayModal.module.css';
+
 
 const MONTH_NAMES = [
     'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
@@ -92,12 +94,8 @@ export default function DayModal({ dateStr, masterSlug, onClose, onDataChanged }
         const workEnd = dayData?.extra_end || dayData?.schedule_end || '18:00';
 
         try {
-            const r = await fetch('/api/extra-days/add/', {
+            const data = await request('/api/extra-days/add/', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken'),
-                },
                 body: JSON.stringify({
                     date: dateStr,
                     start_time: workStart,
@@ -105,7 +103,6 @@ export default function DayModal({ dateStr, masterSlug, onClose, onDataChanged }
                     breaks: newBreaks.filter(b => b.start && b.end),
                 }),
             });
-            const data = await r.json();
             if (!data.success) {
                 showAlert(data.error || 'Ошибка сохранения', 'error');
             } else {
@@ -198,12 +195,8 @@ export default function DayModal({ dateStr, masterSlug, onClose, onDataChanged }
         }
 
         try {
-            const r = await fetch('/api/extra-days/add/', {
+            const data = await request('/api/extra-days/add/', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken'),
-                },
                 body: JSON.stringify({
                     date: dateStr,
                     start_time: editHours.start,
@@ -211,7 +204,6 @@ export default function DayModal({ dateStr, masterSlug, onClose, onDataChanged }
                     breaks: breaks.filter(b => b.start && b.end),
                 }),
             });
-            const data = await r.json();
             if (!data.success) {
                 showAlert(data.error || 'Ошибка сохранения', 'error');
             } else {
@@ -416,17 +408,3 @@ export default function DayModal({ dateStr, masterSlug, onClose, onDataChanged }
     );
 }
 
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
