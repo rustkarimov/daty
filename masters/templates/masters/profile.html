@@ -3,10 +3,6 @@
 
 {% block title %}Профиль{% endblock %}
 
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'js/react/profile.css' %}">
-{% endblock %}
-
 {% block content %}
 <div id="react-profile"
      data-master-id="{{ master.id }}"
@@ -20,8 +16,4 @@
         "avatar_url": "{% if master.avatar %}{{ master.avatar.url }}{% endif %}"
      }'></div>
 {% csrf_token %}
-{% endblock %}
-
-{% block extra_js %}
-<script src="{% static 'js/react/profile.js' %}" type="module"></script>
 {% endblock %}

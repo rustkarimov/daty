@@ -9,6 +9,7 @@ import DashboardPage from './components/Dashboard/DashboardPage';
 import ServicesPage from './components/Services/ServicesPage';
 import SchedulePage from './components/Schedule/SchedulePage';
 import ClientsPage from './components/Clients/ClientsPage';
+import ProfilePage from './components/Profile/ProfilePage';
 
 
 /**
@@ -43,6 +44,7 @@ function PagePortals() {
     const servicesEl = document.getElementById('react-services');
     const scheduleEl = document.getElementById('react-schedule');
     const clientsEl = document.getElementById('react-clients');
+    const profileEl = document.getElementById('react-profile');
 
     return (
         <>
@@ -71,6 +73,14 @@ function PagePortals() {
             {clientsEl && createPortal(
                 <ClientsPage />,
                 clientsEl
+            )}
+
+            {profileEl && createPortal(
+                <ProfilePage
+                    masterId={profileEl.dataset.masterId || ''}
+                    initialData={JSON.parse(profileEl.dataset.initial || '{}')}
+                />,
+                profileEl
             )}
         </>
     );
