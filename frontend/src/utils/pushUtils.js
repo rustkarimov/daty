@@ -96,18 +96,28 @@ export async function checkPushSubscription() {
         if (!subscription) return false;
 
         const data = await checkSubscription(subscription.endpoint);
-        if (!data.success || !data.data || data.data.exists !== true) {
+
+        // Успех: сервер точно ответил
+        if (data.success) {
+            if (data.data && data.data.exists === true) {
+                // Подписка есть на сервере — всё ок
+                return true;
+            }
             // Подписки нет на сервере — удаляем локально
             try {
                 await subscription.unsubscribe();
+                console.log('🗑️ Старая подписка удалена из браузера (нет на сервере)');
             } catch (e) {
                 console.warn('Не удалось удалить старую подписку:', e);
             }
             return false;
         }
 
-        return true;
+        // data.success === false → ошибка сервера, не трогаем подписку
+        console.warn('Ошибка проверки подписки на сервере:', data.error);
+        return false;
     } catch (error) {
+        // Исключение (сеть, не-JSON ответ) — тоже не трогаем подписку
         console.error('Ошибка проверки подписки:', error);
         return false;
     }
