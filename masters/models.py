@@ -319,6 +319,78 @@ class Booking(models.Model):
                     break
         super().save(*args, **kwargs)
 
+
+class CancelledBooking(models.Model):
+    """
+    Отменённая запись. Хранится для истории/статистики.
+    Создаётся при отмене записи клиентом или при добавлении клиента в ЧС.
+    Оригинальная запись Booking удаляется, чтобы освободить слот.
+    """
+    
+    CANCELLED_BY_CHOICES = [
+        ('client', 'Клиент'),
+        ('master', 'Мастер'),
+        ('admin', 'Админ'),
+        ('blacklist', 'Чёрный список'),
+    ]
+    
+    master = models.ForeignKey(
+        Master,
+        on_delete=models.CASCADE,
+        related_name='cancelled_bookings',
+        verbose_name="Мастер"
+    )
+    service = models.ForeignKey(
+        Service,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='cancelled_bookings',
+        verbose_name="Услуга"
+    )
+    
+    # Данные клиента (копия из Booking)
+    client_name = models.CharField(max_length=100, verbose_name="Имя клиента")
+    encrypted_phone = models.BinaryField(verbose_name="Телефон (зашифрованный)")
+    client_comment = models.TextField(verbose_name="Комментарий", blank=True)
+    
+    # Оригинальные дата и время
+    date = models.DateField(verbose_name="Дата записи")
+    time = models.TimeField(verbose_name="Время записи")
+    
+    # Метаданные отмены
+    cancelled_by = models.CharField(
+        max_length=10,
+        choices=CANCELLED_BY_CHOICES,
+        default='client',
+        verbose_name="Кто отменил"
+    )
+    reason = models.TextField(blank=True, verbose_name="Причина отмены")
+    cancelled_at = models.DateTimeField(auto_now_add=True, verbose_name="Когда отменено")
+    
+    # Ссылка на оригинальную запись (для трассировки)
+    original_booking_id = models.IntegerField(
+        null=True, blank=True,
+        verbose_name="ID оригинальной записи"
+    )
+    
+    class Meta:
+        verbose_name = "Отменённая запись"
+        verbose_name_plural = "Отменённые записи"
+        ordering = ['-cancelled_at']
+        indexes = [
+            models.Index(fields=['master', 'date']),
+            models.Index(fields=['-cancelled_at']),
+        ]
+    
+    def __str__(self):
+        return f"{self.client_name} - {self.date} {self.time} (отменена)"
+    
+    def get_decrypted_phone(self, key):
+        """Расшифровывает телефон (аналогично Booking)."""
+        f = Fernet(key)
+        return f.decrypt(bytes(self.encrypted_phone)).decode()
+
 class BlacklistedClient(models.Model):
     """Чёрный список клиентов"""
     master = models.ForeignKey(Master, on_delete=models.CASCADE, related_name='blacklisted_clients')

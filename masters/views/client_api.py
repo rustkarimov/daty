@@ -11,7 +11,7 @@ from django.http import Http404
 from django.views.decorators.csrf import csrf_exempt
 from cryptography.fernet import Fernet, InvalidToken
 
-from ..models import Booking, ClientSession, Notification
+from ..models import Booking, ClientSession, Notification, CancelledBooking
 from ..utils.response_utils import api_success, api_error
 from ..utils.schedule_utils import ScheduleCalculator
 from ..utils.master_utils import get_master_by_identifier
@@ -166,33 +166,62 @@ def api_client_cancel_booking(request, identifier, token):
 
     import logging
     logger = logging.getLogger(__name__)
-    logger.info(f"Клиент {booking.client_name} отменил запись #{booking.id} у мастера {booking.master.id}")
     
-    # Уведомление мастеру
-    service_name = booking.service.name
-    if booking.service.category:
-        service_name = f"{booking.service.category.name}: {service_name}"
-
-    Notification.objects.create(
-        master=booking.master,
-        type='cancelled_booking',
-        title=f'{booking.client_name}',
-        message=f"📅 {booking.date.strftime('%Y-%m-%d')}\n⏰ {booking.time.strftime('%H:%M')}|{service_name}",
-        content_object=booking
+    # Сохраняем данные ДО удаления (пока booking в памяти с id)
+    original_booking_id = booking.id
+    master = booking.master
+    client_name = booking.client_name
+    booking_date = booking.date
+    booking_time = booking.time
+    service = booking.service
+    service_name = service.name
+    if service.category:
+        service_name = f"{service.category.name}: {service_name}"
+    
+    logger.info(
+        f"Клиент {client_name} отменил запись #{original_booking_id} "
+        f"у мастера {master.id}"
     )
     
-    # Push мастеру
+    # 1. Сохраняем историю в CancelledBooking
+    CancelledBooking.objects.create(
+        master=master,
+        service=service,
+        client_name=client_name,
+        encrypted_phone=bytes(booking.encrypted_phone),
+        client_comment=booking.client_comment,
+        date=booking_date,
+        time=booking_time,
+        cancelled_by='client',
+        original_booking_id=original_booking_id,
+    )
+    
+    # 2. Уведомление мастеру (без content_object — объекта уже не будет)
+    Notification.objects.create(
+        master=master,
+        type='cancelled_booking',
+        title=client_name,
+        message=(
+            f"📅 {booking_date.strftime('%Y-%m-%d')}\n"
+            f"⏰ {booking_time.strftime('%H:%M')}|{service_name}"
+        ),
+    )
+    
+    # 3. Push мастеру
     from ..utils.push_utils import send_push_to_master
     try:
         send_push_to_master(
-            master=booking.master,
+            master=master,
             title='❌ Отмена записи',
-            body=f'{booking.client_name} · {booking.time.strftime("%H:%M")} · {booking.service.name}',
+            body=f'{client_name} · {booking_time.strftime("%H:%M")} · {service.name}',
             url='/dashboard/',
-            tag=f'booking-{booking.id}'
+            tag=f'booking-{original_booking_id}'
         )
     except Exception as e:
-        logger.error(f"Ошибка push при отмене записи #{booking.id}: {e}")
+        logger.error(f"Ошибка push при отмене записи #{original_booking_id}: {e}")
+    
+    # 4. Удаляем оригинальную запись — слот освобождается
+    booking.delete()
     
     return api_success({'message': 'Запись отменена'})
 

@@ -1,12 +1,18 @@
 from django.contrib import admin
 from django import forms
 from django.utils.text import slugify
-from .models import Master, Service, Schedule, DayOff, Booking, PhoneVerification, CustomUser, SupportMessage
+from .models import Master, Service, Schedule, DayOff, Booking, PhoneVerification, CustomUser, SupportMessage, CancelledBooking
 
 from django.contrib.auth.admin import UserAdmin
 
 from django.urls import reverse
 from django.utils.html import format_html
+
+
+
+from django.contrib.admin import AdminSite
+from django.utils.safestring import mark_safe
+
 
 # Кастомная админка для CustomUser
 class CustomUserAdmin(UserAdmin):
@@ -300,8 +306,14 @@ def get_admin_urls():
 admin.site.get_urls = get_admin_urls
 
 
-from django.contrib.admin import AdminSite
-from django.utils.safestring import mark_safe
+
+@admin.register(CancelledBooking)
+class CancelledBookingAdmin(admin.ModelAdmin):
+    list_display = ['client_name', 'master', 'date', 'time', 'cancelled_by', 'cancelled_at']
+    list_filter = ['cancelled_by', 'cancelled_at', 'master']
+    search_fields = ['client_name', 'master__first_name', 'master__last_name']
+    readonly_fields = ['cancelled_at', 'encrypted_phone']
+    date_hierarchy = 'cancelled_at'
 
 class CustomAdminSite(AdminSite):
     def get_app_list(self, request):

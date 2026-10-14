@@ -12,7 +12,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 from cryptography.fernet import Fernet, InvalidToken
 
-from ..models import Booking, BlacklistedClient
+from ..models import Booking, BlacklistedClient, CancelledBooking
 from ..utils.response_utils import api_success, api_error
 
 
@@ -353,8 +353,21 @@ def api_blacklist_add(request):
                 try:
                     decrypted = f.decrypt(bytes(booking.encrypted_phone)).decode()
                     if re.sub(r'\D', '', decrypted) == phone_cleaned:
-                        booking.status = 'cancelled'
-                        booking.save()
+                        # Сохраняем в CancelledBooking
+                        CancelledBooking.objects.create(
+                            master=master,
+                            service=booking.service,
+                            client_name=booking.client_name,
+                            encrypted_phone=bytes(booking.encrypted_phone),
+                            client_comment=booking.client_comment,
+                            date=booking.date,
+                            time=booking.time,
+                            cancelled_by='blacklist',
+                            reason=f'Клиент добавлен в ЧС: {reason}',
+                            original_booking_id=booking.id,
+                        )
+                        # Удаляем оригинальную запись
+                        booking.delete()
                         cancelled_count += 1
                 except Exception:
                     pass
