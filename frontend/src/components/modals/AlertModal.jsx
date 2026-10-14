@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import styles from './AlertModal.module.css';
+import useBodyLock from '../../hooks/useBodyLock';   // ← добавь
 
 const ICONS = {
     success: 'fa-check-circle',
@@ -16,6 +17,7 @@ const DEFAULT_TITLES = {
 };
 
 export default function AlertModal({ message, title, type = 'info', onClose }) {
+    useBodyLock();
     const okBtnRef = useRef(null);
 
     useEffect(() => {

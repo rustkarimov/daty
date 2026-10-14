@@ -8,6 +8,7 @@ import {
 import { useNotifications } from './NotificationsProvider';
 import useModal from '../../hooks/useModal';
 import styles from './NotificationsModal.module.css';
+import useBodyLock from '../../hooks/useBodyLock';
 
 const TYPE_NAMES = {
     'new_booking': 'Новая запись',
@@ -70,6 +71,7 @@ function formatDate(input) {
 const OFFSET_STEP = 10;
 
 export default function NotificationsModal() {
+    useBodyLock();
     const { closeModal, refreshUnreadCount, setUnreadCount } = useNotifications();
     const { showAlert } = useModal();
 

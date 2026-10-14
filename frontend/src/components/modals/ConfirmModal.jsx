@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import styles from './ConfirmModal.module.css';
+import useBodyLock from '../../hooks/useBodyLock';
 
 export default function ConfirmModal({
     message,
@@ -10,6 +11,7 @@ export default function ConfirmModal({
     onConfirm,
     onCancel,
 }) {
+    useBodyLock();
     const confirmBtnRef = useRef(null);
 
     useEffect(() => {

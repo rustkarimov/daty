@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { loadMessages, sendMessage } from './api';
 import { useSupport } from './SupportProvider';
 import styles from './SupportChatModal.module.css';
+import useBodyLock from '../../hooks/useBodyLock';
 
 const MONTH_NAMES = [
     'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
@@ -28,6 +29,7 @@ function parseCreatedAt(raw) {
 }
 
 export default function SupportChatModal() {
+    useBodyLock();
     const { closeModal, refreshUnreadCount } = useSupport();
 
     const [messages, setMessages] = useState([]);
