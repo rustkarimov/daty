@@ -8,6 +8,7 @@ import TopbarModals from './TopbarModals';
 import DashboardPage from './components/Dashboard/DashboardPage';
 import ServicesPage from './components/Services/ServicesPage';
 import SchedulePage from './components/Schedule/SchedulePage';
+import ClientsPage from './components/Clients/ClientsPage';
 
 
 /**
@@ -41,6 +42,7 @@ function PagePortals() {
     const dashboardEl = document.getElementById('react-dashboard');
     const servicesEl = document.getElementById('react-services');
     const scheduleEl = document.getElementById('react-schedule');
+    const clientsEl = document.getElementById('react-clients');
 
     return (
         <>
@@ -64,6 +66,11 @@ function PagePortals() {
             {scheduleEl && createPortal(
                 <SchedulePage />,
                 scheduleEl
+            )}
+
+            {clientsEl && createPortal(
+                <ClientsPage />,
+                clientsEl
             )}
         </>
     );

@@ -3,15 +3,7 @@
 
 {% block title %}Статистика клиентов{% endblock %}
 
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'js/react/clients.css' %}">
-{% endblock %}
-
 {% block content %}
 <div id="react-clients"></div>
 {% csrf_token %}
-{% endblock %}
-
-{% block extra_js %}
-<script src="{% static 'js/react/clients.js' %}" type="module"></script>
 {% endblock %}
