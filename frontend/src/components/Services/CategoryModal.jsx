@@ -6,6 +6,7 @@ import {
     deleteCategory,
 } from '../../api/services';
 import styles from './CategoryModal.module.css';
+import useBodyLock from '../../hooks/useBodyLock';
 
 export default function CategoryModal({
     mode = 'add',
@@ -14,6 +15,7 @@ export default function CategoryModal({
     onClose,
     onSaved,
 }) {
+    useBodyLock();
     const [formId, setFormId] = useState('');
     const [formName, setFormName] = useState('');
     const [formOrder, setFormOrder] = useState(0);

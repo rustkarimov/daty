@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { loadBookingDetails } from '../../api/bookingDetails';
 import styles from './BookingDetailsModal.module.css';
+import useBodyLock from '../../hooks/useBodyLock';
 
 export default function BookingDetailsModal({ bookingId, onClose }) {
+    useBodyLock();
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
 

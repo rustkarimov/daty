@@ -27,8 +27,9 @@ def send_push_to_master(master, title, body, url='/dashboard/', tag=None):
     vapid_admin_email = os.getenv('VAPID_ADMIN_EMAIL', 'mailto:noreply@daty.pro')
     
     if not os.path.exists(vapid_private_key_path):
-        logger.error(f"VAPID-ключ не найден: {vapid_private_key_path}")
-        return {'sent': 0, 'failed': 0, 'deleted': 0}
+        error_msg = f"VAPID-ключ не найден: {vapid_private_key_path}"
+        logger.error(error_msg)
+        raise FileNotFoundError(error_msg)
     
     if not vapid_admin_email.startswith('mailto:'):
         vapid_admin_email = f'mailto:{vapid_admin_email}'

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import useModal from '../../hooks/useModal';
 import { getService, addService, editService } from '../../api/services';
 import styles from './ServiceModal.module.css';
+import useBodyLock from '../../hooks/useBodyLock';
 
 export default function ServiceModal({
     mode = 'add',
@@ -10,6 +11,7 @@ export default function ServiceModal({
     onClose,
     onSaved,
 }) {
+    useBodyLock();
     const [loading, setLoading] = useState(mode === 'edit');
     const [saving, setSaving] = useState(false);
     const { showAlert } = useModal();

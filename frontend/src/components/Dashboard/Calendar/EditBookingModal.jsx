@@ -4,6 +4,7 @@ import { loadMasterCategories, loadAvailableDates } from '../../../api/booking';
 import { loadBookingForEdit, updateBooking } from '../../../api/day';
 import { phoneMask } from '../../../utils/phoneMask';
 import useModal from '../../../hooks/useModal';
+import useBodyLock from '../../../hooks/useBodyLock';
 
 const MONTH_NAMES = [
     'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
@@ -22,6 +23,7 @@ function formatDate(dateStr) {
 }
 
 export default function EditBookingModal({ bookingId, masterSlug, onClose, onSaved }) {
+    useBodyLock();
     const [form, setForm] = useState(null);
     const [categories, setCategories] = useState([]);
     const [uncategorized, setUncategorized] = useState([]);

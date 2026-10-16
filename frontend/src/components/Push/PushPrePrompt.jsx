@@ -3,11 +3,13 @@ import { createPortal } from 'react-dom';
 import { usePush } from './PushProvider';
 import useModal from '../../hooks/useModal';
 import styles from './PushPrePrompt.module.css';
+import useBodyLock from '../../hooks/useBodyLock';
 
 const DISMISSED_KEY = 'push_dismissed';
 const DELAY_MS = 2000;
 
 export default function PushPrePrompt() {
+    useBodyLock();
     const { supported, iosHint, subscribed, loading, busy, subscribe } = usePush();
     const { showAlert } = useModal();
     const [visible, setVisible] = useState(false);

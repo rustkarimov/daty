@@ -3,9 +3,11 @@ import BreaksEditor from '../Dashboard/Calendar/BreaksEditor';
 import useModal from '../../hooks/useModal';
 import { addExtraDay } from '../../api/schedule';
 import styles from './ExtraDayModal.module.css';
+import useBodyLock from '../../hooks/useBodyLock';
 
 
 export default function ExtraDayModal({ schedules = [], onClose, onSaved }) {
+    useBodyLock();
     const [date, setDate] = useState('');
     const [startTime, setStartTime] = useState('');
     const [endTime, setEndTime] = useState('');

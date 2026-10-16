@@ -6,6 +6,7 @@ import useModal from '../../../hooks/useModal';
 import { request } from '../../../utils/api';
 import { loadDayStatus, loadBookingsByDate, makeDayOff, makeDayWorking, deleteBooking } from '../../../api/day';
 import styles from './DayModal.module.css';
+import useBodyLock from '../../../hooks/useBodyLock';
 
 
 const MONTH_NAMES = [
@@ -19,6 +20,7 @@ const WEEKDAY_NAMES = [
 ];
 
 export default function DayModal({ dateStr, masterSlug, onClose, onDataChanged }) {
+    useBodyLock();
     const [dayData, setDayData] = useState(null);
     const [bookings, setBookings] = useState([]);
     const [breaks, setBreaks] = useState([]);

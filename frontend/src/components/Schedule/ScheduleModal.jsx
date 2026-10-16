@@ -3,6 +3,7 @@ import BreaksEditor from '../Dashboard/Calendar/BreaksEditor';
 import useModal from '../../hooks/useModal';
 import { addSchedule, editSchedule } from '../../api/schedule';
 import styles from './ScheduleModal.module.css';
+import useBodyLock from '../../hooks/useBodyLock';
 
 const DAYS = [
     { value: 0, label: 'Понедельник' },
@@ -15,6 +16,7 @@ const DAYS = [
 ];
 
 export default function ScheduleModal({ mode = 'add', schedule = null, onClose, onSaved }) {
+    useBodyLock();
     const [dayOfWeek, setDayOfWeek] = useState('');
     const [startTime, setStartTime] = useState('');
     const [endTime, setEndTime] = useState('');

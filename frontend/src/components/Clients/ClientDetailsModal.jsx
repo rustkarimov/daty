@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import BlacklistModal from './BlacklistModal';
 import styles from './ClientDetailsModal.module.css';
+import useBodyLock from '../../hooks/useBodyLock';
 
 export default function ClientDetailsModal({ client, onClose }) {
+    useBodyLock();
     const [blacklistModalOpen, setBlacklistModalOpen] = useState(false);
 
     function handleBackdropClick(e) {

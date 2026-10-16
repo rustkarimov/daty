@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import useModal from '../../hooks/useModal';
 import { addToBlacklist } from '../../api/clients';
 import styles from './BlacklistModal.module.css';
+import useBodyLock from '../../hooks/useBodyLock';
 
 export default function BlacklistModal({
     onClose,
@@ -9,6 +10,7 @@ export default function BlacklistModal({
     initialName = '',
     initialPhone = '',
 }) {
+    useBodyLock();
     const [name, setName] = useState(initialName);
     const [phone, setPhone] = useState(initialPhone);
     const [reason, setReason] = useState('');

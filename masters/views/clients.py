@@ -253,18 +253,48 @@ def search_clients_api(request):
 
     clients_data, blacklisted_phones = _collect_clients(master, only_confirmed=False)
 
+    # Нормализуем запрос:
+    # - search_term — для поиска по имени
+    # - search_digits — только цифры, для поиска по телефону
     search_term = query.lower()
+    search_digits = re.sub(r'\D', '', query)
+
+    # Варианты цифр для поиска в phone_raw (там номер в формате '79991234567'):
+    digits_variants = set()
+    if search_digits:
+        digits_variants.add(search_digits)
+
+        # Если начинается с 8 — добавим вариант с 7 (старый формат)
+        if search_digits.startswith('8'):
+            digits_variants.add('7' + search_digits[1:])
+
+        # Если 10 цифр (без ведущей 7/8) — добавим 7 в начало
+        if len(search_digits) == 10:
+            digits_variants.add('7' + search_digits)
+
+        # Если 11 цифр, начинается с 8 — заменим 8 на 7
+        if len(search_digits) == 11 and search_digits.startswith('8'):
+            digits_variants.add('7' + search_digits[1:])
+
     results = []
 
     for client_key, data in clients_data.items():
         names_list = sorted(data['names'])
         all_names_str = ' '.join(names_list).lower()
         phone_raw = data['phone_raw']
-        phone_search = phone_raw.replace(phone_raw[0], '', 1) if phone_raw else ''
 
-        if (search_term in all_names_str
-                or search_term in phone_raw
-                or search_term in phone_search):
+        # Проверяем по имени
+        name_match = search_term in all_names_str
+
+        # Проверяем по телефону: хотя бы один из вариантов цифр должен быть в phone_raw
+        phone_match = False
+        if search_digits:
+            for variant in digits_variants:
+                if variant and variant in phone_raw:
+                    phone_match = True
+                    break
+
+        if name_match or phone_match:
             results.append(_serialize_client(client_key, data, blacklisted_phones))
 
     results.sort(key=lambda x: x['total_visits'], reverse=True)

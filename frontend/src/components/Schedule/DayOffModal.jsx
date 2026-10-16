@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import useModal from '../../hooks/useModal';
 import { addDayOff } from '../../api/schedule';
 import styles from './DayOffModal.module.css';
+import useBodyLock from '../../hooks/useBodyLock';
 
 export default function DayOffModal({ onClose, onSaved }) {
+    useBodyLock();
     const [date, setDate] = useState('');
     const [reason, setReason] = useState('');
     const [saving, setSaving] = useState(false);

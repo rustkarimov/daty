@@ -3,6 +3,7 @@ import { loadMasterCategories, loadAvailableDates, createMultipleBookings } from
 import { phoneMask } from '../../../utils/phoneMask';
 import shared from './BookingModalShared.module.css';
 import useModal from '../../../hooks/useModal';
+import useBodyLock from '../../../hooks/useBodyLock'
 
 const MONTH_NAMES = [
     'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
@@ -27,6 +28,7 @@ export default function AddBookingModal({
     onCreated,
     allowCreateAnother = true,   // ← новый проп
 }) {
+    useBodyLock();
     const [categories, setCategories] = useState([]);
     const [uncategorized, setUncategorized] = useState([]);
     const [selectedServices, setSelectedServices] = useState([]);
