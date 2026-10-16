@@ -1,31 +1,43 @@
+"""
+Админка приложения masters.
+"""
 from django.contrib import admin
-from django import forms
-from django.utils.text import slugify
-from .models import Master, Service, Schedule, DayOff, Booking, PhoneVerification, CustomUser, SupportMessage, CancelledBooking
-
 from django.contrib.auth.admin import UserAdmin
 
-from django.urls import reverse
-from django.utils.html import format_html
+from .models import (
+    CustomUser,
+    Master,
+    Service,
+    Schedule,
+    DayOff,
+    Booking,
+    PhoneVerification,
+    Notification,
+    CancelledBooking,
+)
+
+# Импортируем регистрацию чата поддержки
+from . import admin_support  # noqa: F401
 
 
+# ============================================================
+# ПОЛЬЗОВАТЕЛИ
+# ============================================================
 
-from django.contrib.admin import AdminSite
-from django.utils.safestring import mark_safe
-
-
-# Кастомная админка для CustomUser
+@admin.register(CustomUser)
 class CustomUserAdmin(UserAdmin):
     list_display = ('phone', 'first_name', 'last_name', 'is_staff')
     search_fields = ('phone', 'first_name', 'last_name')
     ordering = ('phone',)
-    
+
     fieldsets = (
         (None, {'fields': ('phone', 'password')}),
         ('Personal info', {'fields': ('first_name', 'last_name')}),
-        ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
+        ('Permissions', {
+            'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')
+        }),
     )
-    
+
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
@@ -33,278 +45,68 @@ class CustomUserAdmin(UserAdmin):
         }),
     )
 
-# Регистрируем кастомную модель пользователя
-admin.site.register(CustomUser, CustomUserAdmin)
 
-# Форма для мастера
-class MasterAdminForm(forms.ModelForm):
-    class Meta:
-        model = Master
-        fields = '__all__'
-        widgets = {
-            'slug': forms.TextInput(attrs={'readonly': 'readonly'})
-        }
-    
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['slug'].required = False
+# ============================================================
+# МАСТЕРА
+# ============================================================
 
-# Инлайн для мастера (если нужно привязать к пользователю)
-class MasterInline(admin.StackedInline):
-    model = Master
-    can_delete = False
-    verbose_name_plural = 'Профиль мастера'
-    fields = ['phone', 'first_name', 'last_name', 'bio', 'login', 'encryption_key']
-    readonly_fields = ['encryption_key']
-    extra = 0
-    max_num = 1
-
-# Админка мастера
 @admin.register(Master)
 class MasterAdmin(admin.ModelAdmin):
-    list_display = ['full_name', 'phone', 'public_slug', 'created_at']  # замени slug на public_slug
+    list_display = ['full_name', 'phone', 'public_slug', 'created_at']
     list_filter = ['created_at']
-    search_fields = ['user__phone', 'phone', 'first_name', 'last_name', 'login']  # добавил login
+    search_fields = ['user__phone', 'phone', 'first_name', 'last_name', 'login']
     readonly_fields = ['encryption_key', 'created_at', 'updated_at']
-    fields = ['user', 'phone', 'first_name', 'last_name', 'bio', 'login', 'encryption_key', 'created_at', 'updated_at']
-    
+    fields = [
+        'user', 'phone', 'first_name', 'last_name', 'bio', 'login',
+        'encryption_key', 'created_at', 'updated_at',
+    ]
+
     def full_name(self, obj):
         return obj.__str__()
     full_name.short_description = "Имя мастера"
-    
+
     def public_slug(self, obj):
         return obj.public_slug
     public_slug.short_description = "Ссылка"
 
-# Админка услуг
+
+# ============================================================
+# УСЛУГИ
+# ============================================================
+
 @admin.register(Service)
 class ServiceAdmin(admin.ModelAdmin):
     list_display = ['name', 'master', 'duration', 'price', 'is_active']
     list_filter = ['master', 'is_active']
     search_fields = ['name', 'master__first_name', 'master__last_name']
 
-# Админка расписания
+
+# ============================================================
+# РАСПИСАНИЕ
+# ============================================================
+
 @admin.register(Schedule)
 class ScheduleAdmin(admin.ModelAdmin):
     list_display = ['master', 'day_of_week', 'start_time', 'end_time']
     list_filter = ['master']
 
-# Админка выходных дней
+
 @admin.register(DayOff)
 class DayOffAdmin(admin.ModelAdmin):
     list_display = ['master', 'date', 'reason']
     list_filter = ['master', 'date']
 
-# Админка записей
+
+# ============================================================
+# ЗАПИСИ
+# ============================================================
+
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
     list_display = ['client_name', 'master', 'service', 'date', 'time', 'status']
     list_filter = ['master', 'status', 'date']
     search_fields = ['client_name', 'master__first_name', 'master__last_name']
     readonly_fields = ['encrypted_phone']
-
-# Админка кодов подтверждения
-@admin.register(PhoneVerification)
-class PhoneVerificationAdmin(admin.ModelAdmin):
-    list_display = ['phone', 'code', 'created_at', 'is_used']
-    list_filter = ['is_used', 'created_at']
-    search_fields = ['phone', 'code']
-    readonly_fields = ['created_at']
-    
-    
-    
-# admin.py
-from django.contrib import admin
-from .models import Notification, Master
-
-from django.contrib import admin
-from .models import Notification, Master
-
-@admin.register(Notification)
-class NotificationAdmin(admin.ModelAdmin):
-    list_display = ['master', 'type', 'title', 'is_read', 'created_at']
-    list_filter = ['type', 'is_read', 'created_at']
-    search_fields = ['title', 'message', 'master__phone']
-    actions = ['send_to_all_masters', 'send_to_selected_masters']
-    
-    def send_to_all_masters(self, request, queryset):
-        count = 0
-        for master in Master.objects.all():
-            for notification in queryset:
-                Notification.objects.create(
-                    master=master,
-                    type=notification.type,
-                    title=notification.title,
-                    message=notification.message
-                )
-                count += 1
-        self.message_user(request, f'✅ Уведомления отправлены всем мастерам ({count})')
-    send_to_all_masters.short_description = '📢 Отправить ВСЕМ мастерам'
-    
-    def send_to_selected_masters(self, request, queryset):
-        # Получаем выбранных мастеров из POST
-        master_ids = request.POST.getlist('_selected_action')
-        masters = Master.objects.filter(id__in=master_ids)
-        count = 0
-        for master in masters:
-            for notification in queryset:
-                Notification.objects.create(
-                    master=master,
-                    type=notification.type,
-                    title=notification.title,
-                    message=notification.message
-                )
-                count += 1
-        self.message_user(request, f'✅ Уведомления отправлены выбранным мастерам ({count})')
-    send_to_selected_masters.short_description = '📢 Отправить ВЫБРАННЫМ мастерам'
-
-
-from django.contrib import admin
-from django.urls import path
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from django.template.response import TemplateResponse
-from django.http import JsonResponse  # ← ДОБАВИТЬ ЭТУ СТРОКУ
-from .models import SupportMessage, Master
-
-def get_unread_count(request):
-    unread_count = SupportMessage.objects.filter(direction='user', is_read=False).count()
-    return JsonResponse({'unread_count': unread_count})
-
-# В get_admin_urls() добавьте:
-path('support-chat/unread-count/', admin.site.admin_view(get_unread_count), name='support-chat-unread'),
-
-
-# Кастомное представление для чата поддержки
-def support_chat_view(request):
-    # Очищаем все сообщения Django
-    if hasattr(request, '_messages'):
-        del request._messages
-    
-    masters = Master.objects.all()
-    
-    # Собираем данные для каждого мастера
-    masters_data = []
-    for master in masters:
-        last_msg = SupportMessage.objects.filter(master=master).order_by('-created_at').first()
-        unread_count = SupportMessage.objects.filter(
-            master=master, direction='user', is_read=False
-        ).count()
-        
-        masters_data.append({
-            'id': master.id,
-            'name': master.first_name or master.user.phone,
-            'last_name': master.last_name,
-            'phone': master.user.phone,
-            'last_message': last_msg.message[:50] if last_msg else None,
-            'last_message_time': last_msg.created_at if last_msg else None,
-            'unread_count': unread_count,
-        })
-    
-    # Сортируем
-    masters_data.sort(key=lambda x: (-x['unread_count'], -(x['last_message_time'].timestamp() if x['last_message_time'] else 0)))
-    
-    selected_master_id = request.GET.get('master_id')
-    selected_master = None
-    messages_list = []
-    
-    if selected_master_id:
-        selected_master = get_object_or_404(Master, id=selected_master_id)
-        messages_list = SupportMessage.objects.filter(master=selected_master).order_by('created_at')
-    
-    if request.method == 'POST' and selected_master:
-        reply_text = request.POST.get('reply_text', '').strip()
-        if reply_text:
-            SupportMessage.objects.create(
-                master=selected_master,
-                direction='admin',
-                message=reply_text.strip(),
-                is_read=False
-            )
-            # messages.success удалена
-            return redirect(f'/admin/support-chat/?master_id={selected_master.id}')
-    
-    context = {
-        'masters_data': masters_data,
-        'selected_master': selected_master,
-        'messages': messages_list,
-        'title': 'Чат поддержки',
-    }
-    return TemplateResponse(request, 'admin/support_chat.html', context)
-
-
-def get_messages_api(request):
-    """API для получения сообщений чата (без перезагрузки страницы)"""
-    master_id = request.GET.get('master_id')
-    if not master_id:
-        return JsonResponse({'success': False, 'error': 'master_id required'})
-    
-    master = get_object_or_404(Master, id=master_id)
-    messages = SupportMessage.objects.filter(master=master).order_by('created_at')
-    
-    data = []
-    for msg in messages:
-        data.append({
-            'direction': msg.direction,
-            'message': msg.message,
-            'created_at': msg.created_at.strftime('%d.%m.%Y %H:%M'),
-            'is_read': msg.is_read,
-        })
-    
-    return JsonResponse({'success': True, 'messages': data})
-
-
-def get_masters_data_api(request):
-    """API для получения отсортированного списка мастеров с непрочитанными"""
-    masters = Master.objects.all()
-    
-    masters_data = []
-    for master in masters:
-        last_msg = SupportMessage.objects.filter(master=master).order_by('-created_at').first()
-        unread_count = SupportMessage.objects.filter(
-            master=master, direction='user', is_read=False
-        ).count()
-        
-        masters_data.append({
-            'id': master.id,
-            'name': master.first_name or master.user.phone,
-            'phone': master.user.phone,
-            'last_message': last_msg.message[:50] if last_msg else None,
-            'last_message_time': last_msg.created_at if last_msg else None,
-            'unread_count': unread_count,
-        })
-    
-    # Сортировка: сначала по наличию непрочитанных (unread_count > 0), затем по времени последнего сообщения (сначала новые)
-    masters_data.sort(key=lambda x: (
-        -x['unread_count'],  # сначала с непрочитанными
-        -(x['last_message_time'].timestamp() if x['last_message_time'] else 0)  # затем по свежести
-    ))
-    
-    return JsonResponse({'success': True, 'masters': masters_data})
-
-def mark_messages_read(request):
-    """Отметить сообщения как прочитанные (когда админ открывает чат)"""
-    master_id = request.GET.get('master_id')
-    if master_id:
-        SupportMessage.objects.filter(master_id=master_id, direction='user', is_read=False).update(is_read=True)
-        return JsonResponse({'success': True})
-    return JsonResponse({'success': False})
-
-
-# Добавляем URL в админку
-admin_urls = admin.site.get_urls()
-
-def get_admin_urls():
-    return [
-        path('support-chat/', admin.site.admin_view(support_chat_view), name='support-chat'),
-        path('support-chat/messages/', admin.site.admin_view(get_messages_api), name='support-chat-messages'),
-        path('support-chat/masters-data/', admin.site.admin_view(get_masters_data_api), name='support-chat-masters'),
-        path('support-chat/mark-read/', admin.site.admin_view(mark_messages_read), name='support-chat-mark-read'),
-        path('support-chat/unread-count/', admin.site.admin_view(get_unread_count), name='support-chat-unread'),  # ← добавить
-    ] + admin_urls
-
-admin.site.get_urls = get_admin_urls
-
 
 
 @admin.register(CancelledBooking)
@@ -315,29 +117,40 @@ class CancelledBookingAdmin(admin.ModelAdmin):
     readonly_fields = ['cancelled_at', 'encrypted_phone']
     date_hierarchy = 'cancelled_at'
 
-class CustomAdminSite(AdminSite):
-    def get_app_list(self, request):
-        app_list = super().get_app_list(request)
-        
-        unread_count = SupportMessage.objects.filter(direction='user', is_read=False).count()
-        
-        name = 'Чат с мастерами'
-        if unread_count > 0:
-            name = mark_safe(f'Чат с мастерами <span style="background:#dc3545;color:white;border-radius:50%;padding:1px 8px;font-size:10px;margin-left:6px;display:inline-block;line-height:1.6;font-weight:bold;">{unread_count}</span>')
-        
-        support_app = {
-            'name': 'Поддержка',
-            'app_label': 'support',
-            'models': [{
-                'name': name,
-                'object_name': 'SupportChat',
-                'admin_url': '/admin/support-chat/',
-                'view_only': True,
-            }]
-        }
-        
-        app_list.insert(0, support_app)
-        return app_list
 
-# ⬇️ ЭТО ПРОПУЩЕНО! Добавьте эту строку:
-admin.site.__class__ = CustomAdminSite
+# ============================================================
+# ВЕРИФИКАЦИЯ
+# ============================================================
+
+@admin.register(PhoneVerification)
+class PhoneVerificationAdmin(admin.ModelAdmin):
+    list_display = ['phone', 'code', 'created_at', 'is_used']
+    list_filter = ['is_used', 'created_at']
+    search_fields = ['phone', 'code']
+    readonly_fields = ['created_at']
+
+
+# ============================================================
+# УВЕДОМЛЕНИЯ
+# ============================================================
+
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = ['master', 'type', 'title', 'is_read', 'created_at']
+    list_filter = ['type', 'is_read', 'created_at']
+    search_fields = ['title', 'message', 'master__phone']
+    actions = ['send_to_all_masters']
+
+    def send_to_all_masters(self, request, queryset):
+        count = 0
+        for master in Master.objects.all():
+            for notification in queryset:
+                Notification.objects.create(
+                    master=master,
+                    type=notification.type,
+                    title=notification.title,
+                    message=notification.message,
+                )
+                count += 1
+        self.message_user(request, f'✅ Уведомления отправлены всем мастерам ({count})')
+    send_to_all_masters.short_description = '📢 Отправить ВСЕМ мастерам'
