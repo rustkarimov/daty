@@ -5,22 +5,8 @@ import { loadBookingForEdit, updateBooking } from '../../../api/day';
 import { phoneMask } from '../../../utils/phoneMask';
 import useModal from '../../../hooks/useModal';
 import useBodyLock from '../../../hooks/useBodyLock';
+import { formatDate } from '../../../utils/date';
 
-const MONTH_NAMES = [
-    'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
-    'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'
-];
-const WEEKDAY_NAMES = [
-    'воскресенье', 'понедельник', 'вторник', 'среда',
-    'четверг', 'пятница', 'суббота'
-];
-
-function formatDate(dateStr) {
-    if (!dateStr) return '';
-    const [y, m, d] = dateStr.split('-').map(Number);
-    const dObj = new Date(y, m - 1, d);
-    return `${dObj.getDate()} ${MONTH_NAMES[dObj.getMonth()]} (${WEEKDAY_NAMES[dObj.getDay()]})`;
-}
 
 export default function EditBookingModal({ bookingId, masterSlug, onClose, onSaved }) {
     useBodyLock();

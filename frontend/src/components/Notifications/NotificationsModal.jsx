@@ -28,46 +28,6 @@ const TYPE_BADGE_CLASSES = {
     'warning': 'badgeWarning',
 };
 
-const MONTH_NAMES = [
-    'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
-    'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'
-];
-const WEEKDAY_NAMES = [
-    'воскресенье', 'понедельник', 'вторник', 'среда',
-    'четверг', 'пятница', 'суббота'
-];
-
-/**
- * Форматирует ISO-дату `YYYY-MM-DD` в «13 октября (вторник)».
- */
-function formatDate(input) {
-    if (!input) return '';
-
-    let d = null;
-
-    // ISO: YYYY-MM-DD
-    if (/^\d{4}-\d{2}-\d{2}$/.test(input)) {
-        const [y, m, day] = input.split('-').map(Number);
-        d = new Date(y, m - 1, day);
-    }
-    // Русский: DD.MM.YYYY
-    else if (/^\d{2}\.\d{2}\.\d{4}$/.test(input)) {
-        const [day, m, y] = input.split('.').map(Number);
-        d = new Date(y, m - 1, day);
-    }
-    // Что-то другое — вернуть как есть
-    else {
-        return input;
-    }
-
-    // Проверяем, что дата валидна
-    if (isNaN(d.getTime())) {
-        return input;
-    }
-
-    return `${d.getDate()} ${MONTH_NAMES[d.getMonth()]} (${WEEKDAY_NAMES[d.getDay()]})`;
-}
-
 const OFFSET_STEP = 10;
 
 export default function NotificationsModal() {
@@ -216,12 +176,7 @@ export default function NotificationsModal() {
                 const rawDate = parts[0] || '';
                 const time = parts[1] || '';
 
-                let dateFormatted = rawDate;
-                if (/^\d{4}-\d{2}-\d{2}$/.test(rawDate)) {
-                    dateFormatted = formatDate(rawDate);
-                } else if (/^\d{2}\.\d{2}\.\d{4}$/.test(rawDate)) {
-                    dateFormatted = formatDate(rawDate);
-                }
+                const dateFormatted = formatDate(rawDate);
 
                 result.push(
                     <div key={`date-${i}`} className={styles.messageRow}>
@@ -358,8 +313,8 @@ export default function NotificationsModal() {
                                                 <strong>{n.title}</strong>
                                             </div>
                                             {openIds.has(n.id) && (
-                                                <div className={styles.itemMessage}>
-                                                    {renderMessage(n.message)}
+                                                <div className={styles.itemMessage} style={{ whiteSpace: 'pre-line' }}>
+                                                    {n.message}
                                                 </div>
                                             )}
                                         </div>
