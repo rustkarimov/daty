@@ -3,6 +3,7 @@ import useModal from '../../hooks/useModal';
 import { addToBlacklist } from '../../api/clients';
 import styles from './BlacklistModal.module.css';
 import useBodyLock from '../../hooks/useBodyLock';
+import { phoneMask } from '../../utils/phoneMask';
 
 export default function BlacklistModal({
     onClose,
@@ -19,24 +20,6 @@ export default function BlacklistModal({
 
     function handleBackdropClick(e) {
         if (e.target === e.currentTarget) onClose();
-    }
-
-    // Простая маска телефона
-    function handlePhoneChange(e) {
-        let value = e.target.value.replace(/\D/g, '');
-        if (value.length === 0) {
-            setPhone('');
-            return;
-        }
-        if (value[0] !== '7' && value[0] !== '8') value = '7' + value;
-        if (value[0] === '8') value = '7' + value.slice(1);
-        if (value.length > 11) value = value.slice(0, 11);
-        let formatted = value[0];
-        if (value.length > 1) formatted += ' ' + value.slice(1, 4);
-        if (value.length > 4) formatted += ' ' + value.slice(4, 7);
-        if (value.length > 7) formatted += '-' + value.slice(7, 9);
-        if (value.length > 9) formatted += '-' + value.slice(9, 11);
-        setPhone(formatted);
     }
 
     async function handleSave(e) {
@@ -110,7 +93,7 @@ export default function BlacklistModal({
                                 type="tel"
                                 className={styles.formInput}
                                 value={phone}
-                                onChange={handlePhoneChange}
+                                onChange={e => setPhone(phoneMask(e.target.value))}
                                 placeholder="7 999 123-45-67"
                             />
                             <small className={styles.formHint}>
