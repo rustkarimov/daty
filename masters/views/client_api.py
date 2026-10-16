@@ -196,14 +196,19 @@ def api_client_cancel_booking(request, identifier, token):
         original_booking_id=original_booking_id,
     )
     
-    # 2. Уведомление мастеру (без content_object — объекта уже не будет)
+    # 2. Уведомление мастеру 
+    # Форматируем дату: «18 октября»
+    months_ru = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+                'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']
+    date_human = f"{booking_date.day} {months_ru[booking_date.month - 1]}"
+
     Notification.objects.create(
         master=master,
         type='cancelled_booking',
         title=client_name,
         message=(
-            f"📅 {booking_date.strftime('%Y-%m-%d')}\n"
-            f"⏰ {booking_time.strftime('%H:%M')}|{service_name}"
+            f"{date_human} в {booking_time.strftime('%H:%M')}\n"
+            f"{service_name}"
         ),
     )
     
@@ -298,14 +303,21 @@ def api_client_update_booking(request, identifier, token):
     if booking.service.category:
         service_name = f"{booking.service.category.name}: {service_name}"
 
+    # Форматируем даты: «18 октября»
+    # Форматируем даты: «18 октября»
+    months_ru = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+                'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']
+    old_date_human = f"{old_date.day} {months_ru[old_date.month - 1]}"
+    new_date_human = f"{new_date.day} {months_ru[new_date.month - 1]}"
+
     Notification.objects.create(
         master=booking.master,
         type='changed_booking',
         title=f'{booking.client_name}',
         message=(
-            f"📅 Было: {old_date.strftime('%Y-%m-%d')} {old_time.strftime('%H:%M')}\n"
-            f"📅 Стало: {new_date.strftime('%Y-%m-%d')} {new_time.strftime('%H:%M')}\n"
-            f"⏰ {new_time.strftime('%H:%M')}|{service_name}"
+            f"Было: {old_date_human} в {old_time.strftime('%H:%M')}\n"
+            f"Стало: {new_date_human} в {new_time.strftime('%H:%M')}\n"
+            f"{service_name}"
         ),
         content_object=booking
     )

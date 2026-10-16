@@ -354,6 +354,38 @@ document.addEventListener('DOMContentLoaded', function() {
 <script src="{% static 'js/react/app.js' %}" type="module"></script>
 
 
+
+<script>
+// Измеряем высоту нижнего меню и пишем в CSS-переменную
+(function() {
+    function updateMobileNavHeight() {
+        const nav = document.querySelector('.mobile-bottom-nav');
+        if (!nav) return;
+
+        const styles = window.getComputedStyle(nav);
+        if (styles.display === 'none') {
+            document.documentElement.style.setProperty('--mobile-nav-height', '0px');
+            return;
+        }
+
+        const h = nav.offsetHeight;
+        document.documentElement.style.setProperty('--mobile-nav-height', `${h}px`);
+    }
+
+    if (document.readyState === 'complete') {
+        updateMobileNavHeight();
+    } else {
+        window.addEventListener('load', updateMobileNavHeight);
+    }
+
+    window.addEventListener('resize', updateMobileNavHeight);
+    window.addEventListener('orientationchange', () => {
+        setTimeout(updateMobileNavHeight, 100);
+    });
+})();
+</script>
+
+
 </body>
 </html>
 

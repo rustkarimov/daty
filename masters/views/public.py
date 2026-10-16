@@ -324,19 +324,22 @@ def create_multiple_bookings(request, identifier):
         
         if created_by == 'client':
             from ..models import Notification
+            months_ru = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+             'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']
+            date_human = f"{booking_date.day} {months_ru[booking_date.month - 1]}"
+
             notification_lines = []
-            notification_lines.append(f"{booking_date.strftime('%Y-%m-%d')}")
+            notification_lines.append(date_human)
 
             time_offset = 0
             for i, service in enumerate(services):
                 booking_time = (datetime.combine(date.today(), start_time) + timedelta(minutes=time_offset)).strftime('%H:%M')
-                # Формируем название с категорией
                 service_name = service.name
                 if service.category:
                     service_name = f"{service.category.name}: {service_name}"
-                notification_lines.append(f"{booking_time}|{service_name}")
+                notification_lines.append(f"{booking_time} — {service_name}")
                 time_offset += service.duration
-            
+
             notification_message = "\n".join(notification_lines)
             
 
