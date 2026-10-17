@@ -100,7 +100,7 @@ class Master(models.Model):
         help_text="Для расчёта времени на дорогу",
     )
     away_travel_time_default = models.IntegerField(
-        default=60,
+        default=0,
         verbose_name="Время на дорогу по умолчанию (мин)",
     )
     away_buffer_before = models.IntegerField(
@@ -464,19 +464,10 @@ class Booking(models.Model):
 
     @property
     def total_duration_minutes(self):
-        """
-        Полная длительность с учётом всех буферов.
-        Для домашней записи — просто duration.
-        Для выездной — duration + travel + buffer_before + buffer_after.
-        """
+
         base = self.service.duration if self.service else 0
         if self.service_mode == 'away':
-            return (
-                base
-                + (self.travel_time_minutes or 0)
-                + (self.buffer_before_minutes or 0)
-                + (self.buffer_after_minutes or 0)
-            )
+            return base + (self.travel_time_minutes or 0)
         return base
 
     def save(self, *args, **kwargs):
