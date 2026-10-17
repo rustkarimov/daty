@@ -1,0 +1,34 @@
+.slotCard {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid var(--gray-200);
+    border-radius: 12px;
+    background: white;
+    padding: 10px 8px;
+    text-align: center;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--gray-700);
+}
+
+.slotCard:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.slotCard.selected {
+    border: 2px solid var(--primary);
+    background: var(--primary-light);
+}
+
+@media (max-width: 768px) {
+    .slotCard {
+        padding: 6px 4px;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        min-height: 34px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}

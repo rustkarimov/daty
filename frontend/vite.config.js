@@ -19,6 +19,7 @@ export default defineConfig({
 
             input: {
                 app: path.resolve(__dirname, 'src/entries/app.jsx'),
+                'public-app': path.resolve(__dirname, 'src/entries/public_app.jsx'),
             },
             output: {
                 entryFileNames: '[name].js',
