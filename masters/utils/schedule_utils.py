@@ -16,6 +16,7 @@ from ..models import (
     ExtraWorkingDay,
     AwaySchedule,
     AwayExtraDay,
+    AwayDayOff,
 )
 
 
@@ -87,10 +88,11 @@ class ScheduleCalculator:
     def get_away_working_hours_for_date(self, target_date: date):
         """
         Рабочие часы мастера в выездном режиме.
-        Приоритет: DayOff > AwayExtraDay > AwaySchedule.
+        Приоритет: AwayDayOff > AwayExtraDay > AwaySchedule.
         """
-        if DayOff.objects.filter(master=self.master, date=target_date).exists():
+        if AwayDayOff.objects.filter(master=self.master, date=target_date).exists():
             return None
+        ...
 
         extra_day = AwayExtraDay.objects.filter(
             master=self.master, date=target_date
@@ -182,10 +184,11 @@ class ScheduleCalculator:
         start_minutes = time_to_minutes(start_work)
         end_minutes = time_to_minutes(end_work)
 
-        # ---- Для выезда: добавляем буферы к длительности ----
+        # ---- Для выезда: добавляем время на дорогу (туда и обратно) ----
         full_duration = service_duration
         if self.is_away_mode():
-            full_duration = service_duration + (self.master.away_travel_time_default or 0)
+            travel = self.master.away_travel_time_default or 0
+            full_duration = service_duration + travel + travel
 
         # Если передан current_time (для сегодняшнего дня) — начинаем с текущего
         if current_time:

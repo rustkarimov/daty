@@ -363,6 +363,23 @@ class AwayExtraDay(models.Model):
         return f"{self.date}: {self.start_time} - {self.end_time}"
 
 
+class AwayDayOff(models.Model):
+    """Выходной день для выездного режима."""
+    master = models.ForeignKey(
+        Master, on_delete=models.CASCADE, related_name='away_days_off'
+    )
+    date = models.DateField(verbose_name="Дата")
+    reason = models.CharField(max_length=200, verbose_name="Причина", blank=True)
+
+    class Meta:
+        verbose_name = "Выходной день (выезд)"
+        verbose_name_plural = "Выходные дни (выезд)"
+        unique_together = ['master', 'date']
+
+    def __str__(self):
+        return f"{self.date}: {self.reason or 'Выходной'}"
+
+
 # ============================================================
 # ЗАПИСИ
 # ============================================================
@@ -436,9 +453,16 @@ class Booking(models.Model):
     client_address = models.CharField(
         max_length=255, blank=True, verbose_name="Адрес клиента"
     )
-    travel_time_minutes = models.IntegerField(
-        default=0, verbose_name="Время на дорогу (мин)"
+    travel_time_before = models.IntegerField(
+        default=0, verbose_name="Время на дорогу до клиента (мин)"
     )
+    travel_time_after = models.IntegerField(
+        default=0, verbose_name="Время на дорогу после клиента (мин)"
+    )
+    duration_extra_minutes = models.IntegerField(
+        default=0, verbose_name="Дополнительные минуты к услуге"
+    )
+    # Буферы не используем в расчётах, оставляем на будущее
     buffer_before_minutes = models.IntegerField(
         default=0, verbose_name="Буфер до (мин)"
     )
@@ -464,11 +488,11 @@ class Booking(models.Model):
 
     @property
     def total_duration_minutes(self):
-
         base = self.service.duration if self.service else 0
+        extra = self.duration_extra_minutes or 0
         if self.service_mode == 'away':
-            return base + (self.travel_time_minutes or 0)
-        return base
+            return base + extra + (self.travel_time_before or 0) + (self.travel_time_after or 0)
+        return base + extra
 
     def save(self, *args, **kwargs):
         if not self.token:

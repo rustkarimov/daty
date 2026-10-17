@@ -91,13 +91,26 @@ def api_profile_update(request):
             master.login = new_login
         elif not new_login:
             master.login = None
-        
+
+        # Режим работы
+        work_mode = data.get('work_mode')
+        if work_mode in ('home', 'away'):
+            master.work_mode = work_mode
+
+        # Время на дорогу по умолчанию (только для away)
+        away_travel_time_default = data.get('away_travel_time_default')
+        if away_travel_time_default is not None:
+            try:
+                master.away_travel_time_default = max(0, int(away_travel_time_default))
+            except (ValueError, TypeError):
+                pass
+
         master.first_name = first_name
         master.last_name = last_name
         master.bio = bio
         master.address = address
         master.save()
-        
+               
         # Обновляем User
         user = request.user
         user.first_name = first_name
@@ -113,6 +126,8 @@ def api_profile_update(request):
                 'bio': master.bio,
                 'address': master.address,
                 'public_slug': master.public_slug,
+                'work_mode': master.work_mode,
+                'away_travel_time_default': master.away_travel_time_default,
             }
         })
         

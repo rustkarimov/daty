@@ -92,15 +92,15 @@ def get_booking_for_edit(request, booking_id):
 @login_required
 @require_http_methods(["POST"])
 def api_update_booking(request, booking_id):
-    """API: обновляет запись (имя, телефон, услугу, дату, время)."""
+    """API: обновляет запись (имя, телефон, услугу, дату, время, away-поля)."""
     try:
         try:
             booking = Booking.objects.get(id=booking_id, master=request.user.master)
         except Booking.DoesNotExist:
             return api_error('Запись не найдена', status=404)
-        
+
         data = json.loads(request.body)
-        
+
         service_id = data.get('service_id')
         client_name = data.get('client_name')
         client_phone = data.get('client_phone')
@@ -108,39 +108,47 @@ def api_update_booking(request, booking_id):
         time_str = data.get('time')
         comment = data.get('comment', '')
         status = data.get('status', 'confirmed')
-        
+
+        # away-поля (могут не прийти — тогда оставляем как есть)
+        client_address = data.get('client_address', booking.client_address)
+        travel_time_before = data.get('travel_time_before', booking.travel_time_before)
+        travel_time_after = data.get('travel_time_after', booking.travel_time_after)
+        duration_extra_minutes = data.get('duration_extra_minutes', booking.duration_extra_minutes)
+
         # Валидация обязательных полей
         if not all([service_id, client_name, client_phone, date_str, time_str]):
             return api_error('Заполните все поля', status=400)
-        
+
         # Валидация телефона
         client_phone_cleaned = re.sub(r'\D', '', client_phone)
         if len(client_phone_cleaned) != 11 or not client_phone_cleaned.startswith('7'):
             return api_error('Неверный формат телефона', status=400)
-        
+
         # Проверка услуги
         try:
             service = Service.objects.get(id=service_id, master=request.user.master)
         except Service.DoesNotExist:
             return api_error('Услуга не найдена', status=404)
-        
+
         target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
         target_time = datetime.strptime(time_str, '%H:%M').time()
-        
+
         # Проверка свободного времени
         calculator = ScheduleCalculator(request.user.master)
         slots = calculator.generate_time_slots(
-            target_date, 
+            target_date,
             service.duration,
             exclude_booking_id=booking.id,
             original_booking_id=booking.id
         )
-        
+
         is_available = any(slot['start'] == time_str for slot in slots)
-        
+
+        # Если время изменилось и недоступно — предупреждение (не блокируем)
+        warning = None
         if not is_available and (booking.date != target_date or booking.time != target_time):
-            return api_error('Это время уже занято', status=409)
-        
+            warning = 'Выбранное время пересекается с другой записью. Свяжитесь с клиентом, чтобы изменить время.'
+
         # Шифрование телефона
         key = request.user.master.get_encryption_key()
         if key:
@@ -148,7 +156,7 @@ def api_update_booking(request, booking_id):
             encrypted_phone = f.encrypt(client_phone_cleaned.encode())
         else:
             encrypted_phone = client_phone_cleaned.encode()
-        
+
         # Обновление записи
         booking.service = service
         booking.client_name = client_name
@@ -157,10 +165,18 @@ def api_update_booking(request, booking_id):
         booking.date = target_date
         booking.time = target_time
         booking.status = status
+        booking.client_address = client_address or ''
+        booking.travel_time_before = int(travel_time_before or 0)
+        booking.travel_time_after = int(travel_time_after or 0)
+        booking.duration_extra_minutes = int(duration_extra_minutes or 0)
         booking.save()
-        
-        return api_success({'message': 'Запись обновлена'})
-        
+
+        response_data = {'message': 'Запись обновлена'}
+        if warning:
+            response_data['warning'] = warning
+
+        return api_success(response_data)
+
     except json.JSONDecodeError:
         return api_error('Неверный формат данных', status=400)
     except ValueError as e:

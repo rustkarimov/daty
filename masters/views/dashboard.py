@@ -11,7 +11,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 from cryptography.fernet import Fernet, InvalidToken
 
-from ..models import Booking, Schedule, DayOff, ExtraWorkingDay, Master, Service, CustomUser
+from ..models import Booking, Schedule, DayOff, ExtraWorkingDay, AwaySchedule, AwayExtraDay, AwayDayOff, Master, Service, CustomUser
 from ..utils.response_utils import api_success, api_error
 
 
@@ -81,43 +81,66 @@ def dashboard(request):
 
 @login_required
 def get_calendar_schedule(request):
-    """API: возвращает расписание мастера для календаря (с учётом доп. дней)."""
+    """API: возвращает расписание мастера для календаря (с учётом режима)."""
     master = request.user.master
+    is_away = master.work_mode == 'away'
     
-    # Получаем регулярное расписание
-    schedules = Schedule.objects.filter(master=master)
-    schedules_data = {}
-    for schedule in schedules:
-        schedules_data[schedule.day_of_week] = {
-            'start': schedule.start_time.strftime('%H:%M'),
-            'end': schedule.end_time.strftime('%H:%M'),
-            'breaks': [{
-                'start': b.start_time.strftime('%H:%M'),
-                'end': b.end_time.strftime('%H:%M')
-            } for b in schedule.breaks.all()]
-        }
-    
-    # УБИРАЕМ ОГРАНИЧЕНИЕ date__gte — показываем ВСЕ выходные
-    days_off = DayOff.objects.filter(master=master).values_list('date', flat=True)
-    days_off_list = [d.strftime('%Y-%m-%d') for d in days_off]
-    
-    # УБИРАЕМ ОГРАНИЧЕНИЕ date__gte — показываем ВСЕ дополнительные дни
-    extra_days = ExtraWorkingDay.objects.filter(master=master)
-    extra_days_data = {}
-    for day in extra_days:
-        extra_days_data[day.date.strftime('%Y-%m-%d')] = {
-            'start': day.start_time.strftime('%H:%M'),
-            'end': day.end_time.strftime('%H:%M'),
-            'breaks': [{
-                'start': b.start_time.strftime('%H:%M'),
-                'end': b.end_time.strftime('%H:%M')
-            } for b in day.breaks.all()]
-        }
+    if is_away:
+        # ---- Выездной режим ----
+        schedules = AwaySchedule.objects.filter(master=master, is_working=True)
+        schedules_data = {}
+        for schedule in schedules:
+            schedules_data[schedule.day_of_week] = {
+                'start': schedule.start_time.strftime('%H:%M'),
+                'end': schedule.end_time.strftime('%H:%M'),
+                'breaks': [],  # у AwaySchedule нет перерывов
+            }
+        
+        days_off = AwayDayOff.objects.filter(master=master).values_list('date', flat=True)
+        days_off_list = [d.strftime('%Y-%m-%d') for d in days_off]
+        
+        extra_days = AwayExtraDay.objects.filter(master=master)
+        extra_days_data = {}
+        for day in extra_days:
+            extra_days_data[day.date.strftime('%Y-%m-%d')] = {
+                'start': day.start_time.strftime('%H:%M'),
+                'end': day.end_time.strftime('%H:%M'),
+                'breaks': [],
+            }
+    else:
+        # ---- Домашний режим ----
+        schedules = Schedule.objects.filter(master=master)
+        schedules_data = {}
+        for schedule in schedules:
+            schedules_data[schedule.day_of_week] = {
+                'start': schedule.start_time.strftime('%H:%M'),
+                'end': schedule.end_time.strftime('%H:%M'),
+                'breaks': [{
+                    'start': b.start_time.strftime('%H:%M'),
+                    'end': b.end_time.strftime('%H:%M')
+                } for b in schedule.breaks.all()]
+            }
+        
+        days_off = DayOff.objects.filter(master=master).values_list('date', flat=True)
+        days_off_list = [d.strftime('%Y-%m-%d') for d in days_off]
+        
+        extra_days = ExtraWorkingDay.objects.filter(master=master)
+        extra_days_data = {}
+        for day in extra_days:
+            extra_days_data[day.date.strftime('%Y-%m-%d')] = {
+                'start': day.start_time.strftime('%H:%M'),
+                'end': day.end_time.strftime('%H:%M'),
+                'breaks': [{
+                    'start': b.start_time.strftime('%H:%M'),
+                    'end': b.end_time.strftime('%H:%M')
+                } for b in day.breaks.all()]
+            }
     
     return JsonResponse({
         'schedules': schedules_data,
         'days_off': days_off_list,
-        'extra_days': extra_days_data
+        'extra_days': extra_days_data,
+        'mode': master.work_mode,
     })
 
 
@@ -140,9 +163,10 @@ def get_bookings_api(request):
     # Получаем все подтверждённые записи от сегодняшней даты и позже
     bookings = Booking.objects.filter(
         master=master,
-        status='confirmed',
+        status__in=['confirmed', 'pending'],
         date__gte=today
     ).order_by('date', 'time').select_related('service', 'service__category')
+    
     
     # Фильтруем: если запись на сегодня, но время уже прошло — исключаем
     filtered_bookings = []
@@ -212,6 +236,7 @@ def get_bookings_api(request):
             'service_name': service_name,
             'phone': formatted_phone,
             'confirmed_by_master': booking.confirmed_by_master,
+            'status': booking.status,
         })
     
     return JsonResponse({
@@ -338,9 +363,15 @@ def get_booking_details(request, booking_id):
                 'total_visits': total_visits,
                 'first_visit': first_visit.strftime('%d.%m.%Y') if first_visit else '—',
                 'last_visit': last_visit.strftime('%d.%m.%Y') if last_visit else '—',
-                'visits': visits[:10]
+                'visits': visits[:10],
             },
-            'all_booking_ids': [booking.id]
+            'all_booking_ids': [booking.id],
+            'service_mode': booking.service_mode,
+            'client_address': booking.client_address,
+            'travel_time_before': booking.travel_time_before,
+            'travel_time_after': booking.travel_time_after,
+            'duration_extra_minutes': booking.duration_extra_minutes,
+            'status_raw': booking.status,
         })
         
     except Exception as e:
@@ -353,25 +384,29 @@ def get_booking_details(request, booking_id):
 @login_required
 @require_http_methods(["POST"])
 def api_confirm_booking(request, booking_id):
-    """API: подтверждает запись мастером."""
+    """API: подтверждает запись мастером (pending → confirmed)."""
     try:
         booking = Booking.objects.get(id=booking_id, master=request.user.master)
         booking.confirmed_by_master = True
+        if booking.status == 'pending':
+            booking.status = 'confirmed'
         booking.save()
         return api_success({'message': 'Запись подтверждена'})
     except Booking.DoesNotExist:
         return api_error('Запись не найдена', status=404)
     except Exception as e:
         return api_error('Ошибка подтверждения', status=500)
-
+ 
 
 @login_required
 @require_http_methods(["POST"])
 def api_unconfirm_booking(request, booking_id):
-    """API: снимает подтверждение записи мастером."""
+    """API: снимает подтверждение записи мастером (confirmed → pending для away)."""
     try:
         booking = Booking.objects.get(id=booking_id, master=request.user.master)
         booking.confirmed_by_master = False
+        if booking.service_mode == 'away':
+            booking.status = 'pending'
         booking.save()
         return api_success({'message': 'Подтверждение снято'})
     except Booking.DoesNotExist:

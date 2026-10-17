@@ -214,6 +214,8 @@ def create_booking(request, identifier):
         else:
             encrypted_phone = client_phone_cleaned.encode()
 
+        travel_default = (master.away_travel_time_default or 0) if is_away else 0
+
         booking = Booking.objects.create(
             master=master,
             service=service,
@@ -226,7 +228,8 @@ def create_booking(request, identifier):
             created_by=created_by,
             service_mode='away' if is_away else 'home',
             client_address=client_address if is_away else '',
-            travel_time_minutes=(master.away_travel_time_default or 0) if is_away else 0,
+            travel_time_before=travel_default,
+            travel_time_after=travel_default,
         )
 
         message = 'Предварительная запись оформлена. Ждите подтверждения мастера.' if is_away else 'Запись создана!'
@@ -337,7 +340,10 @@ def create_multiple_bookings(request, identifier):
             else:
                 service_comment = comment
 
-            booking_travel_time = travel_time_default if (is_away and i == 0) else 0
+            # Для away: время на дорогу ставим только на первую услугу (туда)
+            # и на последнюю (обратно). Для промежуточных — 0.
+            travel_before = travel_time_default if (is_away and i == 0) else 0
+            travel_after = travel_time_default if (is_away and i == len(services) - 1) else 0
 
             booking = Booking.objects.create(
                 master=master,
@@ -351,7 +357,8 @@ def create_multiple_bookings(request, identifier):
                 created_by=created_by,
                 service_mode='away' if is_away else 'home',
                 client_address=client_address if is_away else '',
-                travel_time_minutes=booking_travel_time,
+                travel_time_before=travel_before,
+                travel_time_after=travel_after,
             )
             created_bookings.append(booking)
             services_list.append(service.name)
