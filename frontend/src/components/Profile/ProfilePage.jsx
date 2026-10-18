@@ -69,9 +69,7 @@ export default function ProfilePage({ initialData, masterId }) {
 
             if (data.success) {
                 showAlert('Профиль сохранён', 'success');
-                // Обновляем URL, если логин изменился
                 if (data.master?.public_slug) {
-                    // Просто обновляем браузерный title без перезагрузки
                     document.title = `${firstName} ${lastName} - Профиль`;
                 }
             } else {
@@ -185,6 +183,7 @@ export default function ProfilePage({ initialData, masterId }) {
                                 Ваша ссылка: <span className={styles.linkPreview}>{publicUrl}</span>
                             </small>
                         </div>
+
 
                         <div className={styles.formField}>
                             <label className={styles.formLabel}>Адрес</label>

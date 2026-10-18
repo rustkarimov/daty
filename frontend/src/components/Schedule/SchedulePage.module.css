@@ -74,6 +74,50 @@
     background: var(--primary-dark);
 }
 
+/* ---- Блок «Время на дорогу» ---- */
+.travelTimeBlock {
+    padding: 0 4px;
+}
+
+.travelTimeLabel {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--gray-700);
+    margin-bottom: 8px;
+}
+
+.travelTimeRow {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.travelTimeInput {
+    width: 120px;
+    height: 40px;
+    border-radius: 10px;
+    border: 1px solid var(--gray-300);
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    background: white;
+    box-sizing: border-box;
+}
+
+.travelTimeInput:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.travelTimeHint {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--gray-500);
+    margin-top: 4px;
+}
+
+
 /* ============================================================ */
 /* ==================== АДАПТИВ =============================== */
 /* ============================================================ */
@@ -121,5 +165,13 @@
         font-size: 0.7rem;
         border-radius: 16px;
         height: 30px;
+    }
+
+    .travelTimeRow {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .travelTimeInput {
+        width: 100%;
     }
 }

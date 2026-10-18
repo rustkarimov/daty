@@ -50,12 +50,13 @@ function PagePortals() {
         <>
             {dashboardEl && createPortal(
                 <DashboardPage
-                    masterSlug={dashboardEl.dataset.masterSlug || ''}
-                    masterMaxLink={dashboardEl.dataset.masterMaxLink || ''}
-                    totalBookings={dashboardEl.dataset.totalBookings || '0'}
-                    totalServices={dashboardEl.dataset.totalServices || '0'}
-                    totalClients={dashboardEl.dataset.totalClients || '0'}
-                    publicLink={dashboardEl.dataset.publicLink || ''}
+                    masterSlug={dashboardEl.dataset.masterSlug}
+                    masterMaxLink={dashboardEl.dataset.masterMaxLink}
+                    masterMode={dashboardEl.dataset.masterMode || 'home'}  // ← добавить
+                    totalBookings={parseInt(dashboardEl.dataset.totalBookings || '0', 10)}
+                    totalServices={parseInt(dashboardEl.dataset.totalServices || '0', 10)}
+                    totalClients={parseInt(dashboardEl.dataset.totalClients || '0', 10)}
+                    publicLink={dashboardEl.dataset.publicLink}
                 />,
                 dashboardEl
             )}
@@ -66,7 +67,10 @@ function PagePortals() {
             )}
 
             {scheduleEl && createPortal(
-                <SchedulePage />,
+                <SchedulePage
+                    masterMode={scheduleEl.dataset.masterMode || 'home'}
+                    initialAwayTravelTime={parseInt(scheduleEl.dataset.awayTravelTime || '0', 10)}
+                />,
                 scheduleEl
             )}
 

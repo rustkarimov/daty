@@ -27,6 +27,9 @@ export default function BookingDetailsModal({ bookingId, onClose }) {
         }
     }
 
+    const isAway = data?.service_mode === 'away';
+    const isPending = data?.status_raw === 'pending';
+
     return (
         <div className={styles.backdrop} onClick={handleBackdropClick}>
             <div className={styles.modal} onClick={e => e.stopPropagation()}>
@@ -53,6 +56,24 @@ export default function BookingDetailsModal({ bookingId, onClose }) {
                         <p className="text-danger">Не удалось загрузить данные</p>
                     ) : (
                         <>
+                            {/* Бейджи статуса и режима */}
+                            <div className={styles.badgesRow}>
+                                {isPending ? (
+                                    <span className={styles.badgePending}>Ожидает</span>
+                                ) : (
+                                    <span className={styles.badgeConfirmed}>Подтверждена</span>
+                                )}
+                                {isAway ? (
+                                    <span className={styles.badgeAway}>
+                                        <i className="fas fa-car me-1" />Выезд
+                                    </span>
+                                ) : (
+                                    <span className={styles.badgeHome}>
+                                        <i className="fas fa-home me-1" />Дома
+                                    </span>
+                                )}
+                            </div>
+
                             {/* Клиент */}
                             <div className={styles.section}>
                                 <div className={styles.sectionTitle}>Клиент</div>
@@ -95,6 +116,41 @@ export default function BookingDetailsModal({ bookingId, onClose }) {
                                     ))}
                                 </div>
                             </div>
+
+                            {/* Выезд */}
+                            {isAway && (
+                                <div className={styles.section}>
+                                    <div className={styles.sectionTitle}>
+                                        <i className="fas fa-car me-1" />Выезд
+                                    </div>
+                                    <div className={styles.awayBox}>
+                                        <div className={styles.awayRow}>
+                                            <span className={styles.awayLabel}>Адрес</span>
+                                            <span className={styles.awayValue}>
+                                                {data.client_address || '—'}
+                                            </span>
+                                        </div>
+                                        <div className={styles.awayRow}>
+                                            <span className={styles.awayLabel}>Дорога до</span>
+                                            <span className={styles.awayValue}>
+                                                {data.travel_time_before || 0} мин
+                                            </span>
+                                        </div>
+                                        <div className={styles.awayRow}>
+                                            <span className={styles.awayLabel}>Дорога после</span>
+                                            <span className={styles.awayValue}>
+                                                {data.travel_time_after || 0} мин
+                                            </span>
+                                        </div>
+                                        <div className={styles.awayRow}>
+                                            <span className={styles.awayLabel}>Доп. минуты</span>
+                                            <span className={styles.awayValue}>
+                                                {data.duration_extra_minutes || 0} мин
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Комментарий */}
                             <div className={styles.section}>

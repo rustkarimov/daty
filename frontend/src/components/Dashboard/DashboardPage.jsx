@@ -5,11 +5,13 @@ import UpcomingBookings from './UpcomingBookings';
 import Calendar from './Calendar/Calendar';
 import EditBookingModal from './Calendar/EditBookingModal';
 import PushSettings from '../Push/PushSettings';
+import WorkModeToggle from './WorkModeToggle';
 import useModal from '../../hooks/useModal';
 
 export default function DashboardPage({
     masterSlug,
     masterMaxLink,
+    masterMode,
     totalBookings,
     totalServices,
     totalClients,
@@ -36,6 +38,8 @@ export default function DashboardPage({
 
     return (
         <>
+            <WorkModeToggle currentMode={masterMode} />
+
             <UpcomingBookings
                 key={`upcoming-${refreshKey}`}
                 masterSlug={masterSlug}
@@ -50,6 +54,7 @@ export default function DashboardPage({
                         <Calendar
                             key={`calendar-${refreshKey}`}
                             masterSlug={masterSlug}
+                            masterMode={masterMode}
                             onExternalChange={handleDataChanged}
                         />
                     </div>

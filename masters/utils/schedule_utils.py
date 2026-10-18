@@ -81,6 +81,35 @@ class ScheduleCalculator:
 
         return []
 
+
+    def get_away_breaks_for_date(self, target_date: date):
+        """Перерывы в выездном режиме (минуты от начала дня)."""
+        def to_min(t):
+            return t.hour * 60 + t.minute
+
+        # 1. Дополнительный выездной день
+        extra_day = AwayExtraDay.objects.filter(
+            master=self.master, date=target_date
+        ).first()
+        if extra_day:
+            return [
+                (to_min(s), to_min(e))
+                for s, e in extra_day.breaks.all().values_list('start_time', 'end_time')
+            ]
+
+        # 2. Регулярное расписание выездов
+        day_of_week = target_date.weekday()
+        schedule = AwaySchedule.objects.filter(
+            master=self.master, day_of_week=day_of_week, is_working=True
+        ).first()
+        if schedule:
+            return [
+                (to_min(s), to_min(e))
+                for s, e in schedule.breaks.all().values_list('start_time', 'end_time')
+            ]
+
+        return []
+
     # ============================================================
     # ВЫЕЗДНОЙ РЕЖИМ
     # ============================================================
@@ -124,9 +153,9 @@ class ScheduleCalculator:
         return self.get_home_working_hours_for_date(target_date)
 
     def get_breaks_for_date(self, target_date: date):
-        """Перерывы (только в домашнем режиме)."""
+        """Перерывы (в обоих режимах)."""
         if self.is_away_mode():
-            return []
+            return self.get_away_breaks_for_date(target_date)
         return self.get_home_breaks_for_date(target_date)
 
     # ============================================================
@@ -192,7 +221,7 @@ class ScheduleCalculator:
 
         # Если передан current_time (для сегодняшнего дня) — начинаем с текущего
         if current_time:
-            current_minutes = time_to_minуutes(current_time)
+            current_minutes = time_to_minutes(current_time)
             current_minutes = (
                 (current_minutes + slot_step - 1) // slot_step
             ) * slot_step

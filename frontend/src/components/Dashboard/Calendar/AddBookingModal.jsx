@@ -3,18 +3,21 @@ import { loadMasterCategories, loadAvailableDates, createMultipleBookings } from
 import { phoneMask } from '../../../utils/phoneMask';
 import shared from './BookingModalShared.module.css';
 import useModal from '../../../hooks/useModal';
-import useBodyLock from '../../../hooks/useBodyLock'
+import useBodyLock from '../../../hooks/useBodyLock';
 import { formatDate } from '../../../utils/date';
 
 
 export default function AddBookingModal({
     masterSlug,
+    masterMode = 'home',
     defaultDate,
     onClose,
     onCreated,
-    allowCreateAnother = true,   // ← новый проп
+    allowCreateAnother = true,
 }) {
     useBodyLock();
+    const isAway = masterMode === 'away';
+
     const [categories, setCategories] = useState([]);
     const [uncategorized, setUncategorized] = useState([]);
     const [selectedServices, setSelectedServices] = useState([]);
@@ -24,20 +27,18 @@ export default function AddBookingModal({
     const [selectedTime, setSelectedTime] = useState('');
     const [clientName, setClientName] = useState('');
     const [clientPhone, setClientPhone] = useState('');
+    const [clientAddress, setClientAddress] = useState('');
     const [comment, setComment] = useState('');
     const [loading, setLoading] = useState(true);
     const [loadingDates, setLoadingDates] = useState(false);
     const [loadingSlots, setLoadingSlots] = useState(false);
     const [saving, setSaving] = useState(false);
-
-    // ← Новое: результат созданной записи
     const [createdBooking, setCreatedBooking] = useState(null);
 
     const { showAlert } = useModal();
     const slotsRef = useRef(null);
     const summaryRef = useRef(null);
 
-    // Загрузка услуг
     useEffect(() => {
         loadMasterCategories(masterSlug)
             .then(data => {
@@ -51,7 +52,6 @@ export default function AddBookingModal({
             });
     }, [masterSlug]);
 
-    // Загрузка дат при изменении выбранных услуг
     useEffect(() => {
         if (selectedServices.length === 0) {
             setAvailableDates([]);
@@ -72,7 +72,6 @@ export default function AddBookingModal({
             });
     }, [selectedServices, masterSlug]);
 
-    // Загрузка слотов при изменении даты
     useEffect(() => {
         if (selectedServices.length === 0 || !selectedDate) {
             setAvailableSlots([]);
@@ -166,6 +165,10 @@ export default function AddBookingModal({
             showAlert('Телефон должен содержать 11 цифр', 'warning');
             return;
         }
+        if (isAway && !clientAddress.trim()) {
+            showAlert('Укажите адрес клиента', 'warning');
+            return;
+        }
 
         setSaving(true);
         try {
@@ -175,22 +178,23 @@ export default function AddBookingModal({
                 client_phone: phoneCleaned,
                 date: selectedDate,
                 start_time: selectedTime,
+                client_address: isAway ? clientAddress.trim() : '',
                 comment: comment.trim(),
                 created_by: 'master',
             });
             if (data.success) {
-                // ← Было: onCreated(); onClose();
-                // ← Стало: показываем экран успеха
                 setCreatedBooking({
                     clientName: clientName.trim(),
                     date: selectedDate,
                     time: selectedTime,
+                    clientAddress: isAway ? clientAddress.trim() : '',
                     services: selectedServices.map(s => ({
                         name: s.name,
                         category: s.category_name || null,
                     })),
                     totalDuration,
                     totalPrice,
+                    isAway,
                 });
             } else {
                 showAlert(data.error || 'Ошибка создания записи', 'error');
@@ -203,7 +207,6 @@ export default function AddBookingModal({
         }
     }
 
-    // ← Новое: «Записать ещё»
     function handleCreateAnother() {
         setCreatedBooking(null);
         setSelectedServices([]);
@@ -211,16 +214,15 @@ export default function AddBookingModal({
         setSelectedTime('');
         setClientName('');
         setClientPhone('');
+        setClientAddress('');
         setComment('');
 
-        // Прокрутить наверх через 100мс, чтобы React успел отрисовать форму
         setTimeout(() => {
             const body = document.querySelector(`.${shared.body}`);
             if (body) body.scrollTop = 0;
         }, 100);
     }
 
-    // ← Новое: «Готово»
     function handleFinish() {
         if (onCreated) onCreated();
         onClose();
@@ -278,7 +280,6 @@ export default function AddBookingModal({
                 </div>
 
                 <div className={shared.body}>
-                    {/* ← Новое: если запись создана — показываем экран успеха */}
                     {createdBooking ? (
                         <div className={shared.successBox}>
                             <div className={shared.successIcon}>
@@ -302,6 +303,12 @@ export default function AddBookingModal({
                                         </span>
                                     ))}
                                 </p>
+                                {createdBooking.isAway && createdBooking.clientAddress && (
+                                    <p className={shared.successMeta}>
+                                        <i className="fas fa-map-marker-alt me-1" />
+                                        {createdBooking.clientAddress}
+                                    </p>
+                                )}
                                 <p className={shared.successMeta}>
                                     {createdBooking.totalDuration} мин · {createdBooking.totalPrice} ₽
                                 </p>
@@ -315,7 +322,6 @@ export default function AddBookingModal({
                                 </div>
                             ) : (
                                 <>
-                                    {/* Шаг 1: Услуги */}
                                     <label className={shared.sectionLabel}>
                                         Шаг 1: Выберите услуги (до 3)
                                     </label>
@@ -338,7 +344,6 @@ export default function AddBookingModal({
                                         </div>
                                     )}
 
-                                    {/* Шаг 2: Дата и время */}
                                     {selectedServices.length > 0 && (
                                         <>
                                             <label className={`${shared.sectionLabel} ${shared.sectionLabelTop}`}>
@@ -390,7 +395,6 @@ export default function AddBookingModal({
                                         </>
                                     )}
 
-                                    {/* Шаг 3: Сводка и данные клиента */}
                                     {selectedTime && (
                                         <>
                                             <div className={shared.summaryBox} ref={summaryRef}>
@@ -442,6 +446,17 @@ export default function AddBookingModal({
                                                 value={clientPhone}
                                                 onChange={e => setClientPhone(phoneMask(e.target.value))}
                                             />
+
+                                            {isAway && (
+                                                <input
+                                                    type="text"
+                                                    className={shared.formInput}
+                                                    placeholder="Адрес клиента (куда ехать)"
+                                                    value={clientAddress}
+                                                    onChange={e => setClientAddress(e.target.value)}
+                                                />
+                                            )}
+
                                             <textarea
                                                 className={shared.formTextarea}
                                                 rows="2"
@@ -459,7 +474,6 @@ export default function AddBookingModal({
 
                 <div className={shared.footer}>
                     {createdBooking ? (
-                        // ← Экран успеха: две кнопки
                         <>
                             {allowCreateAnother && (
                                 <button
@@ -479,7 +493,6 @@ export default function AddBookingModal({
                             </button>
                         </>
                     ) : (
-                        // ← Обычные кнопки
                         <>
                             <button
                                 type="button"

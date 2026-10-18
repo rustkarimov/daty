@@ -21,6 +21,13 @@ export default function EditBookingModal({ bookingId, masterSlug, onClose, onSav
     const [clientName, setClientName] = useState('');
     const [clientPhone, setClientPhone] = useState('');
     const [comment, setComment] = useState('');
+
+    // away-поля
+    const [clientAddress, setClientAddress] = useState('');
+    const [travelTimeBefore, setTravelTimeBefore] = useState(0);
+    const [travelTimeAfter, setTravelTimeAfter] = useState(0);
+    const [durationExtraMinutes, setDurationExtraMinutes] = useState(0);
+
     const [loading, setLoading] = useState(true);
     const [loadingDates, setLoadingDates] = useState(false);
     const [loadingSlots, setLoadingSlots] = useState(false);
@@ -42,6 +49,10 @@ export default function EditBookingModal({ bookingId, masterSlug, onClose, onSav
                 setClientName(data.client_name || '');
                 setClientPhone(data.client_phone ? phoneMask(data.client_phone) : '');
                 setComment(data.comment || '');
+                setClientAddress(data.client_address || '');
+                setTravelTimeBefore(data.travel_time_before || 0);
+                setTravelTimeAfter(data.travel_time_after || 0);
+                setDurationExtraMinutes(data.duration_extra_minutes || 0);
                 setLoading(false);
             })
             .catch(error => {
@@ -178,6 +189,10 @@ export default function EditBookingModal({ bookingId, masterSlug, onClose, onSav
             showAlert('Телефон должен содержать 11 цифр', 'warning');
             return;
         }
+        if (form.service_mode === 'away' && !clientAddress.trim()) {
+            showAlert('Укажите адрес клиента', 'warning');
+            return;
+        }
 
         setSaving(true);
         try {
@@ -189,8 +204,15 @@ export default function EditBookingModal({ bookingId, masterSlug, onClose, onSav
                 time: selectedTime,
                 comment: comment.trim(),
                 status: form.status || 'confirmed',
+                client_address: clientAddress.trim(),
+                travel_time_before: parseInt(travelTimeBefore) || 0,
+                travel_time_after: parseInt(travelTimeAfter) || 0,
+                duration_extra_minutes: parseInt(durationExtraMinutes) || 0,
             });
             if (data.success) {
+                if (data.data && data.data.warning) {
+                    showAlert(data.data.warning, 'warning');
+                }
                 if (onSaved) onSaved();
                 onClose();
             } else {
@@ -223,6 +245,8 @@ export default function EditBookingModal({ bookingId, masterSlug, onClose, onSav
             </div>
         );
     }
+
+    const isAway = form?.service_mode === 'away';
 
     return (
         <div className={shared.backdrop} onClick={handleBackdropClick}>
@@ -371,6 +395,65 @@ export default function EditBookingModal({ bookingId, masterSlug, onClose, onSav
                                         value={comment}
                                         onChange={e => setComment(e.target.value)}
                                     />
+
+                                    {/* away-поля */}
+                                    {isAway && (
+                                        <>
+                                            <label className={`${shared.sectionLabel} ${shared.sectionLabelTop}`}>
+                                                <i className="fas fa-car me-1" />
+                                                Выезд
+                                            </label>
+                                            <input
+                                                type="text"
+                                                className={shared.formInput}
+                                                placeholder="Адрес клиента"
+                                                value={clientAddress}
+                                                onChange={e => setClientAddress(e.target.value)}
+                                            />
+                                            <div className={shared.twoCols}>
+                                                <div className={shared.col}>
+                                                    <label className={shared.miniLabel}>
+                                                        Дорога до (мин)
+                                                    </label>
+                                                    <input
+                                                        type="number"
+                                                        className={shared.formInput}
+                                                        min="0"
+                                                        step="5"
+                                                        value={travelTimeBefore}
+                                                        onChange={e => setTravelTimeBefore(e.target.value)}
+                                                    />
+                                                </div>
+                                                <div className={shared.col}>
+                                                    <label className={shared.miniLabel}>
+                                                        Дорога после (мин)
+                                                    </label>
+                                                    <input
+                                                        type="number"
+                                                        className={shared.formInput}
+                                                        min="0"
+                                                        step="5"
+                                                        value={travelTimeAfter}
+                                                        onChange={e => setTravelTimeAfter(e.target.value)}
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label className={shared.miniLabel}>
+                                                    Доп. минуты к услуге
+                                                </label>
+                                                <input
+                                                    type="number"
+                                                    className={shared.formInput}
+                                                    min="0"
+                                                    step="5"
+                                                    value={durationExtraMinutes}
+                                                    onChange={e => setDurationExtraMinutes(e.target.value)}
+                                                    placeholder="0"
+                                                />
+                                            </div>
+                                        </>
+                                    )}
                                 </>
                             )}
                         </>

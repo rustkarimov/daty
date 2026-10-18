@@ -84,7 +84,7 @@ def get_calendar_schedule(request):
     """API: возвращает расписание мастера для календаря (с учётом режима)."""
     master = request.user.master
     is_away = master.work_mode == 'away'
-    
+
     if is_away:
         # ---- Выездной режим ----
         schedules = AwaySchedule.objects.filter(master=master, is_working=True)
@@ -93,19 +93,25 @@ def get_calendar_schedule(request):
             schedules_data[schedule.day_of_week] = {
                 'start': schedule.start_time.strftime('%H:%M'),
                 'end': schedule.end_time.strftime('%H:%M'),
-                'breaks': [],  # у AwaySchedule нет перерывов
+                'breaks': [{
+                    'start': b.start_time.strftime('%H:%M'),
+                    'end': b.end_time.strftime('%H:%M')
+                } for b in schedule.breaks.all()],
             }
-        
+
         days_off = AwayDayOff.objects.filter(master=master).values_list('date', flat=True)
         days_off_list = [d.strftime('%Y-%m-%d') for d in days_off]
-        
+
         extra_days = AwayExtraDay.objects.filter(master=master)
         extra_days_data = {}
         for day in extra_days:
             extra_days_data[day.date.strftime('%Y-%m-%d')] = {
                 'start': day.start_time.strftime('%H:%M'),
                 'end': day.end_time.strftime('%H:%M'),
-                'breaks': [],
+                'breaks': [{
+                    'start': b.start_time.strftime('%H:%M'),
+                    'end': b.end_time.strftime('%H:%M')
+                } for b in day.breaks.all()],
             }
     else:
         # ---- Домашний режим ----
@@ -120,10 +126,10 @@ def get_calendar_schedule(request):
                     'end': b.end_time.strftime('%H:%M')
                 } for b in schedule.breaks.all()]
             }
-        
+
         days_off = DayOff.objects.filter(master=master).values_list('date', flat=True)
         days_off_list = [d.strftime('%Y-%m-%d') for d in days_off]
-        
+
         extra_days = ExtraWorkingDay.objects.filter(master=master)
         extra_days_data = {}
         for day in extra_days:
@@ -135,7 +141,7 @@ def get_calendar_schedule(request):
                     'end': b.end_time.strftime('%H:%M')
                 } for b in day.breaks.all()]
             }
-    
+
     return JsonResponse({
         'schedules': schedules_data,
         'days_off': days_off_list,
@@ -164,7 +170,8 @@ def get_bookings_api(request):
     bookings = Booking.objects.filter(
         master=master,
         status__in=['confirmed', 'pending'],
-        date__gte=today
+        date__gte=today,
+        service_mode=master.work_mode,   # ← фильтр по режиму
     ).order_by('date', 'time').select_related('service', 'service__category')
     
     
@@ -423,7 +430,11 @@ def api_unconfirm_booking(request, booking_id):
 def get_bookings_counts(request):
     """API: возвращает количество записей по датам (для календаря)."""
     master = request.user.master
-    bookings = Booking.objects.filter(master=master, status='confirmed')
+    bookings = Booking.objects.filter(
+        master=master,
+        status__in=['confirmed', 'pending'],
+        service_mode=master.work_mode,
+    )
     
     counts = {}
     for booking in bookings:
@@ -447,7 +458,8 @@ def get_bookings_by_date(request):
     bookings = Booking.objects.filter(
         master=master,
         date=target_date,
-        status='confirmed'
+        status__in=['confirmed', 'pending'],
+        service_mode=master.work_mode,
     ).order_by('time').select_related('service')
     
     key = master.get_encryption_key()
@@ -498,28 +510,35 @@ def get_bookings_by_date(request):
 
 @login_required
 def get_day_status(request):
-    """API: возвращает статус конкретного дня (рабочий, выходной, допдень)."""
+    """API: возвращает статус конкретного дня (с учётом режима мастера)."""
     master = request.user.master
     date_str = request.GET.get('date')
-    
+
     if not date_str:
         return JsonResponse({'error': 'Дата не указана'}, status=400)
-    
+
     target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
     day_of_week = target_date.weekday()
-    
-    extra_day = ExtraWorkingDay.objects.filter(master=master, date=target_date).first()
-    is_day_off = DayOff.objects.filter(master=master, date=target_date).exists()
-    schedule = Schedule.objects.filter(master=master, day_of_week=day_of_week).first()
-    
+
+    if master.work_mode == 'away':
+        extra_day = AwayExtraDay.objects.filter(master=master, date=target_date).first()
+        is_day_off = AwayDayOff.objects.filter(master=master, date=target_date).exists()
+        schedule = AwaySchedule.objects.filter(
+            master=master, day_of_week=day_of_week, is_working=True
+        ).first()
+    else:
+        extra_day = ExtraWorkingDay.objects.filter(master=master, date=target_date).first()
+        is_day_off = DayOff.objects.filter(master=master, date=target_date).exists()
+        schedule = Schedule.objects.filter(master=master, day_of_week=day_of_week).first()
+
     # Определяем рабочие часы (приоритет: extra_day > schedule)
     start_time = None
     end_time = None
+    breaks = []
 
     if extra_day:
         start_time = extra_day.start_time.strftime('%H:%M')
         end_time = extra_day.end_time.strftime('%H:%M')
-        # Берём перерывы из extra_day
         breaks = [{
             'start': b.start_time.strftime('%H:%M'),
             'end': b.end_time.strftime('%H:%M')
@@ -527,23 +546,21 @@ def get_day_status(request):
     elif schedule:
         start_time = schedule.start_time.strftime('%H:%M')
         end_time = schedule.end_time.strftime('%H:%M')
-        # Берём перерывы из schedule
         breaks = [{
             'start': b.start_time.strftime('%H:%M'),
             'end': b.end_time.strftime('%H:%M')
         } for b in schedule.breaks.all()]
-    else:
-        breaks = []
-    
+
     return JsonResponse({
         'is_extra': extra_day is not None,
         'is_day_off': is_day_off,
         'has_schedule': schedule is not None,
         'schedule_start': start_time,
         'schedule_end': end_time,
-        'extra_start': start_time,  # для совместимости с шаблоном
-        'extra_end': end_time,      # для совместимости с шаблоном
+        'extra_start': start_time,
+        'extra_end': end_time,
         'breaks': breaks,
-        'date': date_str
+        'date': date_str,
+        'mode': master.work_mode,
     })
     

@@ -14,7 +14,7 @@ from django.views.decorators.http import require_http_methods
 from ..models import (
     Schedule, Break, ExtraWorkingDay, ExtraWorkingDayBreak, DayOff,
     AwaySchedule, AwayExtraDay, AwayDayOff,
-    Booking,
+    Booking, AwayBreak, AwayExtraDayBreak,
 )
 from ..utils.response_utils import api_success, api_error
 
@@ -30,13 +30,17 @@ def get_schedule_models(master):
             'Schedule': AwaySchedule,
             'ExtraWorkingDay': AwayExtraDay,
             'DayOff': AwayDayOff,
-            'has_breaks': False,
-            'has_is_working': True,   # у AwaySchedule есть is_working
+            'Break': AwayBreak,
+            'ExtraWorkingDayBreak': AwayExtraDayBreak,
+            'has_breaks': True,        # ← теперь у away тоже есть перерывы
+            'has_is_working': True,
         }
     return {
         'Schedule': Schedule,
         'ExtraWorkingDay': ExtraWorkingDay,
         'DayOff': DayOff,
+        'Break': Break,
+        'ExtraWorkingDayBreak': ExtraWorkingDayBreak,
         'has_breaks': True,
         'has_is_working': False,
     }
@@ -140,7 +144,7 @@ def api_add_schedule(request):
             end_time=datetime.strptime(end_time, '%H:%M').time(),
         )
 
-        # Перерывы — только для home
+        # Перерывы
         if models['has_breaks']:
             for break_data in breaks:
                 if break_data.get('start') and break_data.get('end'):
@@ -154,7 +158,7 @@ def api_add_schedule(request):
                             f'Перерыв {break_data["start"]}-{break_data["end"]} выходит за пределы рабочего дня ({start_time}-{end_time})',
                             status=400
                         )
-                    Break.objects.create(
+                    models['Break'].objects.create(
                         schedule=schedule_obj,
                         start_time=datetime.strptime(break_data['start'], '%H:%M').time(),
                         end_time=datetime.strptime(break_data['end'], '%H:%M').time()
@@ -253,7 +257,7 @@ def api_edit_schedule(request, schedule_id):
             schedule_obj.breaks.all().delete()
             for break_data in breaks:
                 if break_data.get('start') and break_data.get('end'):
-                    Break.objects.create(
+                    models['Break'].objects.create(
                         schedule=schedule_obj,
                         start_time=datetime.strptime(break_data['start'], '%H:%M').time(),
                         end_time=datetime.strptime(break_data['end'], '%H:%M').time()
@@ -334,7 +338,7 @@ def api_add_extra_day(request):
         if start_time >= end_time:
             return api_error('Время начала не может быть позже времени окончания', status=400)
 
-        # Перерывы — только для home
+        # Проверка перерывов
         if models['has_breaks']:
             for break_data in breaks:
                 if break_data.get('start') and break_data.get('end'):
@@ -392,6 +396,7 @@ def api_add_extra_day(request):
         ExtraModel.objects.filter(master=master, date=target_date).delete()
         models['DayOff'].objects.filter(master=master, date=target_date).delete()
 
+        # Создаём доп. день
         extra_day = ExtraModel.objects.create(
             master=master,
             date=target_date,
@@ -399,11 +404,11 @@ def api_add_extra_day(request):
             end_time=datetime.strptime(end_time, '%H:%M').time(),
         )
 
-        # Перерывы — только для home (ExtraWorkingDayBreak)
+        # Перерывы — создаём после extra_day
         if models['has_breaks']:
             for break_data in breaks:
                 if break_data.get('start') and break_data.get('end'):
-                    ExtraWorkingDayBreak.objects.create(
+                    models['ExtraWorkingDayBreak'].objects.create(
                         extra_day=extra_day,
                         start_time=datetime.strptime(break_data['start'], '%H:%M').time(),
                         end_time=datetime.strptime(break_data['end'], '%H:%M').time()

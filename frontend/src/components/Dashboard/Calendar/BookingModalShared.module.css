@@ -492,6 +492,26 @@
     color: var(--gray-500);
 }
 
+/* ---- Две колонки (away-поля) ---- */
+.twoCols {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.col {
+    flex: 1;
+    min-width: 0;
+}
+
+.miniLabel {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--gray-500);
+    margin-bottom: 2px;
+}
+
+
 /* ---- Анимация ---- */
 @keyframes fadeInUp {
     from {
@@ -580,6 +600,12 @@
     .successDetails {
         font-size: 0.9rem;
     }
+
+    .twoCols {
+        flex-direction: column;
+        gap: 0;
+    }
+
 }
 
 @media (max-width: 480px) {

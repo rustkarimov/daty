@@ -13,7 +13,9 @@
         "address": "{{ master.address|default:''|escapejs }}",
         "bio": "{{ master.bio|escapejs }}",
         "phone": "{{ master.user.phone }}",
-        "avatar_url": "{% if master.avatar %}{{ master.avatar.url }}{% endif %}"
+        "avatar_url": "{% if master.avatar %}{{ master.avatar.url }}{% endif %}",
+        "work_mode": "{{ master.work_mode }}",
+        "away_travel_time_default": {{ master.away_travel_time_default|default:0 }}
      }'></div>
 {% csrf_token %}
 {% endblock %}

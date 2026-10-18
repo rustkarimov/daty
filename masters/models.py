@@ -184,6 +184,12 @@ class ServiceCategory(models.Model):
     name = models.CharField(max_length=100, verbose_name="Название категории")
     order = models.IntegerField(default=0, verbose_name="Порядок сортировки")
     is_active = models.BooleanField(default=True, verbose_name="Активна")
+    mode = models.CharField(
+        max_length=10,
+        choices=[('home', 'Дома'), ('away', 'Выезд')],
+        default='home',
+        verbose_name="Режим",
+    )
 
     class Meta:
         verbose_name = "Категория услуг"
@@ -210,6 +216,12 @@ class Service(models.Model):
     duration = models.IntegerField(verbose_name="Длительность (минут)")
     price = models.DecimalField(max_digits=8, decimal_places=2, verbose_name="Цена")
     is_active = models.BooleanField(default=True, verbose_name="Активна")
+    mode = models.CharField(
+        max_length=10,
+        choices=[('home', 'Дома'), ('away', 'Выезд')],
+        default='home',
+        verbose_name="Режим",
+    )
 
     class Meta:
         verbose_name = "Услуга"
@@ -379,6 +391,36 @@ class AwayDayOff(models.Model):
     def __str__(self):
         return f"{self.date}: {self.reason or 'Выходной'}"
 
+class AwayBreak(models.Model):
+    """Перерыв в регулярном выездном расписании."""
+    schedule = models.ForeignKey(
+        AwaySchedule, on_delete=models.CASCADE, related_name='breaks'
+    )
+    start_time = models.TimeField(verbose_name="Начало перерыва")
+    end_time = models.TimeField(verbose_name="Конец перерыва")
+
+    class Meta:
+        verbose_name = "Перерыв (выезд)"
+        verbose_name_plural = "Перерывы (выезд)"
+
+    def __str__(self):
+        return f"{self.start_time} - {self.end_time}"
+
+
+class AwayExtraDayBreak(models.Model):
+    """Перерыв в дополнительном выездном дне."""
+    extra_day = models.ForeignKey(
+        AwayExtraDay, on_delete=models.CASCADE, related_name='breaks'
+    )
+    start_time = models.TimeField(verbose_name="Начало перерыва")
+    end_time = models.TimeField(verbose_name="Конец перерыва")
+
+    class Meta:
+        verbose_name = "Перерыв (доп. выездной день)"
+        verbose_name_plural = "Перерывы (доп. выездные дни)"
+
+    def __str__(self):
+        return f"{self.start_time} - {self.end_time}"
 
 # ============================================================
 # ЗАПИСИ

@@ -6,6 +6,7 @@ import ScheduleModal from './ScheduleModal';
 import ExtraDayModal from './ExtraDayModal';
 import DayOffModal from './DayOffModal';
 import useModal from '../../hooks/useModal';
+import { updateProfile } from '../../api/profile';
 import {
     loadSchedules,
     loadUpcomingExtraDays,
@@ -14,7 +15,7 @@ import {
 } from '../../api/schedule';
 import styles from './SchedulePage.module.css';
 
-export default function SchedulePage() {
+export default function SchedulePage({ masterMode = 'home', initialAwayTravelTime = 0 }) {
     // Данные
     const [schedules, setSchedules] = useState([]);
     const [futureExtraDays, setFutureExtraDays] = useState([]);
@@ -29,11 +30,16 @@ export default function SchedulePage() {
     const [loadingDaysOff, setLoadingDaysOff] = useState(true);
 
     // Модалки
-    const [scheduleModal, setScheduleModal] = useState(null);   // { mode: 'add' } | { mode: 'edit', schedule: {...} }
+    const [scheduleModal, setScheduleModal] = useState(null);
     const [extraDayModal, setExtraDayModal] = useState(false);
     const [dayOffModal, setDayOffModal] = useState(false);
 
+    // Время на дорогу (away)
+    const [awayTravelTime, setAwayTravelTime] = useState(initialAwayTravelTime);
+    const [savingTravelTime, setSavingTravelTime] = useState(false);
+
     const { showAlert } = useModal();
+    const isAway = masterMode === 'away';
 
     // ---------- Загрузка данных ----------
 
@@ -100,12 +106,79 @@ export default function SchedulePage() {
             });
     }
 
+    // ---------- Сохранение времени на дорогу ----------
+
+    async function handleSaveTravelTime() {
+        setSavingTravelTime(true);
+        try {
+            const data = await updateProfile({
+                away_travel_time_default: parseInt(awayTravelTime) || 0,
+            });
+            if (data.success) {
+                showAlert('Время на дорогу сохранено', 'success');
+            } else {
+                showAlert(data.error || 'Ошибка сохранения', 'error');
+            }
+        } catch (error) {
+            console.error('Ошибка:', error);
+            showAlert('Ошибка соединения', 'error');
+        } finally {
+            setSavingTravelTime(false);
+        }
+    }
+
     return (
         <div className={styles.page}>
             {/* Заголовок */}
             <div className={styles.pageHeader}>
                 <h2>Расписание</h2>
             </div>
+
+            {/* Блок «Время на дорогу» — только для away */}
+            {isAway && (
+                <div className={styles.card}>
+                    <div className={styles.sectionTitle}>Выездной режим</div>
+                    <div className={styles.travelTimeBlock}>
+                        <label className={styles.travelTimeLabel}>
+                            <i className="fas fa-car me-1" />
+                            Время на дорогу по умолчанию (мин)
+                        </label>
+                        <div className={styles.travelTimeRow}>
+                            <input
+                                type="number"
+                                className={styles.travelTimeInput}
+                                min="0"
+                                step="5"
+                                value={awayTravelTime}
+                                onChange={e => setAwayTravelTime(e.target.value)}
+                                placeholder="0"
+                            />
+                            <button
+                                type="button"
+                                className={styles.btnPrimary}
+                                onClick={handleSaveTravelTime}
+                                disabled={savingTravelTime}
+                            >
+                                {savingTravelTime ? (
+                                    <>
+                                        <i className="fas fa-spinner fa-spin" />
+                                        Сохранение...
+                                    </>
+                                ) : (
+                                    <>
+                                        <i className="fas fa-save" />
+                                        Сохранить
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                        <small className={styles.travelTimeHint}>
+                            Это время будет автоматически добавляться к каждой выездной записи.
+                            Мастер может изменить его в карточке заказа.
+                        </small>
+                    </div>
+                </div>
+            )}
 
             {/* Секция 1: Регулярная работа */}
             <div className={styles.card}>

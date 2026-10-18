@@ -19,7 +19,7 @@ const WEEKDAY_NAMES = [
     'четверг', 'пятница', 'суббота'
 ];
 
-export default function DayModal({ dateStr, masterSlug, onClose, onDataChanged }) {
+export default function DayModal({ dateStr, masterSlug, masterMode = 'home', onClose, onDataChanged }) {
     useBodyLock();
     const [dayData, setDayData] = useState(null);
     const [bookings, setBookings] = useState([]);
@@ -310,14 +310,16 @@ export default function DayModal({ dateStr, masterSlug, onClose, onDataChanged }
                                             Сделать рабочим днём
                                         </button>
                                     ) : (
-                                        <button type="button" className={styles.btnSoftBlue} onClick={handleMakeDayOff}>
-                                            <i className="fas fa-calendar-times" />
-                                            Сделать выходным
-                                        </button>
+                                        <>
+                                            <button type="button" className={styles.btnSoftBlue} onClick={handleMakeDayOff}>
+                                                <i className="fas fa-calendar-times" />
+                                                Сделать выходным
+                                            </button>
+                                            <button type="button" className={styles.btnPink} onClick={handleOpenAddBooking}>
+                                                Добавить запись
+                                            </button>
+                                        </>
                                     )}
-                                    <button type="button" className={styles.btnPink} onClick={handleOpenAddBooking}>
-                                        Добавить запись
-                                    </button>
                                 </div>
 
                                 <hr className={styles.divider} />
@@ -400,6 +402,7 @@ export default function DayModal({ dateStr, masterSlug, onClose, onDataChanged }
             {showAddBooking && (
                 <AddBookingModal
                     masterSlug={masterSlug}
+                    masterMode={masterMode}
                     defaultDate={dateStr}
                     onClose={handleCloseAddBooking}
                     onCreated={handleBookingCreated}

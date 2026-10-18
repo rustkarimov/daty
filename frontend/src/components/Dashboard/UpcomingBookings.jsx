@@ -53,7 +53,15 @@ export default function UpcomingBookings({ masterSlug, masterMaxLink, onEdit, on
             const data = await fn(booking.id);
             if (data.success) {
                 setBookings(prev => prev.map(b =>
-                    b.id === booking.id ? { ...b, confirmed_by_master: !b.confirmed_by_master } : b
+                    b.id === booking.id
+                        ? {
+                            ...b,
+                            confirmed_by_master: !b.confirmed_by_master,
+                            status: !b.confirmed_by_master
+                                ? 'confirmed'
+                                : (b.service_mode === 'away' ? 'pending' : b.status),
+                        }
+                        : b
                 ));
                 const msg = booking.confirmed_by_master ? 'Подтверждение снято' : 'Запись подтверждена';
                 if (onDataChanged) onDataChanged(msg);
@@ -160,6 +168,7 @@ export default function UpcomingBookings({ masterSlug, masterMaxLink, onEdit, on
                                         <th>Время</th>
                                         <th>Клиент</th>
                                         <th>Услуги</th>
+                                        <th>Статус</th>
                                         <th></th>
                                     </tr>
                                 </thead>
@@ -173,6 +182,13 @@ export default function UpcomingBookings({ masterSlug, masterMaxLink, onEdit, on
                                             <td>{b.time}</td>
                                             <td>{b.client_name}</td>
                                             <td>{b.service_name}</td>
+                                            <td>
+                                                {b.status === 'pending' ? (
+                                                    <span className={styles.statusPending}>Ожидает</span>
+                                                ) : (
+                                                    <span className={styles.statusConfirmed}>Подтверждена</span>
+                                                )}
+                                            </td>
                                             <td className={styles.actionsCell}>
                                                 <div className={styles.allButtonsRow}>
                                                     <button

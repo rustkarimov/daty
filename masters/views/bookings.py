@@ -85,7 +85,12 @@ def get_booking_for_edit(request, booking_id):
         'date': booking.date.strftime('%Y-%m-%d'),
         'time': booking.time.strftime('%H:%M'),
         'comment': booking.client_comment,
-        'status': booking.status
+        'status': booking.status,
+        'service_mode': booking.service_mode,
+        'client_address': booking.client_address,
+        'travel_time_before': booking.travel_time_before,
+        'travel_time_after': booking.travel_time_after,
+        'duration_extra_minutes': booking.duration_extra_minutes,
     })
 
 

@@ -204,6 +204,81 @@
     color: var(--gray-800);
 }
 
+/* ---- Бейджи ---- */
+.badgesRow {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.badgePending,
+.badgeConfirmed,
+.badgeAway,
+.badgeHome {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 12px;
+    border-radius: 30px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.badgePending {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+.badgeConfirmed {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.badgeAway {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.badgeHome {
+    background: var(--gray-100);
+    color: var(--gray-600);
+}
+
+/* ---- Блок «Выезд» ---- */
+.awayBox {
+    background: var(--gray-50);
+    border-radius: 10px;
+    padding: 10px 14px;
+    border: 1px solid var(--gray-100);
+}
+
+.awayRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 4px 0;
+    font-size: 0.85rem;
+    border-bottom: 1px solid var(--gray-100);
+}
+
+.awayRow:last-child {
+    border-bottom: none;
+}
+
+.awayLabel {
+    color: var(--gray-500);
+    flex-shrink: 0;
+}
+
+.awayValue {
+    color: var(--gray-800);
+    font-weight: 600;
+    text-align: right;
+    word-break: break-word;
+}
+
 /* ---- Анимация ---- */
 @keyframes fadeInUp {
     from {

@@ -4,12 +4,13 @@ import DayModal from './DayModal';
 import { loadCalendar, loadCounts } from '../../../api/calendar';
 import styles from './Calendar.module.css';
 
+
 const MONTH_NAMES = [
     'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
     'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
 ];
 
-export default function Calendar({ masterSlug, onExternalChange }) {
+export default function Calendar({ masterSlug, masterMode = 'home', onExternalChange }) {
     const [currentDate, setCurrentDate] = useState(new Date());
     const [calendarData, setCalendarData] = useState(null);
     const [countsData, setCountsData] = useState(null);

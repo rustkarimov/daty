@@ -113,6 +113,23 @@ export default function ServicesStep({ identifier, selectedServices, onChange })
         );
     }
 
+    const hasAnyServices =
+        categories.some(c => c.services.length > 0) ||
+        uncategorized.length > 0;
+
+    if (!hasAnyServices) {
+        return (
+            <div className="card mb-4">
+                <div className="card-body text-center py-5">
+                    <i className="fas fa-cut" style={{ fontSize: '3rem', color: 'var(--gray-300)' }} />
+                    <p className="text-muted mt-3 mb-0">
+                        Мастер пока не опубликовал услуги
+                    </p>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="card mb-4">
             <div className="card-header bg-white">
