@@ -58,6 +58,7 @@ def schedule(request):
     schedules = models['Schedule'].objects.filter(master=master).order_by('day_of_week')
 
     return render(request, 'masters/schedule.html', {
+        'master': master,
         'schedules': schedules,
         'mode': master.work_mode,
     })

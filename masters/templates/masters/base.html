@@ -350,7 +350,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <!-- React: корень приложения (шапка, модалки, страницы через порталы) -->
 
-<div id="react-app" data-master-slug="{{ request.user.master.public_slug }}"></div>
+<div id="react-app"
+     data-master-slug="{{ request.user.master.public_slug }}"
+     data-master-mode="{{ request.user.master.work_mode }}"></div>
 <script src="{% static 'js/react/app.js' %}" type="module"></script>
 
 

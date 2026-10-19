@@ -216,6 +216,13 @@ def create_booking(request, identifier):
 
         travel_default = (master.away_travel_time_default or 0) if is_away else 0
 
+        if created_by == 'master':
+            booking_status = 'confirmed'
+        elif is_away:
+            booking_status = 'pending'
+        else:
+            booking_status = 'confirmed'
+
         booking = Booking.objects.create(
             master=master,
             service=service,
@@ -224,8 +231,9 @@ def create_booking(request, identifier):
             client_comment=comment,
             date=booking_date,
             time=booking_time,
-            status='pending' if is_away else 'confirmed',
+            status=booking_status,
             created_by=created_by,
+            confirmed_by_master=(created_by == 'master'),
             service_mode='away' if is_away else 'home',
             client_address=client_address if is_away else '',
             travel_time_before=travel_default,
@@ -345,6 +353,15 @@ def create_multiple_bookings(request, identifier):
             travel_before = travel_time_default if (is_away and i == 0) else 0
             travel_after = travel_time_default if (is_away and i == len(services) - 1) else 0
 
+            # Если создаёт мастер — статус confirmed (он уже подтвердил).
+            # Если клиент в away — pending (ждёт подтверждения).
+            if created_by == 'master':
+                booking_status = 'confirmed'
+            elif is_away:
+                booking_status = 'pending'
+            else:
+                booking_status = 'confirmed'
+
             booking = Booking.objects.create(
                 master=master,
                 service=service,
@@ -353,8 +370,9 @@ def create_multiple_bookings(request, identifier):
                 client_comment=service_comment,
                 date=booking_date,
                 time=booking_time,
-                status='pending' if is_away else 'confirmed',
+                status=booking_status,
                 created_by=created_by,
+                confirmed_by_master=(created_by == 'master'),
                 service_mode='away' if is_away else 'home',
                 client_address=client_address if is_away else '',
                 travel_time_before=travel_before,

@@ -21,7 +21,7 @@ from ..utils.master_utils import get_master_by_identifier
 def services(request):
     """Страница управления услугами"""
     master = request.user.master
-    services_list = Service.objects.filter(master=master, mode=master.work_mode)
+    services_list = Service.objects.filter(master=master)
     return render(request, 'masters/services.html', {'services': services_list})
 
 
@@ -50,7 +50,7 @@ def api_add_service(request):
         if category_id:
             try:
                 category = ServiceCategory.objects.get(
-                    id=category_id, master=master, mode=master.work_mode
+                    id=category_id, master=master
                 )
             except ServiceCategory.DoesNotExist:
                 return api_error('Категория не найдена', status=404)
@@ -96,13 +96,13 @@ def api_edit_service(request, service_id):
         if not data.get('price'):
             return api_error('Цена обязательна', status=400)
 
-        # Проверка категории (с учётом режима)
+        # Проверка категории
         category_id = data.get('category_id')
         category = None
         if category_id:
             try:
                 category = ServiceCategory.objects.get(
-                    id=category_id, master=master, mode=master.work_mode
+                    id=category_id, master=master
                 )
             except ServiceCategory.DoesNotExist:
                 return api_error('Категория не найдена', status=404)
@@ -142,28 +142,26 @@ def api_delete_service(request, service_id):
 def get_categories(request):
     """Возвращает категории и услуги мастера для страницы /services/."""
     master = request.user.master
-    categories = ServiceCategory.objects.filter(
-        master=master, is_active=True, mode=master.work_mode
-    )
+    categories = ServiceCategory.objects.filter(master=master, is_active=True)
     uncategorized = Service.objects.filter(
-        master=master, category__isnull=True, is_active=True, mode=master.work_mode
+        master=master, category__isnull=True, is_active=True
     )
 
     data = []
     for cat in categories:
-        services = Service.objects.filter(
-            master=master, category=cat, is_active=True, mode=master.work_mode
-        )
+        services = Service.objects.filter(master=master, category=cat, is_active=True)
         data.append({
             'id': cat.id,
             'name': cat.name,
             'order': cat.order,
+            'mode': cat.mode,
             'services': [{
                 'id': s.id,
                 'name': s.name,
                 'description': s.description,
                 'duration': s.duration,
-                'price': float(s.price)
+                'price': float(s.price),
+                'mode': s.mode,
             } for s in services]
         })
 
@@ -174,7 +172,8 @@ def get_categories(request):
             'name': s.name,
             'description': s.description,
             'duration': s.duration,
-            'price': float(s.price)
+            'price': float(s.price),
+            'mode': s.mode,
         } for s in uncategorized]
     })
 
@@ -283,16 +282,16 @@ def get_master_categories(request, identifier):
         return JsonResponse({'error': 'Мастер не найден'}, status=404)
 
     categories = ServiceCategory.objects.filter(
-        master=master, is_active=True, mode=master.work_mode
+        master=master, is_active=True
     )
     uncategorized = Service.objects.filter(
-        master=master, category__isnull=True, is_active=True, mode=master.work_mode
+        master=master, category__isnull=True, is_active=True
     )
 
     data = []
     for cat in categories:
         services = Service.objects.filter(
-            master=master, category=cat, is_active=True, mode=master.work_mode
+            master=master, category=cat, is_active=True
         )
         data.append({
             'id': cat.id,
