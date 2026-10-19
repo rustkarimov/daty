@@ -723,6 +723,37 @@ def api_delete_day_off_by_date(request):
         return api_error('Ошибка при удалении выходного дня', status=500)
 
 
+@login_required
+@require_http_methods(["POST"])
+def api_update_away_travel(request):
+    """Сохраняет время на дорогу до клиента по умолчанию (для away)."""
+    try:
+        master = request.user.master
+        if master.work_mode != 'away':
+            return api_error('Доступно только в выездном режиме', status=400)
+
+        data = json.loads(request.body)
+
+        before = data.get('away_travel_time_before_default')
+
+        if before is not None:
+            try:
+                master.away_travel_time_before_default = max(0, int(before))
+            except (ValueError, TypeError):
+                pass
+
+        master.save()
+
+        return api_success({
+            'away_travel_time_before_default': master.away_travel_time_before_default,
+        })
+
+    except json.JSONDecodeError:
+        return api_error('Неверный формат данных', status=400)
+    except Exception as e:
+        return api_error('Ошибка сохранения', status=500)
+    
+
 def _pluralize_bookings(n):
     """Склонение слова 'запись' по числу."""
     n = abs(n) % 100

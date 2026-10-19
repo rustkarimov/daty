@@ -99,9 +99,9 @@ class Master(models.Model):
         verbose_name="Адрес, откуда выезжаю",
         help_text="Для расчёта времени на дорогу",
     )
-    away_travel_time_default = models.IntegerField(
+    away_travel_time_before_default = models.IntegerField(
         default=0,
-        verbose_name="Время на дорогу по умолчанию (мин)",
+        verbose_name="Время на дорогу туда по умолчанию (мин)",
     )
     away_buffer_before = models.IntegerField(
         default=15,

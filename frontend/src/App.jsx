@@ -69,7 +69,7 @@ function PagePortals() {
             {scheduleEl && createPortal(
                 <SchedulePage
                     masterMode={scheduleEl.dataset.masterMode || 'home'}
-                    initialAwayTravelTime={parseInt(scheduleEl.dataset.awayTravelTime || '0', 10)}
+                    initialAwayTravelBefore={parseInt(scheduleEl.dataset.awayTravelBefore || '0', 10)}
                 />,
                 scheduleEl
             )}

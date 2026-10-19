@@ -127,16 +127,19 @@ def get_available_slots(request, identifier):
             original_booking_id=int(original_booking_id) if original_booking_id else None
         )
 
-        # Полная длительность (для away — с учётом дороги)
+        # Полная длительность (для away — с учётом дороги туда + обратно)
+        # Полная длительность (для away — с учётом дороги до клиента)
         full_duration = duration
+        travel_before = 0
         if master.work_mode == 'away':
-            full_duration = duration + (master.away_travel_time_default or 0)
+            travel_before = master.away_travel_time_before_default or 0
+            full_duration = duration + travel_before
 
         return JsonResponse({
             'slots': slots,
             'mode': master.work_mode,
             'full_duration': full_duration,
-            'travel_time': master.away_travel_time_default if master.work_mode == 'away' else 0,
+            'travel_time_before': travel_before,
         })
 
     except Exception as e:
@@ -214,7 +217,7 @@ def create_booking(request, identifier):
         else:
             encrypted_phone = client_phone_cleaned.encode()
 
-        travel_default = (master.away_travel_time_default or 0) if is_away else 0
+        travel_before_default = (master.away_travel_time_before_default or 0) if is_away else 0
 
         if created_by == 'master':
             booking_status = 'confirmed'
@@ -236,8 +239,8 @@ def create_booking(request, identifier):
             confirmed_by_master=(created_by == 'master'),
             service_mode='away' if is_away else 'home',
             client_address=client_address if is_away else '',
-            travel_time_before=travel_default,
-            travel_time_after=travel_default,
+            travel_time_before=travel_before_default,
+            travel_time_after=0,
         )
 
         message = 'Предварительная запись оформлена. Ждите подтверждения мастера.' if is_away else 'Запись создана!'
@@ -338,7 +341,7 @@ def create_multiple_bookings(request, identifier):
         time_offset = 0
         services_list = []
 
-        travel_time_default = master.away_travel_time_default if is_away else 0
+        travel_before_default = (master.away_travel_time_before_default or 0) if is_away else 0
 
         for i, service in enumerate(services):
             booking_time = (datetime.combine(date.today(), start_time) + timedelta(minutes=time_offset)).time()
@@ -350,8 +353,8 @@ def create_multiple_bookings(request, identifier):
 
             # Для away: время на дорогу ставим только на первую услугу (туда)
             # и на последнюю (обратно). Для промежуточных — 0.
-            travel_before = travel_time_default if (is_away and i == 0) else 0
-            travel_after = travel_time_default if (is_away and i == len(services) - 1) else 0
+            travel_before = travel_before_default if (is_away and i == 0) else 0
+            travel_after = 0
 
             # Если создаёт мастер — статус confirmed (он уже подтвердил).
             # Если клиент в away — pending (ждёт подтверждения).

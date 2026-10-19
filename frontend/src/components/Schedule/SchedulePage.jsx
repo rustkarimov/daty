@@ -6,7 +6,7 @@ import ScheduleModal from './ScheduleModal';
 import ExtraDayModal from './ExtraDayModal';
 import DayOffModal from './DayOffModal';
 import useModal from '../../hooks/useModal';
-import { updateProfile } from '../../api/profile';
+import { updateAwayTravel } from '../../api/schedule';
 import {
     loadSchedules,
     loadUpcomingExtraDays,
@@ -15,7 +15,10 @@ import {
 } from '../../api/schedule';
 import styles from './SchedulePage.module.css';
 
-export default function SchedulePage({ masterMode = 'home', initialAwayTravelTime = 0 }) {
+export default function SchedulePage({
+    masterMode = 'home',
+    initialAwayTravelBefore = 0,
+}) {
     // Данные
     const [schedules, setSchedules] = useState([]);
     const [futureExtraDays, setFutureExtraDays] = useState([]);
@@ -35,7 +38,7 @@ export default function SchedulePage({ masterMode = 'home', initialAwayTravelTim
     const [dayOffModal, setDayOffModal] = useState(false);
 
     // Время на дорогу (away)
-    const [awayTravelTime, setAwayTravelTime] = useState(initialAwayTravelTime);
+    const [awayTravelBefore, setAwayTravelBefore] = useState(initialAwayTravelBefore);
     const [savingTravelTime, setSavingTravelTime] = useState(false);
 
     const { showAlert } = useModal();
@@ -92,7 +95,6 @@ export default function SchedulePage({ masterMode = 'home', initialAwayTravelTim
         reloadDaysOff();
     }, [reloadSchedules, reloadExtraDays, reloadDaysOff]);
 
-    // Догрузка прошедших доп. дней
     function loadMorePastDays() {
         const nextPage = pastDaysPage + 1;
         loadPastExtraDays(nextPage, 10)
@@ -111,8 +113,8 @@ export default function SchedulePage({ masterMode = 'home', initialAwayTravelTim
     async function handleSaveTravelTime() {
         setSavingTravelTime(true);
         try {
-            const data = await updateProfile({
-                away_travel_time_default: parseInt(awayTravelTime) || 0,
+            const data = await updateAwayTravel({
+                away_travel_time_before_default: parseInt(awayTravelBefore) || 0,
             });
             if (data.success) {
                 showAlert('Время на дорогу сохранено', 'success');
@@ -129,7 +131,6 @@ export default function SchedulePage({ masterMode = 'home', initialAwayTravelTim
 
     return (
         <div className={styles.page}>
-            {/* Заголовок */}
             <div className={styles.pageHeader}>
                 <h2>Расписание</h2>
             </div>
@@ -139,20 +140,22 @@ export default function SchedulePage({ masterMode = 'home', initialAwayTravelTim
                 <div className={styles.card}>
                     <div className={styles.sectionTitle}>Выездной режим</div>
                     <div className={styles.travelTimeBlock}>
-                        <label className={styles.travelTimeLabel}>
-                            <i className="fas fa-car me-1" />
-                            Время на дорогу по умолчанию (мин)
-                        </label>
                         <div className={styles.travelTimeRow}>
-                            <input
-                                type="number"
-                                className={styles.travelTimeInput}
-                                min="0"
-                                step="5"
-                                value={awayTravelTime}
-                                onChange={e => setAwayTravelTime(e.target.value)}
-                                placeholder="0"
-                            />
+                            <div className={styles.travelTimeField}>
+                                <label className={styles.travelTimeLabel}>
+                                    <i className="fas fa-car me-1" />
+                                    Время на дорогу до клиента (мин)
+                                </label>
+                                <input
+                                    type="number"
+                                    className={styles.travelTimeInput}
+                                    min="0"
+                                    step="5"
+                                    value={awayTravelBefore}
+                                    onChange={e => setAwayTravelBefore(e.target.value)}
+                                    placeholder="0"
+                                />
+                            </div>
                             <button
                                 type="button"
                                 className={styles.btnPrimary}

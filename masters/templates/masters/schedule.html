@@ -10,6 +10,6 @@
 {% block content %}
 <div id="react-schedule"
      data-master-mode="{{ master.work_mode }}"
-     data-away-travel-time="{{ master.away_travel_time_default|default:0 }}"></div>
+     data-away-travel-before="{{ master.away_travel_time_before_default|default:0 }}"></div>
 {% csrf_token %}
 {% endblock %}

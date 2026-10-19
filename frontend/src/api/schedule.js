@@ -65,3 +65,10 @@ export function addDayOff(data) {
 export function deleteDayOff(id) {
     return request(`/api/days-off/${id}/delete/`, { method: 'POST' });
 }
+
+export function updateAwayTravel(data) {
+    return request('/api/away-travel/update/', {
+        method: 'POST',
+        body: JSON.stringify(data),
+    });
+}

@@ -54,6 +54,9 @@ urlpatterns = [
     path('api/schedule/<int:schedule_id>/edit/', views.api_edit_schedule, name='api_edit_schedule'),
     path('api/schedule/<int:schedule_id>/delete/', views.api_delete_schedule, name='api_delete_schedule'),
 
+    # Время на дорогу (away)
+    path('api/away-travel/update/', views.api_update_away_travel, name='api_update_away_travel'),
+
     # Ручное добавление записи
     # path('add-booking/', views.add_manual_booking, name='add_manual_booking'),
     path('add-booking/', lambda request: redirect('dashboard'), name='add_manual_booking'),

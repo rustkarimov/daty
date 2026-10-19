@@ -164,22 +164,36 @@ class ScheduleCalculator:
 
     def get_booked_slots_for_date(self, target_date: date):
         """
-        Занятые слоты на дату (учитываем полную длительность — для выезда).
-        Возвращает [(start, end, booking_id)].
+        Занятые интервалы на дату.
+        Для away: [time - travel_time_before, time + service + extra].
+        Для home: [time, time + service + extra].
+        Возвращает [(start_time, end_time, booking_id)].
         """
         bookings = Booking.objects.filter(
             master=self.master,
             date=target_date,
-            status__in=['confirmed', 'pending'],  # pending тоже блокирует
+            status__in=['confirmed', 'pending'],
         ).select_related('service')
 
         booked_slots = []
         for booking in bookings:
-            start = booking.time
-            duration = booking.total_duration_minutes  # ← учитываем буферы
-            end = (datetime.combine(date.today(), start) +
-                   timedelta(minutes=duration)).time()
-            booked_slots.append((start, end, booking.id))
+            base_duration = (booking.service.duration if booking.service else 0)
+            extra = booking.duration_extra_minutes or 0
+            duration = base_duration + extra
+
+            start_dt = datetime.combine(date.today(), booking.time)
+            end_dt = start_dt + timedelta(minutes=duration)
+
+            if self.is_away_mode():
+                before = booking.travel_time_before or 0
+                start_dt = start_dt - timedelta(minutes=before)
+
+            # Обрезаем по границам дня (0..1440)
+            if start_dt.date() < date.today():
+                start_dt = datetime.combine(date.today(), time(0, 0))
+
+            booked_slots.append((start_dt.time(), end_dt.time(), booking.id))
+
         return booked_slots
 
     # ============================================================
@@ -198,8 +212,9 @@ class ScheduleCalculator:
         """
         Генерирует свободные слоты.
 
-        Для выездного режима service_duration автоматически расширяется
-        на travel_time_default + buffer_before + buffer_after.
+        Для home: слот = [slot_start, slot_start + service_duration].
+        Для away: слот = [slot_start - before, slot_start + service_duration]
+                  (проверяем, что мастер выехал и вернулся без пересечений).
         """
         working_hours = self.get_working_hours_for_date(target_date)
         if not working_hours:
@@ -213,11 +228,13 @@ class ScheduleCalculator:
         start_minutes = time_to_minutes(start_work)
         end_minutes = time_to_minutes(end_work)
 
-        # ---- Для выезда: добавляем время на дорогу (туда и обратно) ----
+        # ---- Длительность услуги (без before/after) ----
         full_duration = service_duration
+
+        # ---- Для away: before (дорога до клиента) ----
+        before = 0
         if self.is_away_mode():
-            travel = self.master.away_travel_time_default or 0
-            full_duration = service_duration + travel + travel
+            before = self.master.away_travel_time_before_default or 0
 
         # Если передан current_time (для сегодняшнего дня) — начинаем с текущего
         if current_time:
@@ -230,10 +247,10 @@ class ScheduleCalculator:
         if start_minutes >= end_minutes:
             return []
 
-        # ---- Перерывы ----
+        # ---- Перерывы (учитываем в обоих режимах) ----
         breaks = self.get_breaks_for_date(target_date)
 
-        # ---- Занятые слоты ----
+        # ---- Занятые интервалы ----
         booked_slots = []
         for start, end, booking_id in self.get_booked_slots_for_date(target_date):
             if exclude_booking_id and booking_id == exclude_booking_id:
@@ -247,7 +264,11 @@ class ScheduleCalculator:
                     id=original_booking_id, master=self.master
                 )
                 original_start = time_to_minutes(original_booking.time)
-                original_end = original_start + original_booking.total_duration_minutes
+                base = original_booking.service.duration if original_booking.service else 0
+                extra = original_booking.duration_extra_minutes or 0
+                original_end = original_start + base + extra
+                if self.is_away_mode():
+                    original_start -= (original_booking.travel_time_before or 0)
 
                 booked_slots = [
                     (s, e) for (s, e) in booked_slots
@@ -266,6 +287,7 @@ class ScheduleCalculator:
                 busy_minutes[m] = True
 
         # ---- Генерация слотов ----
+        # ---- Генерация слотов ----
         all_slots = []
         current = start_minutes
 
@@ -273,14 +295,20 @@ class ScheduleCalculator:
             slot_start = current
             slot_end = current + full_duration
 
+            # Для away проверяем [slot_start - before, slot_end]
+            check_start = slot_start
+            if self.is_away_mode():
+                check_start = max(0, slot_start - before)
+
             is_free = True
-            for m in range(slot_start, min(slot_end, 1440)):
+            conflict_end = None
+            for m in range(check_start, min(slot_end, 1440)):
                 if busy_minutes[m]:
                     is_free = False
                     m_end = m
                     while m_end < 1440 and busy_minutes[m_end]:
                         m_end += 1
-                    current = m_end
+                    conflict_end = m_end
                     break
 
             if is_free:
@@ -294,6 +322,17 @@ class ScheduleCalculator:
                     'id': len(all_slots),
                 })
                 current += slot_step
+            else:
+                # Следующий слот — после занятого интервала + before
+                if self.is_away_mode():
+                    next_start = conflict_end + before
+                else:
+                    next_start = conflict_end
+
+                # Гарантируем прогресс
+                current = max(next_start, slot_start + 1)
+                # Выравниваем по шагу
+                current = ((current + slot_step - 1) // slot_step) * slot_step
 
         return all_slots
 
