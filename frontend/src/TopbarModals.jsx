@@ -19,6 +19,7 @@ export default function TopbarModals() {
 
     // masterSlug для AddBookingModal берём из #react-app (общий для всех страниц)
     const masterSlug = document.getElementById('react-app')?.dataset.masterSlug || '';
+    const masterMode = document.getElementById('react-app')?.dataset.masterMode || 'home';
 
     useEffect(() => {
         function handleOpenAddBooking() {
@@ -47,6 +48,7 @@ export default function TopbarModals() {
             {addBookingOpen && (
                 <AddBookingModal
                     masterSlug={masterSlug}
+                    masterMode={masterMode}
                     onClose={() => setAddBookingOpen(false)}
                     onCreated={handleCreated}
                 />

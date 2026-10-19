@@ -95,6 +95,7 @@ export default function Calendar({ masterSlug, masterMode = 'home', onExternalCh
                 <DayModal
                     dateStr={selectedDate}
                     masterSlug={masterSlug}
+                    masterMode={masterMode}
                     onClose={handleCloseModal}
                     onDataChanged={handleDataChanged}
                 />

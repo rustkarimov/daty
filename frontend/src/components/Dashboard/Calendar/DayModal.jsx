@@ -169,7 +169,7 @@ export default function DayModal({ dateStr, masterSlug, masterMode = 'home', onC
         try {
             const bookingsData = await loadBookingsByDate(dateStr);
             setBookings(bookingsData.bookings || []);
-            if (onDataChanged) onDataChanged('Запись добавлена');
+            if (onDataChanged) onDataChanged();
         } catch (error) {
             console.error('Ошибка перезагрузки записей:', error);
         }
