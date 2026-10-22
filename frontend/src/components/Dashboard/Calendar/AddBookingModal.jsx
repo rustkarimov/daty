@@ -28,6 +28,9 @@ export default function AddBookingModal({
     const [clientName, setClientName] = useState('');
     const [clientPhone, setClientPhone] = useState('');
     const [clientAddress, setClientAddress] = useState('');
+    const [travelBefore, setTravelBefore] = useState(0);
+    const [travelAfter, setTravelAfter] = useState(0);
+    const [durationExtra, setDurationExtra] = useState(0);
     const [comment, setComment] = useState('');
     const [loading, setLoading] = useState(true);
     const [loadingDates, setLoadingDates] = useState(false);
@@ -181,6 +184,9 @@ export default function AddBookingModal({
                 client_address: isAway ? clientAddress.trim() : '',
                 comment: comment.trim(),
                 created_by: 'master',
+                travel_time_before: isAway ? (parseInt(travelBefore) || 0) : 0,
+                travel_time_after: isAway ? (parseInt(travelAfter) || 0) : 0,
+                duration_extra_minutes: parseInt(durationExtra) || 0,
             });
             if (data.success) {
                 setCreatedBooking({
@@ -215,6 +221,9 @@ export default function AddBookingModal({
         setClientName('');
         setClientPhone('');
         setClientAddress('');
+        setTravelBefore(0);
+        setTravelAfter(0);
+        setDurationExtra(0);
         setComment('');
 
         setTimeout(() => {
@@ -448,13 +457,61 @@ export default function AddBookingModal({
                                             />
 
                                             {isAway && (
-                                                <input
-                                                    type="text"
-                                                    className={shared.formInput}
-                                                    placeholder="Адрес клиента (куда ехать)"
-                                                    value={clientAddress}
-                                                    onChange={e => setClientAddress(e.target.value)}
-                                                />
+                                                <>
+                                                    <input
+                                                        type="text"
+                                                        className={shared.formInput}
+                                                        placeholder="Адрес клиента (куда ехать)"
+                                                        value={clientAddress}
+                                                        onChange={e => setClientAddress(e.target.value)}
+                                                    />
+
+                                                    <div className={shared.twoCols}>
+                                                        <div className={shared.col}>
+                                                            <label className={shared.miniLabel}>
+                                                                Время до (мин)
+                                                            </label>
+                                                            <input
+                                                                type="number"
+                                                                className={shared.formInput}
+                                                                min="0"
+                                                                step="5"
+                                                                value={travelBefore}
+                                                                onChange={e => setTravelBefore(e.target.value)}
+                                                                placeholder="0"
+                                                            />
+                                                        </div>
+                                                        <div className={shared.col}>
+                                                            <label className={shared.miniLabel}>
+                                                                Время после (мин)
+                                                            </label>
+                                                            <input
+                                                                type="number"
+                                                                className={shared.formInput}
+                                                                min="0"
+                                                                step="5"
+                                                                value={travelAfter}
+                                                                onChange={e => setTravelAfter(e.target.value)}
+                                                                placeholder="0"
+                                                            />
+                                                        </div>
+                                                    </div>
+
+                                                    <div>
+                                                        <label className={shared.miniLabel}>
+                                                            Доп. минуты к услуге
+                                                        </label>
+                                                        <input
+                                                            type="number"
+                                                            className={shared.formInput}
+                                                            min="0"
+                                                            step="5"
+                                                            value={durationExtra}
+                                                            onChange={e => setDurationExtra(e.target.value)}
+                                                            placeholder="0"
+                                                        />
+                                                    </div>
+                                                </>
                                             )}
 
                                             <textarea

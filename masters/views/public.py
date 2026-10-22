@@ -175,6 +175,10 @@ def create_booking(request, identifier):
         created_by = data.get('created_by', 'client')
         client_address = (data.get('client_address') or '').strip()
 
+        travel_time_before = data.get('travel_time_before')
+        travel_time_after = data.get('travel_time_after')
+        duration_extra_minutes = data.get('duration_extra_minutes')
+
         is_away = master.work_mode == 'away'
 
         if is_away and not client_address:
@@ -217,6 +221,7 @@ def create_booking(request, identifier):
         else:
             encrypted_phone = client_phone_cleaned.encode()
 
+
         travel_before_default = (master.away_travel_time_before_default or 0) if is_away else 0
 
         if created_by == 'master':
@@ -225,6 +230,19 @@ def create_booking(request, identifier):
             booking_status = 'pending'
         else:
             booking_status = 'confirmed'
+
+        # Если мастер задал — используем его. Иначе — default.
+        if travel_time_before is not None and is_away:
+            final_travel_before = int(travel_time_before)
+        else:
+            final_travel_before = travel_before_default
+
+        if travel_time_after is not None and is_away:
+            final_travel_after = int(travel_time_after)
+        else:
+            final_travel_after = 0
+
+        final_extra_minutes = int(duration_extra_minutes) if duration_extra_minutes is not None else 0
 
         booking = Booking.objects.create(
             master=master,
@@ -239,8 +257,9 @@ def create_booking(request, identifier):
             confirmed_by_master=(created_by == 'master'),
             service_mode='away' if is_away else 'home',
             client_address=client_address if is_away else '',
-            travel_time_before=travel_before_default,
-            travel_time_after=0,
+            travel_time_before=final_travel_before,
+            travel_time_after=final_travel_after,
+            duration_extra_minutes=final_extra_minutes,
         )
 
         message = 'Предварительная запись оформлена. Ждите подтверждения мастера.' if is_away else 'Запись создана!'
@@ -286,6 +305,10 @@ def create_multiple_bookings(request, identifier):
         comment = data.get('comment', '')
         created_by = data.get('created_by', 'client')
         client_address = (data.get('client_address') or '').strip()
+        
+        travel_time_before = data.get('travel_time_before')
+        travel_time_after = data.get('travel_time_after')
+        duration_extra_minutes = data.get('duration_extra_minutes')
 
         is_away = master.work_mode == 'away'
 
@@ -351,10 +374,19 @@ def create_multiple_bookings(request, identifier):
             else:
                 service_comment = comment
 
-            # Для away: время на дорогу ставим только на первую услугу (туда)
-            # и на последнюю (обратно). Для промежуточных — 0.
-            travel_before = travel_before_default if (is_away and i == 0) else 0
-            travel_after = 0
+    
+            # Если мастер задал — используем его. Иначе — defaults.
+            if travel_time_before is not None and is_away and i == 0:
+                travel_before = int(travel_time_before)
+            else:
+                travel_before = travel_before_default if (is_away and i == 0) else 0
+
+            if travel_time_after is not None and is_away and i == len(services) - 1:
+                travel_after = int(travel_time_after)
+            else:
+                travel_after = 0
+
+            extra_minutes = int(duration_extra_minutes) if duration_extra_minutes is not None else 0
 
             # Если создаёт мастер — статус confirmed (он уже подтвердил).
             # Если клиент в away — pending (ждёт подтверждения).
@@ -380,6 +412,7 @@ def create_multiple_bookings(request, identifier):
                 client_address=client_address if is_away else '',
                 travel_time_before=travel_before,
                 travel_time_after=travel_after,
+                duration_extra_minutes=extra_minutes,
             )
             created_bookings.append(booking)
             services_list.append(service.name)
