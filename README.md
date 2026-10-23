@@ -4,176 +4,241 @@
 
 ## Что умеет
 
-- 📅 **Умное расписание** — настройка рабочих дней, перерывов, выходных
-- ✂️ **Услуги с категориями** — гибкое управление прайсом
-- 👥 **Запись клиентов** — личная страница мастера с онлайн-записью
-- 📊 **Статистика** — визиты клиентов, лояльность, чёрный список
-- 🔒 **Шифрование телефонов** — данные клиентов защищены (Fernet)
-- 💬 **Чат поддержки** — прямая связь с администрацией
-- 📱 **PWA** — работает как мобильное приложение *(в разработке)*
+- Умное расписание — настройка рабочих дней, перерывов, выходных
+- Услуги с категориями — гибкое управление прайсом
+- Запись клиентов — личная страница мастера с онлайн-записью
+- Статистика — визиты клиентов, лояльность, чёрный список
+- Шифрование телефонов — данные клиентов защищены (Fernet)
+- Чат поддержки — прямая связь с администрацией
+- PWA — работает как мобильное приложение (в разработке)
+- Два режима: home (дома) и away (выезд)
 
 ## Стек
 
-- **Backend:** Django 4.2, Python 3.11
-- **Frontend:** Django Templates + Vanilla JS, Bootstrap 5
-- **БД:** SQLite (dev) / PostgreSQL (prod)
-- **Шифрование:** Fernet (cryptography)
-- **SMS:** SMS.ru
+- Backend: Django 4.2, Python 3.11
+- Frontend: Django Templates + React (Vite), Bootstrap 5
+- БД: SQLite (dev) / PostgreSQL (prod)
+- Шифрование: Fernet (cryptography)
+- SMS: SMS.ru
+- Push: pywebpush (VAPID)
 
 ## Установка (локально)
 
 ### Требования
+
 - Python 3.11+
 - pip
+- Node.js 18+
 - Git
 
 ### Шаги
 
-```bash
-# 1. Клонировать репозиторий
+1. Клонировать репозиторий:
+
 git clone <url-репозитория>
 cd mymaster
+text
 
-# 2. Создать виртуальное окружение
+
+2. Создать виртуальное окружение:
+
 python -m venv venv
+text
 
-# Активировать
-# Windows:
-venv\Scripts\activate
-# Linux/Mac:
-source venv/bin/activate
 
-# 3. Установить зависимости
+3. Активировать:
+- Windows: `venv\Scripts\activate`
+- Linux/Mac: `source venv/bin/activate`
+
+4. Установить зависимости:
+
 pip install -r requirements.txt
+text
 
-# 4. Создать .env
-copy .env.example .env       # Windows
-# или
-cp .env.example .env         # Linux/Mac
 
-# 5. Отредактировать .env — вставить свои значения
+5. Создать `.env`:
 
-# 6. Применить миграции
+copy .env.example .env # Windows
+cp .env.example .env # Linux/Mac
+text
+
+
+6. Отредактировать `.env` — вставить свои значения.
+
+7. Применить миграции:
+
 python manage.py migrate
+text
 
-# 7. Создать суперпользователя (для админки)
+
+8. Создать суперпользователя:
+
 python manage.py createsuperuser
+text
 
-# 8. Запустить сервер
+
+9. Собрать фронтенд:
+
+cd frontend
+npm install
+npm run build
+cd ..
+text
+
+
+10. Запустить сервер:
+
 python manage.py runserver
+text
 
 
-Запуск тестов
-bash
+### Запуск тестов
 
 python manage.py test
+text
+
 
 19 тестов покрывают:
+- Создание записи (10 тестов)
+- Регистрация мастера (3 теста)
+- Отмена записи (3 теста)
+- Расчёт слотов (3 теста)
 
-    Создание записи (10 тестов)
-
-    Регистрация мастера (3 теста)
-
-    Отмена записи (3 теста)
-
-    Расчёт слотов (3 теста)
-
-Структура проекта
+## Структура проекта
 
 mymaster/
-├── mymaster/              # Настройки Django
-│   ├── settings.py
-│   ├── urls.py
-│   └── ...
-├── masters/               # Основное приложение
-│   ├── models.py          # Модели: Master, Service, Booking, ...
-│   ├── views.py           # Views: страницы + API
-│   ├── forms.py           # Формы
-│   ├── admin.py           # Админка
-│   ├── signals.py         # Сигналы (создание профиля, уведомления)
-│   ├── urls.py            # URL-ы
-│   ├── utils/             # Утилиты
-│   │   ├── schedule_utils.py    # Расчёт слотов
-│   │   ├── sms_utils.py         # Отправка SMS
-│   │   ├── call_utils.py        # Звонки (SMS.ru)
-│   │   ├── master_utils.py      # Поиск мастера
-│   │   └── response_utils.py    # API-ответы
-│   ├── templates/         # HTML-шаблоны
-│   │   ├── masters/       # Шаблоны кабинета
-│   │   └── admin/         # Кастомная админка
-│   ├── tests/             # Тесты
-│   │   ├── factories.py
-│   │   ├── test_booking.py
-│   │   ├── test_registration.py
-│   │   ├── test_cancellation.py
-│   │   └── test_schedule.py
-│   └── ...
-├── static/                # Статика
-│   ├── css/
-│   ├── js/
-│   └── images/
-├── media/                 # Загруженные файлы (аватары)
-├── requirements.txt       # Зависимости
-├── .env.example           # Шаблон окружения
+├── mymaster/ # Настройки Django
+│ ├── settings.py
+│ ├── urls.py
+│ └── ...
+├── masters/ # Основное приложение
+│ ├── models.py # Модели: Master, Service, Booking, ...
+│ ├── views/ # Views (разбиты по модулям)
+│ │ ├── dashboard.py
+│ │ ├── bookings.py
+│ │ ├── public.py
+│ │ ├── schedule.py
+│ │ ├── services.py
+│ │ ├── profile.py
+│ │ ├── auth.py
+│ │ ├── client_api.py
+│ │ ├── clients.py
+│ │ ├── notifications.py
+│ │ ├── support.py
+│ │ └── ...
+│ ├── utils/ # Утилиты
+│ │ ├── schedule_utils.py # Расчёт слотов
+│ │ ├── sms_utils.py # Отправка SMS
+│ │ ├── call_utils.py # Звонки (SMS.ru)
+│ │ ├── master_utils.py # Поиск мастера
+│ │ ├── push_utils.py # Push-уведомления
+│ │ └── response_utils.py # API-ответы
+│ ├── templates/ # HTML-шаблоны
+│ │ ├── masters/ # Шаблоны кабинета
+│ │ └── admin/ # Кастомная админка
+│ ├── tests/ # Тесты
+│ └── ...
+├── frontend/ # React-приложение (Vite)
+│ ├── src/
+│ │ ├── components/
+│ │ │ ├── Dashboard/
+│ │ │ ├── Services/
+│ │ │ ├── Schedule/
+│ │ │ ├── Clients/
+│ │ │ ├── Profile/
+│ │ │ ├── Public/
+│ │ │ └── modals/
+│ │ ├── api/
+│ │ ├── hooks/
+│ │ ├── utils/
+│ │ └── entries/
+│ ├── package.json
+│ └── vite.config.js
+├── static/ # Статика
+│ ├── css/
+│ ├── js/
+│ └── images/
+├── media/ # Загруженные файлы (аватары)
+├── requirements.txt # Зависимости
+├── .env.example # Шаблон окружения
 ├── .gitignore
 └── manage.py
+text
 
 
-Основные API endpoints
-Публичные (для клиентов)
+## Основные API endpoints
 
-    GET /api/master/<slug>/categories/ — услуги мастера
+### Публичные (для клиентов)
 
-    GET /api/<slug>/dates/?total_duration=60 — доступные даты
+- `GET /api/master/<slug>/categories/` — услуги мастера
+- `GET /api/<slug>/dates/?total_duration=60` — доступные даты
+- `GET /api/<slug>/slots/?total_duration=60&date=2026-10-01` — доступные слоты
+- `POST /api/<slug>/book/` — создать запись (одна услуга)
+- `POST /api/<slug>/book-multiple/` — создать запись (несколько услуг)
 
-    GET /api/<slug>/slots/?total_duration=60&date=2026-10-01 — доступные слоты
+### Приватные (для мастера, требуется авторизация)
 
-    POST /api/<slug>/book/ — создать запись (одна услуга)
+- `GET /api/bookings/` — список записей (пагинация)
+- `POST /api/booking/<id>/delete/` — удалить запись
+- `POST /api/booking/<id>/confirm/` — подтвердить запись
+- `POST /api/booking/<id>/unconfirm/` — снять подтверждение
+- `GET /api/clients-statistics/` — статистика клиентов
+- `POST /api/services/add/` — добавить услугу
+- `GET /api/schedule/calendar/` — расписание для календаря
+- `GET /api/day-status/?date=2026-10-01` — статус дня
+- `POST /api/away-travel/update/` — время на дорогу (away)
 
-    POST /api/<slug>/book-multiple/ — создать запись (несколько услуг)
+### Аутентификация
 
-Приватные (для мастера, требуется авторизация)
+- `POST /api/mobile/login/` — вход
+- `POST /api/mobile/register/` — регистрация
+- `POST /api/mobile/verify/` — подтверждение кода
 
-    GET /api/bookings/ — список записей (пагинация)
+### Push-уведомления
 
-    POST /api/booking/<id>/delete/ — удалить запись
+- `GET /api/push/vapid-key/` — публичный VAPID-ключ
+- `POST /api/push/subscribe/` — подписка
+- `POST /api/push/unsubscribe/` — отписка
+- `POST /api/push/check/` — проверка подписки
 
-    POST /api/booking/<id>/confirm/ — подтвердить запись
+## Режимы работы
 
-    GET /api/clients-statistics/ — статистика клиентов
+### Home (дома)
 
-    POST /api/services/add/ — добавить услугу
+- `Schedule`, `ExtraWorkingDay`, `DayOff` — расписание, доп. дни, выходные.
+- `Break`, `ExtraWorkingDayBreak` — перерывы.
+- Услуги — общие (не фильтруются по режиму).
 
-Аутентификация
+### Away (выезд)
 
-    POST /api/mobile/login/ — вход
+- `AwaySchedule`, `AwayExtraDay`, `AwayDayOff` — расписание, доп. дни, выходные.
+- `AwayBreak`, `AwayExtraDayBreak` — перерывы.
+- `Master.away_travel_time_before_default`, `Master.away_travel_time_after_default` — время на дорогу (default).
+- `Master.arrival_window_minutes` — интервал приезда (0–120).
+- `Booking.travel_time_before`, `Booking.travel_time_after`, `Booking.duration_extra_minutes` — для конкретной записи.
+- `Booking.service_mode = 'away'`, `Booking.status = 'pending'` (до подтверждения), `Booking.client_address` — адрес.
 
-    POST /api/mobile/register/ — регистрация
+### Переключение
 
-    POST /api/mobile/verify/ — подтверждение кода
+- `WorkModeToggle` в `DashboardPage` (перед `PushSettings`).
+- `Master.work_mode` = `home` / `away`.
+- При переключении — страницы (расписание, календарь, услуги) показывают данные соответствующего режима.
 
-Безопасность
+## Безопасность
 
-    ✅ Шифрование телефонов — Fernet (AES-128)
+- Шифрование телефонов — Fernet (AES-128)
+- CSRF-защита — Django встроенная
+- XSS-защита — экранирование в шаблонах и JS
+- SQL-инъекции — Django ORM защищает
+- Пароли — bcrypt (Django default)
+- Rate limit — SMS, звонки (django.core.cache)
 
-    ✅ CSRF-защита — Django встроенная
+## Как внести вклад
 
-    ✅ XSS-защита — экранирование в шаблонах и JS
-
-    ✅ SQL-инъекции — Django ORM защищает
-
-    ✅ Пароли — bcrypt (Django default)
-
-Как внести вклад
-
-    Создайте ветку: git checkout -b feature/название
-
-    Внесите изменения
-
-    Запустите тесты: python manage.py test
-
-    Если всё ок — коммит: git commit -m "Описание"
-
-    Push: git push origin feature/название
-
-    Создайте Pull Request
+1. Создайте ветку: `git checkout -b feature/название`
+2. Внесите изменения
+3. Запустите тесты: `python manage.py test`
+4. Соберите фронт: `cd frontend && npm run build`
+5. Если всё ок — коммит: `git commit -m "Описание"`
+6. Push: `git push origin feature/название`
+7. Создайте Pull Request

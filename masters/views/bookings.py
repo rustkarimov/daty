@@ -138,22 +138,6 @@ def api_update_booking(request, booking_id):
         target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
         target_time = datetime.strptime(time_str, '%H:%M').time()
 
-        # Проверка свободного времени
-        calculator = ScheduleCalculator(request.user.master)
-        slots = calculator.generate_time_slots(
-            target_date,
-            service.duration,
-            exclude_booking_id=booking.id,
-            original_booking_id=booking.id
-        )
-
-        is_available = any(slot['start'] == time_str for slot in slots)
-
-        # Если время изменилось и недоступно — предупреждение (не блокируем)
-        warning = None
-        if not is_available and (booking.date != target_date or booking.time != target_time):
-            warning = 'Выбранное время пересекается с другой записью. Свяжитесь с клиентом, чтобы изменить время.'
-
         # Шифрование телефона
         key = request.user.master.get_encryption_key()
         if key:
@@ -161,6 +145,9 @@ def api_update_booking(request, booking_id):
             encrypted_phone = f.encrypt(client_phone_cleaned.encode())
         else:
             encrypted_phone = client_phone_cleaned.encode()
+
+        old_date = booking.date
+        old_time = booking.time
 
         # Обновление записи
         booking.service = service
@@ -174,12 +161,29 @@ def api_update_booking(request, booking_id):
         booking.travel_time_before = int(travel_time_before or 0)
         booking.travel_time_after = int(travel_time_after or 0)
         booking.duration_extra_minutes = int(duration_extra_minutes or 0)
+
+        # Проверка на конфликт (warning, не блок)
+        warning = None
+        if booking.service_mode == 'away':
+            calculator = ScheduleCalculator(request.user.master)
+            slots = calculator.generate_time_slots(
+                target_date,
+                service.duration,
+                exclude_booking_id=booking.id,
+                original_booking_id=booking.id,
+            )
+            is_available = any(slot['start'] == time_str for slot in slots)
+            if not is_available:
+                warning = (
+                    'Выбранное время пересекается с другой записью. '
+                    'Свяжитесь с клиентом, чтобы изменить время.'
+                )
+
         booking.save()
 
         response_data = {'message': 'Запись обновлена'}
         if warning:
             response_data['warning'] = warning
-
         return api_success(response_data)
 
     except json.JSONDecodeError:

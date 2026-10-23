@@ -103,6 +103,10 @@ class Master(models.Model):
         default=0,
         verbose_name="Время на дорогу туда по умолчанию (мин)",
     )
+    away_travel_time_after_default = models.IntegerField(
+        default=0,
+        verbose_name="Время на дорогу обратно по умолчанию (мин)",
+    )
     arrival_window_minutes = models.IntegerField(
         default=30,
         verbose_name="Интервал прибытия (мин)",

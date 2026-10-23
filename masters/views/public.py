@@ -127,13 +127,15 @@ def get_available_slots(request, identifier):
             original_booking_id=int(original_booking_id) if original_booking_id else None
         )
 
-        # Полная длительность (для away — с учётом дороги туда + обратно)
-        # Полная длительность (для away — с учётом дороги до клиента)
-        full_duration = duration
-        travel_before = 0
+        # Полная длительность «занятости» для отображения
         if master.work_mode == 'away':
+            W = master.arrival_window_minutes or 0
+            travel_after = master.away_travel_time_after_default or 0
             travel_before = master.away_travel_time_before_default or 0
-            full_duration = duration + travel_before
+            full_duration = travel_before + W + duration + travel_after
+        else:
+            travel_before = 0
+            full_duration = duration
 
         return JsonResponse({
             'slots': slots,
@@ -147,7 +149,6 @@ def get_available_slots(request, identifier):
         logger = logging.getLogger(__name__)
         logger.exception(f"Ошибка в get_available_slots: {e}")
         return JsonResponse({'error': str(e)}, status=500)
-
 
 # ============================================================
 # СОЗДАНИЕ ЗАПИСЕЙ (ПУБЛИЧНЫЕ)
@@ -221,8 +222,8 @@ def create_booking(request, identifier):
         else:
             encrypted_phone = client_phone_cleaned.encode()
 
-
         travel_before_default = (master.away_travel_time_before_default or 0) if is_away else 0
+        travel_after_default = (master.away_travel_time_after_default or 0) if is_away else 0
 
         if created_by == 'master':
             booking_status = 'confirmed'
@@ -240,7 +241,7 @@ def create_booking(request, identifier):
         if travel_time_after is not None and is_away:
             final_travel_after = int(travel_time_after)
         else:
-            final_travel_after = 0
+            final_travel_after = travel_after_default
 
         final_extra_minutes = int(duration_extra_minutes) if duration_extra_minutes is not None else 0
 
@@ -305,7 +306,7 @@ def create_multiple_bookings(request, identifier):
         comment = data.get('comment', '')
         created_by = data.get('created_by', 'client')
         client_address = (data.get('client_address') or '').strip()
-        
+
         travel_time_before = data.get('travel_time_before')
         travel_time_after = data.get('travel_time_after')
         duration_extra_minutes = data.get('duration_extra_minutes')
@@ -365,6 +366,9 @@ def create_multiple_bookings(request, identifier):
         services_list = []
 
         travel_before_default = (master.away_travel_time_before_default or 0) if is_away else 0
+        travel_after_default = (master.away_travel_time_after_default or 0) if is_away else 0
+
+        extra_minutes = int(duration_extra_minutes) if duration_extra_minutes is not None else 0
 
         for i, service in enumerate(services):
             booking_time = (datetime.combine(date.today(), start_time) + timedelta(minutes=time_offset)).time()
@@ -374,22 +378,18 @@ def create_multiple_bookings(request, identifier):
             else:
                 service_comment = comment
 
-    
-            # Если мастер задал — используем его. Иначе — defaults.
+            # travel_before: только для первой услуги (если мастер задал — его, иначе default)
             if travel_time_before is not None and is_away and i == 0:
                 travel_before = int(travel_time_before)
             else:
                 travel_before = travel_before_default if (is_away and i == 0) else 0
 
+            # travel_after: только для последней услуги
             if travel_time_after is not None and is_away and i == len(services) - 1:
                 travel_after = int(travel_time_after)
             else:
-                travel_after = 0
+                travel_after = travel_after_default if (is_away and i == len(services) - 1) else 0
 
-            extra_minutes = int(duration_extra_minutes) if duration_extra_minutes is not None else 0
-
-            # Если создаёт мастер — статус confirmed (он уже подтвердил).
-            # Если клиент в away — pending (ждёт подтверждения).
             if created_by == 'master':
                 booking_status = 'confirmed'
             elif is_away:

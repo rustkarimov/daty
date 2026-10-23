@@ -3,7 +3,7 @@
 """
 import re
 import json
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
@@ -449,21 +449,22 @@ def get_bookings_by_date(request):
     """API: возвращает список записей на конкретную дату."""
     master = request.user.master
     date_str = request.GET.get('date')
-    
+
     if not date_str:
         return JsonResponse({'error': 'Дата не указана'}, status=400)
-    
+
     target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
-    
+
     bookings = Booking.objects.filter(
         master=master,
         date=target_date,
         status__in=['confirmed', 'pending'],
         service_mode=master.work_mode,
-    ).order_by('time').select_related('service')
-    
+    ).order_by('time').select_related('service', 'service__category')
+
     key = master.get_encryption_key()
-    
+    is_away = master.work_mode == 'away'
+
     data = []
     for booking in bookings:
         # Расшифровываем телефон
@@ -471,36 +472,72 @@ def get_bookings_by_date(request):
         if key:
             try:
                 f = Fernet(key)
-                decrypted = f.decrypt(bytes(booking.encrypted_phone)).decode()
-                phone = decrypted
+                phone = f.decrypt(bytes(booking.encrypted_phone)).decode()
             except (InvalidToken, Exception):
                 try:
                     phone = booking.encrypted_phone.decode('utf-8')
-                except:
+                except Exception:
                     phone = str(booking.encrypted_phone)
         else:
             try:
                 phone = booking.encrypted_phone.decode('utf-8')
-            except:
+            except Exception:
                 phone = str(booking.encrypted_phone)
-        
-        # Форматируем телефон
+
         phone_cleaned = re.sub(r'\D', '', phone)
         if len(phone_cleaned) == 11:
-            formatted_phone = f"{phone_cleaned[0]} {phone_cleaned[1:4]} {phone_cleaned[4:7]}-{phone_cleaned[7:9]}-{phone_cleaned[9:11]}"
+            formatted_phone = (
+                f"{phone_cleaned[0]} {phone_cleaned[1:4]} "
+                f"{phone_cleaned[4:7]}-{phone_cleaned[7:9]}-{phone_cleaned[9:11]}"
+            )
         else:
             formatted_phone = phone
-        
-        data.append({
+
+        item = {
             'id': booking.id,
             'time': booking.time.strftime('%H:%M'),
             'client_name': booking.client_name,
             'service_name': booking.service.name,
-            'category_name': booking.service.category.name if booking.service.category else None,
+            'category_name': (
+                booking.service.category.name if booking.service.category else None
+            ),
             'service_duration': booking.service.duration,
-            'phone': formatted_phone
-        })
-    
+            'phone': formatted_phone,
+            'status': booking.status,
+            'service_mode': booking.service_mode,
+        }
+
+        # Для away — расширенные поля для timeline
+        if is_away:
+            W = master.arrival_window_minutes or 0
+            B = booking.travel_time_before or 0
+            F = booking.travel_time_after or 0
+            S = booking.service.duration if booking.service else 0
+            extra = booking.duration_extra_minutes or 0
+
+            A_dt = datetime.combine(target_date, booking.time)
+            arrival_start = A_dt
+            arrival_end = arrival_start + timedelta(minutes=W)
+            service_start = arrival_end
+            service_end = service_start + timedelta(minutes=S + extra)
+            busy_start = arrival_start - timedelta(minutes=B)
+            busy_end = service_end + timedelta(minutes=F)
+
+            item.update({
+                'arrival_start': arrival_start.strftime('%H:%M'),
+                'arrival_end': arrival_end.strftime('%H:%M'),
+                'service_start': service_start.strftime('%H:%M'),
+                'service_end': service_end.strftime('%H:%M'),
+                'busy_start': busy_start.strftime('%H:%M'),
+                'busy_end': busy_end.strftime('%H:%M'),
+                'travel_before': B,
+                'travel_after': F,
+                'duration_extra_minutes': extra,
+                'arrival_window': W,
+            })
+
+        data.append(item)
+
     return JsonResponse({'bookings': data})
 
 
@@ -562,5 +599,9 @@ def get_day_status(request):
         'breaks': breaks,
         'date': date_str,
         'mode': master.work_mode,
+        # ↓ для away-timeline
+        'arrival_window_minutes': master.arrival_window_minutes or 0,
+        'away_travel_time_before_default': master.away_travel_time_before_default or 0,
+        'away_travel_time_after_default': master.away_travel_time_after_default or 0,
     })
     
