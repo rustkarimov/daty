@@ -2,7 +2,6 @@
 /* ========== DAY MODAL (CSS Module) ========================== */
 /* ============================================================ */
 
-/* ---- Backdrop ---- */
 .backdrop {
     position: fixed;
     inset: 0;
@@ -15,7 +14,6 @@
     padding: 24px 16px;
 }
 
-/* ---- Окно модалки ---- */
 .modal {
     background: white;
     border-radius: 16px;
@@ -30,7 +28,6 @@
     animation: fadeInUp 0.3s ease;
 }
 
-/* ---- Заголовок ---- */
 .header {
     padding: 16px 20px;
     background: white;
@@ -68,14 +65,12 @@
     color: var(--gray-800);
 }
 
-/* ---- Тело ---- */
 .body {
     padding: 20px;
     overflow-y: auto;
     flex: 1;
 }
 
-/* ---- Состояние загрузки ---- */
 .loading {
     text-align: center;
     padding: 24px 0;
@@ -119,14 +114,6 @@
     align-items: center;
     gap: 6px;
     color: var(--gray-700);
-}
-
-/* ---- Редактирование часов ---- */
-.hoursEdit {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
 }
 
 .hoursInput {
@@ -189,12 +176,10 @@
     color: var(--gray-700);
 }
 
-/* ---- Блок перерывов ---- */
 .breaksBlock {
     margin-bottom: 16px;
 }
 
-/* ---- Кнопки управления ---- */
 .actions {
     display: flex;
     gap: 8px;
@@ -261,14 +246,12 @@
     background: var(--primary-dark);
 }
 
-/* ---- Разделитель ---- */
 .divider {
     border: none;
     border-top: 1px solid var(--gray-200);
     margin: 16px 0;
 }
 
-/* ---- Заголовок списка записей ---- */
 .bookingsTitle {
     font-size: 0.95rem;
     font-weight: 600;
@@ -279,84 +262,13 @@
     gap: 8px;
 }
 
-/* ---- Пустое состояние ---- */
 .emptyState {
     text-align: center;
     color: var(--gray-500);
-    margin: 0;
-}
-
-/* ---- Таблица записей ---- */
-.tableWrapper {
-    overflow: visible;
-}
-
-.table {
-    width: 100%;
-    font-size: 0.9rem;
-    border-collapse: collapse;
-}
-
-.table thead th {
-    font-weight: 600;
-    color: var(--gray-600);
-    border-bottom: 2px solid var(--gray-200);
-    padding: 8px 12px;
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-    text-align: left;
-    background: var(--gray-50);
-}
-
-.table tbody td {
-    padding: 10px 12px;
-    vertical-align: middle;
-    border-bottom: 1px solid var(--gray-100);
-}
-
-.table tbody tr:last-child td {
-    border-bottom: none;
-}
-
-/* ---- Действия в таблице ---- */
-.actionsCell {
-    white-space: nowrap;
-}
-
-.actionIcons {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-}
-
-.actionIconBtn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    padding: 0;
-    border-radius: 8px;
-    border: none;
-    background: transparent;
-    color: var(--gray-600);
+    margin: 12px 0 0 0;
     font-size: 0.85rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
 }
 
-.actionIconBtn:hover {
-    background: var(--gray-100);
-    color: var(--gray-800);
-}
-
-.actionIconBtnDelete:hover {
-    background: #fef2f2;
-    color: #dc2626;
-}
-
-/* ---- Футер ---- */
 .footer {
     padding: 12px 20px;
     background: var(--gray-50);
@@ -384,7 +296,6 @@
     color: var(--gray-800);
 }
 
-/* ---- Анимация ---- */
 @keyframes fadeInUp {
     from {
         opacity: 0;
@@ -400,31 +311,12 @@
 /* ==================== АДАПТИВ =============================== */
 /* ============================================================ */
 
-/* ---- 992-1200 (ноутбуки) ---- */
-@media (max-width: 1200px) {
-    .modal {
-        max-width: 700px;
-    }
-}
-
-/* ---- 768-992 (планшеты) ---- */
-@media (max-width: 992px) {
-    .modal {
-        max-width: 600px;
-    }
-    
-    .hoursInput {
-        width: 100px;
-    }
-}
-
-/* ---- <768 (смартфоны) ---- */
 @media (max-width: 768px) {
     .backdrop {
         padding: 0;
         align-items: stretch;
     }
-    
+
     .modal {
         max-width: 100%;
         border-radius: 0;
@@ -433,128 +325,61 @@
         border: none;
         box-shadow: none;
     }
-    
+
     .header {
         padding: 14px 16px;
     }
-    
+
     .title {
         font-size: 0.95rem;
     }
-    
+
     .body {
         padding: 16px;
     }
-    
+
     .footer {
         padding: 10px 16px;
         flex-direction: column;
     }
-    
+
     .footer .btnSecondary,
     .footer .btnPink {
         width: 100%;
         justify-content: center;
     }
-    
-    /* Часы работы — на всю ширину */
-    .hoursEdit {
-        flex-wrap: wrap;
-    }
-    
+
     .hoursInput {
         width: 90px;
         height: 28px;
         font-size: 0.8rem;
     }
-    
-    /* Кнопки действий — на всю ширину */
+
     .actions {
         flex-direction: column;
     }
-    
+
     .actions .btnSoftBlue,
     .actions .btnSuccess,
     .actions .btnPink {
         width: 100%;
         justify-content: center;
     }
-    
-    /* Таблица → карточки */
-    .table,
-    .table tbody,
-    .table tr,
-    .table td {
-        display: block;
-        width: 100%;
-    }
-    
-    .table thead {
-        display: none;
-    }
-    
-    .table tbody tr {
-        background: white;
-        border-radius: 12px;
-        padding: 10px 12px;
-        margin-bottom: 8px;
-        border: 1px solid var(--gray-200);
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
-    }
-    
-    .table tbody td {
-        display: flex;
-        justify-content: flex-start;
-        align-items: center;
-        padding: 3px 0;
-        border: none;
-        font-size: 0.8rem;
-        gap: 4px;
-        width: 100%;
-    }
-    
-    /* Время — жирным */
-    .table tbody td:first-child {
-        font-weight: 600;
-        font-size: 0.85rem;
-        color: var(--gray-800);
-    }
-    
-    /* Телефон — серым */
-    .table tbody td:nth-child(4) {
-        color: var(--gray-500);
-        font-size: 0.75rem;
-    }
-    
-    /* Действия — отдельной строкой */
-    .table tbody td:last-child {
-        border-top: 1px solid var(--gray-200);
-        padding-top: 6px;
-        margin-top: 4px;
-        flex-wrap: wrap;
-        gap: 4px;
-        justify-content: flex-start;
-    }
-    
-    .actionIcons {
-        gap: 4px;
-    }
 }
 
-/* ---- <480 (маленькие смартфоны) ---- */
 @media (max-width: 480px) {
     .header {
         padding: 12px 14px;
     }
-    
+
     .title {
         font-size: 0.9rem;
     }
-    
+
     .body {
         padding: 12px;
     }
-    
+
     .hoursInput {
         width: 80px;
         height: 26px;

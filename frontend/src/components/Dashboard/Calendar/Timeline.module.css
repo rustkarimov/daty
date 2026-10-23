@@ -1,0 +1,363 @@
+/* ============================================================ */
+/* ========== TIMELINE (mobile-first) ========================= */
+/* ============================================================ */
+
+.wrapper {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid var(--gray-200);
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+
+.header {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--gray-200);
+    background: var(--gray-50);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.headerDate {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--gray-700);
+}
+
+.headerHint {
+    font-size: 0.7rem;
+    color: var(--gray-400);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.headerHint i {
+    color: var(--primary);
+    font-size: 0.7rem;
+}
+
+/* ---- Канвас ---- */
+.canvas {
+    position: relative;
+    padding: 12px 10px 12px 0;
+    cursor: pointer;
+}
+
+.grid {
+    position: relative;
+    margin-left: 44px;   /* место под метки времени */
+}
+
+/* ---- Метки времени (слева) ---- */
+.hourLabel {
+    position: absolute;
+    left: -44px;
+    width: 38px;
+    transform: translateY(-50%);
+    text-align: right;
+    font-size: 0.65rem;
+    font-weight: 500;
+    color: var(--gray-500);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* ---- Линии сетки ---- */
+.hourLine {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--gray-200);
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* ---- Перерывы ---- */
+.breakBlock {
+    position: absolute;
+    left: 0;
+    right: 0;
+    background: repeating-linear-gradient(
+        45deg,
+        var(--gray-100),
+        var(--gray-100) 6px,
+        var(--gray-200) 6px,
+        var(--gray-200) 12px
+    );
+    border-top: 1px dashed var(--gray-300);
+    border-bottom: 1px dashed var(--gray-300);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.breakBlock span {
+    font-size: 0.7rem;
+    color: var(--gray-600);
+    background: white;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+/* ---- Блок записи ---- */
+.blockWrapper {
+    position: absolute;
+    left: 0;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    border-radius: 8px;
+    border: 1px solid var(--gray-300);
+    background: white;
+    overflow: hidden;
+    cursor: pointer;
+    transition: box-shadow 0.15s ease, transform 0.1s ease;
+    z-index: 2;
+    box-sizing: border-box;
+}
+
+.blockWrapper:hover,
+.blockWrapperHovered {
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
+    z-index: 6;
+}
+
+.blockWrapper:active {
+    transform: scale(0.99);
+}
+
+/* ---- Дорога ---- */
+.travelRow {
+    background: var(--gray-100);
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.travelRow:last-child {
+    border-bottom: none;
+    border-top: 1px solid var(--gray-200);
+}
+
+.travelAddress {
+    font-size: 0.65rem;
+    color: var(--gray-600);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    max-width: 100%;
+    font-weight: 500;
+}
+
+.travelAddress i {
+    font-size: 0.6rem;
+    color: var(--gray-500);
+    flex-shrink: 0;
+}
+
+/* ---- Услуга ---- */
+.serviceRow {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    padding: 3px 8px;
+    overflow: hidden;
+    border-left: 3px solid;
+}
+
+.pending {
+    background: #fef3c7;
+    border-left-color: #d97706;
+}
+
+.confirmed {
+    background: #dcfce7;
+    border-left-color: #16a34a;
+}
+
+.serviceInner {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.clientName {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--gray-800);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.15;
+}
+
+.serviceName {
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: var(--gray-700);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
+}
+
+.serviceTime {
+    font-size: 0.65rem;
+    color: var(--gray-600);
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-weight: 500;
+}
+
+.serviceTime i {
+    font-size: 0.6rem;
+}
+
+/* ---- Конфликт ---- */
+.conflictZone {
+    position: absolute;
+    left: 0;
+    right: 0;
+    background: rgba(220, 38, 38, 0.12);
+    border-top: 2px dashed #dc2626;
+    border-bottom: 2px dashed #dc2626;
+    z-index: 5;
+    pointer-events: none;
+}
+
+/* ---- Линия «сейчас» ---- */
+.nowLine {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #dc2626;
+    z-index: 7;
+    pointer-events: none;
+}
+
+.nowDot {
+    position: absolute;
+    left: -5px;
+    top: -3px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #dc2626;
+}
+
+/* ---- Выходной ---- */
+.emptyDay {
+    text-align: center;
+    padding: 32px 16px;
+    color: var(--gray-500);
+    background: var(--gray-50);
+    border-radius: 12px;
+}
+
+.emptyDay i {
+    font-size: 2.5rem;
+    color: var(--gray-400);
+    margin-bottom: 8px;
+    display: block;
+}
+
+.emptyDay p {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+/* ============================================================ */
+/* ========== АДАПТИВ ========================================= */
+/* ============================================================ */
+
+@media (max-width: 480px) {
+    .canvas {
+        padding: 8px 8px 8px 0;
+    }
+
+    .grid {
+        margin-left: 38px;
+    }
+
+    .hourLabel {
+        left: -38px;
+        width: 32px;
+        font-size: 0.6rem;
+    }
+
+    .blockWrapper {
+        border-radius: 6px;
+    }
+
+    .serviceRow {
+        padding: 2px 6px;
+    }
+
+    .clientName {
+        font-size: 0.75rem;
+    }
+
+    .serviceName {
+        font-size: 0.65rem;
+    }
+
+    .travelAddress {
+        font-size: 0.6rem;
+    }
+}
+
+@media (min-width: 769px) {
+    .canvas {
+        padding: 16px 16px 16px 0;
+    }
+
+    .grid {
+        margin-left: 56px;
+    }
+
+    .hourLabel {
+        left: -56px;
+        width: 48px;
+        font-size: 0.75rem;
+    }
+
+    .blockWrapper {
+        border-radius: 10px;
+    }
+
+    .serviceRow {
+        padding: 4px 12px;
+    }
+
+    .clientName {
+        font-size: 0.9rem;
+    }
+
+    .serviceName {
+        font-size: 0.8rem;
+    }
+
+    .travelAddress {
+        font-size: 0.7rem;
+    }
+}

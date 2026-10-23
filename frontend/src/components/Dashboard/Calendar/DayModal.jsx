@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import BreaksEditor from './BreaksEditor';
 import EditBookingModal from './EditBookingModal';
 import AddBookingModal from './AddBookingModal';
+import Timeline from './Timeline';
 import useModal from '../../../hooks/useModal';
 import { request } from '../../../utils/api';
 import { loadDayStatus, loadBookingsByDate, makeDayOff, makeDayWorking, deleteBooking } from '../../../api/day';
 import styles from './DayModal.module.css';
 import useBodyLock from '../../../hooks/useBodyLock';
-
 
 const MONTH_NAMES = [
     'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
@@ -27,6 +27,7 @@ export default function DayModal({ dateStr, masterSlug, masterMode = 'home', onC
     const [loading, setLoading] = useState(true);
     const [editingBookingId, setEditingBookingId] = useState(null);
     const [showAddBooking, setShowAddBooking] = useState(false);
+    const [addBookingTime, setAddBookingTime] = useState(null);
     const [editingHours, setEditingHours] = useState(false);
     const [editHours, setEditHours] = useState({ start: '', end: '' });
     const { showAlert, showConfirm } = useModal();
@@ -50,9 +51,7 @@ export default function DayModal({ dateStr, masterSlug, masterMode = 'home', onC
     }, [dateStr]);
 
     function handleBackdropClick(e) {
-        if (e.target === e.currentTarget) {
-            onClose();
-        }
+        if (e.target === e.currentTarget) onClose();
     }
 
     async function handleMakeDayOff() {
@@ -157,12 +156,14 @@ export default function DayModal({ dateStr, masterSlug, masterMode = 'home', onC
         }
     }
 
-    function handleOpenAddBooking() {
+    function handleOpenAddBooking(time) {
+        setAddBookingTime(time || null);
         setShowAddBooking(true);
     }
 
     function handleCloseAddBooking() {
         setShowAddBooking(false);
+        setAddBookingTime(null);
     }
 
     async function handleBookingCreated() {
@@ -249,6 +250,7 @@ export default function DayModal({ dateStr, masterSlug, masterMode = 'home', onC
                             </div>
                         ) : (
                             <>
+                                {/* Инфо о дне: часы работы / выходной */}
                                 <div className={styles.dayInfo}>
                                     {isDayOff ? (
                                         <div className={styles.dayInfoOff}>
@@ -315,7 +317,7 @@ export default function DayModal({ dateStr, masterSlug, masterMode = 'home', onC
                                                 <i className="fas fa-calendar-times" />
                                                 Сделать выходным
                                             </button>
-                                            <button type="button" className={styles.btnPink} onClick={handleOpenAddBooking}>
+                                            <button type="button" className={styles.btnPink} onClick={() => handleOpenAddBooking(null)}>
                                                 Добавить запись
                                             </button>
                                         </>
@@ -324,59 +326,33 @@ export default function DayModal({ dateStr, masterSlug, masterMode = 'home', onC
 
                                 <hr className={styles.divider} />
 
+                                {/* Заголовок графика */}
                                 <h6 className={styles.bookingsTitle}>
-                                    <i className="fas fa-list" />
-                                    Записи на этот день ({bookings.length})
+                                    <i className="fas fa-stream" />
+                                    График дня
                                 </h6>
-                                {bookings.length === 0 ? (
-                                    <p className={styles.emptyState}>Нет записей</p>
-                                ) : (
-                                    <div className={styles.tableWrapper}>
-                                        <table className={styles.table}>
-                                            <thead>
-                                                <tr>
-                                                    <th>Время</th>
-                                                    <th>Клиент</th>
-                                                    <th>Услуга</th>
-                                                    <th>Телефон</th>
-                                                    <th>Действия</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {bookings.map(b => (
-                                                    <tr key={b.id}>
-                                                        <td>{b.time}</td>
-                                                        <td>{b.client_name}</td>
-                                                        <td>
-                                                            {b.category_name ? `${b.category_name}. ` : ''}
-                                                            {b.service_name}
-                                                        </td>
-                                                        <td>{b.phone || '—'}</td>
-                                                        <td className={styles.actionsCell}>
-                                                            <div className={styles.actionIcons}>
-                                                                <button
-                                                                    type="button"
-                                                                    className={styles.actionIconBtn}
-                                                                    onClick={() => handleEditBooking(b.id)}
-                                                                    title="Редактировать"
-                                                                >
-                                                                    <i className="fas fa-edit" />
-                                                                </button>
-                                                                <button
-                                                                    type="button"
-                                                                    className={`${styles.actionIconBtn} ${styles.actionIconBtnDelete}`}
-                                                                    onClick={() => handleDeleteBooking(b.id, b.client_name, b.time)}
-                                                                    title="Удалить"
-                                                                >
-                                                                    <i className="fas fa-trash" />
-                                                                </button>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
+
+                                {/* Timeline */}
+                                {!isDayOff && (
+                                    <Timeline
+                                        dateStr={dateStr}
+                                        dayData={dayData}
+                                        bookings={bookings}
+                                        onEditBooking={handleEditBooking}
+                                        onEmptyClick={(time) => handleOpenAddBooking(time)}
+                                    />
+                                )}
+
+                                {isDayOff && bookings.length > 0 && (
+                                    <p className={styles.emptyState}>
+                                        Есть {bookings.length} записей на этот день. Сделайте день рабочим, чтобы увидеть график.
+                                    </p>
+                                )}
+
+                                {!isDayOff && bookings.length === 0 && (
+                                    <p className={styles.emptyState}>
+                                        Нет записей. Нажмите на свободное время в графике, чтобы добавить.
+                                    </p>
                                 )}
                             </>
                         )}
@@ -404,6 +380,7 @@ export default function DayModal({ dateStr, masterSlug, masterMode = 'home', onC
                     masterSlug={masterSlug}
                     masterMode={masterMode}
                     defaultDate={dateStr}
+                    defaultTime={addBookingTime}
                     onClose={handleCloseAddBooking}
                     onCreated={handleBookingCreated}
                     allowCreateAnother={false}
@@ -412,4 +389,3 @@ export default function DayModal({ dateStr, masterSlug, masterMode = 'home', onC
         </>
     );
 }
-

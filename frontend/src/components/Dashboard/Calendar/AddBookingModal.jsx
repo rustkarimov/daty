@@ -11,6 +11,7 @@ export default function AddBookingModal({
     masterSlug,
     masterMode = 'home',
     defaultDate,
+    defaultTime,
     onClose,
     onCreated,
     allowCreateAnother = true,
@@ -24,7 +25,7 @@ export default function AddBookingModal({
     const [availableDates, setAvailableDates] = useState([]);
     const [availableSlots, setAvailableSlots] = useState([]);
     const [selectedDate, setSelectedDate] = useState(defaultDate || '');
-    const [selectedTime, setSelectedTime] = useState('');
+    const [selectedTime, setSelectedTime] = useState(defaultTime || '');
     const [clientName, setClientName] = useState('');
     const [clientPhone, setClientPhone] = useState('');
     const [clientAddress, setClientAddress] = useState('');
