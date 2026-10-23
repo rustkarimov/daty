@@ -103,6 +103,11 @@ class Master(models.Model):
         default=0,
         verbose_name="Время на дорогу туда по умолчанию (мин)",
     )
+    arrival_window_minutes = models.IntegerField(
+        default=30,
+        verbose_name="Интервал прибытия (мин)",
+        help_text="Ширина интервала, в который мастер может приехать (0–120)",
+    )
     away_buffer_before = models.IntegerField(
         default=15,
         verbose_name="Буфер до выезда (мин)",
