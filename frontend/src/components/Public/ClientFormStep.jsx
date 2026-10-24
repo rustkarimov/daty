@@ -17,7 +17,7 @@ export default function ClientFormStep({
     identifier,
     selectedServices,
     selectedDate,
-    selectedTime,
+    selectedTime,     // { start, end }
     isAway,
     onSuccess,
 }) {
@@ -31,21 +31,18 @@ export default function ClientFormStep({
     const totalDuration = selectedServices.reduce((sum, s) => sum + s.duration, 0);
     const totalPrice = selectedServices.reduce((sum, s) => sum + s.price, 0);
 
+    const startTime = selectedTime?.start || '';
+    const endTime = selectedTime?.end || '';
+    const timeLabel = endTime && endTime !== startTime
+        ? `${startTime}—${endTime}`
+        : startTime;
+
     async function handleSubmit(e) {
         e.preventDefault();
         const phoneCleaned = phone.replace(/\D/g, '');
-        if (!name.trim()) {
-            showAlert('Введите имя', 'warning');
-            return;
-        }
-        if (phoneCleaned.length !== 11) {
-            showAlert('Телефон должен содержать 11 цифр', 'warning');
-            return;
-        }
-        if (isAway && !address.trim()) {
-            showAlert('Укажите адрес для выезда', 'warning');
-            return;
-        }
+        if (!name.trim()) { showAlert('Введите имя', 'warning'); return; }
+        if (phoneCleaned.length !== 11) { showAlert('Телефон должен содержать 11 цифр', 'warning'); return; }
+        if (isAway && !address.trim()) { showAlert('Укажите адрес для выезда', 'warning'); return; }
 
         setSaving(true);
         try {
@@ -54,7 +51,7 @@ export default function ClientFormStep({
                 client_name: name.trim(),
                 client_phone: phoneCleaned,
                 date: selectedDate,
-                start_time: selectedTime,
+                start_time: startTime,
                 client_address: isAway ? address.trim() : '',
                 comment: comment.trim(),
                 created_by: 'client',
@@ -88,7 +85,6 @@ export default function ClientFormStep({
                 </h5>
             </div>
             <div className="card-body">
-                {/* Сводка */}
                 <div className={styles.summary}>
                     <div className={styles.summaryLabel}>
                         <i className="fas fa-list me-1" />
@@ -122,7 +118,7 @@ export default function ClientFormStep({
                                 <span className={styles.summaryLabelSmall}>
                                     <i className="far fa-clock me-1" />Время
                                 </span>
-                                <span className={styles.summaryValue}>{selectedTime}</span>
+                                <span className={styles.summaryValue}>{timeLabel}</span>
                             </div>
                         </div>
                     </div>

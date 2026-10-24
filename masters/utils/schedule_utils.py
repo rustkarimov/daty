@@ -226,15 +226,19 @@ class ScheduleCalculator:
         exclude_booking_id: int = None,
         current_time: time = None,
         original_booking_id: int = None,
+        travel_before_override: int = None,
+        travel_after_override: int = None,
     ):
         """
         Генерирует свободные слоты (интервалы приезда).
 
         home: слот = [A, A + service_duration].
-        away: слот = [A, A + W] (интервал приезда). Клиент видит только интервал приезда,
-              длительность услуги он знает из выбранных услуг.
-              Проверка занятости: [A, A + W + service + extra + travel_after] — БЕЗ travel_before,
-              т.к. travel_before поглощается travel_after предыдущей записи.
+
+        away: слот = [A, A + W] (интервал приезда).
+              Проверка занятости:
+                1) [A, A + W + service + extra + travel_after_new] не пересекается с чужим busy.
+                2) Для каждой записи i: A >= service_end_i + travel_before_new.
+                   (Мастер едет от адреса предыдущего клиента).
               Шаг слотов = arrival_window (W). Если W = 0 → шаг 15.
         """
         working_hours = self.get_working_hours_for_date(target_date)
@@ -253,33 +257,39 @@ class ScheduleCalculator:
 
         # ---- Параметры away ----
         arrival_window = 0
+        travel_before_new = 0
+        travel_after_new = 0
         if is_away:
             arrival_window = self.master.arrival_window_minutes or 0
             if arrival_window < 0:
                 arrival_window = 0
             if arrival_window > 120:
                 arrival_window = 120
-            # Шаг слотов = arrival_window (минимум 15)
+
+            if travel_before_override is not None:
+                travel_before_new = travel_before_override
+            else:
+                travel_before_new = self.master.away_travel_time_before_default or 0
+
+            if travel_after_override is not None:
+                travel_after_new = travel_after_override
+            else:
+                travel_after_new = self.master.away_travel_time_after_default or 0
+
             if arrival_window > 0:
                 slot_step = arrival_window
             else:
                 slot_step = 15
 
-        # Полная длительность «проверки занятости»
+        # ---- Длительность проверки и отображения ----
         if is_away:
-            # check_duration = W + S + F  (без travel_before — поглощается F предыдущей записи)
-            travel_after_new = self.master.away_travel_time_after_default or 0
             check_duration = arrival_window + service_duration + travel_after_new
         else:
             check_duration = service_duration
 
-        # ---- Отображаемая длительность слота (для клиента) ----
-        if is_away:
-            slot_display_duration = arrival_window    # [A, A + W]
-        else:
-            slot_display_duration = service_duration  # [A, A + S]
+        slot_display_duration = arrival_window if is_away else service_duration
 
-        # Если передан current_time (для сегодняшнего дня) — начинаем с текущего
+        # ---- current_time ----
         if current_time:
             current_minutes = time_to_minutes(current_time)
             current_minutes = (
@@ -293,17 +303,19 @@ class ScheduleCalculator:
         # ---- Перерывы ----
         breaks = self.get_breaks_for_date(target_date)
 
-        # ---- Занятые интервалы ----
+        # ---- Занятые интервалы: (busy_start, busy_end, F_i, booking_id) ----
         booked_slots = []
-        for start, end, booking_id, travel_after_prev in self.get_booked_slots_for_date(target_date):
+        for start, end, booking_id, travel_after_i in self.get_booked_slots_for_date(target_date):
             if exclude_booking_id and booking_id == exclude_booking_id:
                 continue
             booked_slots.append((
                 time_to_minutes(start),
                 time_to_minutes(end),
+                travel_after_i,
+                booking_id,
             ))
 
-        # ---- Временно разблокируем исходную запись (при редактировании) ----
+        # ---- Разблокируем исходную запись (при редактировании) ----
         if original_booking_id:
             try:
                 original_booking = Booking.objects.get(
@@ -321,20 +333,18 @@ class ScheduleCalculator:
                     )
 
                 booked_slots = [
-                    (s, e) for (s, e) in booked_slots
+                    (s, e, ta, bid) for (s, e, ta, bid) in booked_slots
                     if not (abs(s - original_start) <= 1 and abs(e - original_end) <= 1)
                 ]
             except Booking.DoesNotExist:
                 pass
 
-        # ---- Массив занятых минут ----
+        # ---- busy_minutes (стандартная проверка 1) ----
         busy_minutes = [False] * (24 * 60)
-
         for b_start, b_end in breaks:
             for m in range(b_start, min(b_end, 1440)):
                 busy_minutes[m] = True
-
-        for b_start, b_end in booked_slots:
+        for b_start, b_end, _, _ in booked_slots:
             for m in range(b_start, min(b_end, 1440)):
                 busy_minutes[m] = True
 
@@ -346,11 +356,11 @@ class ScheduleCalculator:
             slot_start = current
             slot_display_end = current + slot_display_duration
 
-            # Проверяем [slot_start, slot_start + check_duration]
-            check_end = min(slot_start + check_duration, 1440)
-
             is_free = True
             conflict_end = None
+
+            # --- Проверка 1: busy_minutes ---
+            check_end = min(slot_start + check_duration, 1440)
             for m in range(slot_start, check_end):
                 if busy_minutes[m]:
                     is_free = False
@@ -359,6 +369,20 @@ class ScheduleCalculator:
                         m_end += 1
                     conflict_end = m_end
                     break
+
+            # --- Проверка 2 (только away): дорога от конца услуги предыдущего ---
+            if is_free and is_away and travel_before_new > 0 and booked_slots:
+                for (b_start, b_end, f_i, _) in booked_slots:
+                    # Восстанавливаем конец услуги: busy_end - travel_after
+                    service_end_i = b_end - f_i
+                    # Минимальное время приезда нового клиента
+                    min_a = service_end_i + travel_before_new
+
+                    if slot_start < min_a:
+                        is_free = False
+                        if conflict_end is None or min_a > conflict_end:
+                            conflict_end = min_a
+                        break
 
             if is_free:
                 start_time_str = f"{slot_start // 60:02d}:{slot_start % 60:02d}"
@@ -373,7 +397,8 @@ class ScheduleCalculator:
                 })
                 current += slot_step
             else:
-                # Следующий слот — после занятого интервала
+                if conflict_end is None:
+                    conflict_end = slot_start + slot_step
                 current = max(conflict_end, slot_start + 1)
                 current = ((current + slot_step - 1) // slot_step) * slot_step
 

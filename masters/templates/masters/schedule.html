@@ -8,8 +8,11 @@
 {% endblock %}
 
 {% block content %}
+
 <div id="react-schedule"
      data-master-mode="{{ master.work_mode }}"
-     data-away-travel-before="{{ master.away_travel_time_before_default|default:0 }}"></div>
+     data-away-travel-before="{{ master.away_travel_time_before_default|default:0 }}"
+     data-away-travel-after="{{ master.away_travel_time_after_default|default:0 }}"
+     data-arrival-window="{{ master.arrival_window_minutes|default:30 }}"></div>
 {% csrf_token %}
 {% endblock %}

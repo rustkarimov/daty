@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useRef, useEffect } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import styles from './Timeline.module.css';
 
 const MONTH_NAMES = [
@@ -68,22 +68,20 @@ export default function Timeline({
             }
         });
 
-        // Округляем до целых часов
-        startM = Math.floor(startM / 60) * 60;
-        endM = Math.ceil(endM / 60) * 60;
-
+        // Без округления вниз/вверх
         return { startMin: startM, endMin: endM };
     }, [dayData, bookings, isAway]);
 
     const totalMinutes = Math.max(endMin - startMin, 60);
     const isMobile = useIsMobile();
-    const hourHeight = isMobile ? 56 : 72;
+    const hourHeight = isMobile ? 64 : 80;
     const pxPerMinute = hourHeight / 60;
     const totalHeight = totalMinutes * pxPerMinute;
 
     // Метки — только целые часы
     const hourMarks = [];
-    for (let m = startMin; m <= endMin; m += 60) {
+    const firstHour = Math.ceil(startMin / 60) * 60;
+    for (let m = firstHour; m <= endMin; m += 60) {
         hourMarks.push(m);
     }
 
@@ -93,7 +91,7 @@ export default function Timeline({
         end: timeToMinutes(b.end),
     }));
 
-    // Текущее время (если сегодня)
+    // Текущее время
     const now = new Date();
     const nowMin = now.getHours() * 60 + now.getMinutes();
     const isToday = (() => {
@@ -108,7 +106,7 @@ export default function Timeline({
 
     const [hoveredId, setHoveredId] = useState(null);
 
-    // ---- Пересечения ----
+    // Пересечения
     const conflicts = useMemo(() => {
         const sorted = [...(bookings || [])].sort(
             (a, b) => timeToMinutes(a.busy_start) - timeToMinutes(b.busy_start)
@@ -126,20 +124,17 @@ export default function Timeline({
         return result;
     }, [bookings]);
 
-    // ---- Клик по пустому месту ----
+    // Клик по пустому месту
     function handleEmptyClick(e) {
         const rect = e.currentTarget.getBoundingClientRect();
         const y = e.clientY - rect.top;
         const rawMinutes = y / pxPerMinute + startMin;
-        // Округление по шагу W (или 30, если W=0)
         const W = dayData?.arrival_window_minutes || 0;
         const step = isAway && W > 0 ? W : 30;
         const minutes = Math.round(rawMinutes / step) * step;
 
-        // Не кликаем по перерывам
         if (breaksInMin.some(b => minutes >= b.start && minutes < b.end)) return;
 
-        // Не кликаем по занятым слотам
         if ((bookings || []).some(b => {
             const bs = timeToMinutes(b.busy_start);
             const be = timeToMinutes(b.busy_end);
@@ -168,10 +163,7 @@ export default function Timeline({
             </div>
 
             <div className={styles.canvas} onClick={handleEmptyClick}>
-                <div
-                    className={styles.grid}
-                    style={{ height: `${totalHeight}px` }}
-                >
+                <div className={styles.grid} style={{ height: `${totalHeight}px` }}>
                     {/* Метки времени и линии сетки */}
                     {hourMarks.map(m => {
                         const top = (m - startMin) * pxPerMinute;
@@ -254,33 +246,49 @@ export default function Timeline({
 // ============================================================
 
 function BookingBlock({ booking, startMin, pxPerMinute, isAway, isHovered, onHover, onEdit }) {
-    let busyStart, busyEnd, serviceStart, serviceEnd;
+    let busyStart, busyEnd, arrivalStart, serviceEnd;
 
     if (isAway) {
         busyStart = timeToMinutes(booking.busy_start);
         busyEnd = timeToMinutes(booking.busy_end);
-        serviceStart = timeToMinutes(booking.service_start);
+        arrivalStart = timeToMinutes(booking.arrival_start);
         serviceEnd = timeToMinutes(booking.service_end);
     } else {
         busyStart = timeToMinutes(booking.time);
-        serviceStart = busyStart;
+        arrivalStart = busyStart;
         serviceEnd = busyStart + (booking.service_duration || 60);
         busyEnd = serviceEnd;
     }
 
     const top = (busyStart - startMin) * pxPerMinute;
-    const height = (busyEnd - busyStart) * pxPerMinute;
-    const travelBeforeH = (serviceStart - busyStart) * pxPerMinute;
-    const serviceH = (serviceEnd - serviceStart) * pxPerMinute;
-    const travelAfterH = (busyEnd - serviceEnd) * pxPerMinute;
+    
+    // Считаем высоты
+    let travelBeforeH = (arrivalStart - busyStart) * pxPerMinute;
+    let colorZoneH = (serviceEnd - arrivalStart) * pxPerMinute;
+    let travelAfterH = (busyEnd - serviceEnd) * pxPerMinute;
+
+    // Минимальные высоты (чтобы влез текст и адрес)
+    const minTravelHeight = 24; 
+    const minColorHeight = 60; 
+
+    if (travelBeforeH < minTravelHeight) travelBeforeH = minTravelHeight;
+    if (travelAfterH > 0 && travelAfterH < minTravelHeight) travelAfterH = minTravelHeight;
+    if (colorZoneH < minColorHeight) colorZoneH = minColorHeight;
+
+    const height = travelBeforeH + colorZoneH + travelAfterH;
 
     const colorClass = booking.status === 'pending' ? styles.pending : styles.confirmed;
 
-    // Показывать ли данные клиента — если средняя часть достаточно высокая
-    const showClient = serviceH >= 28;
-    const showService = serviceH >= 42;
-    const showTime = serviceH >= 58;
-    const showAddress = travelBeforeH >= 22 && booking.client_address;
+    // Время прибытия для первой строки
+    const arrivalEnd = timeToMinutes(booking.arrival_end);
+    const arrivalTimeStr = arrivalStart < arrivalEnd
+        ? `${minutesToTime(arrivalStart)}—${minutesToTime(arrivalEnd)}`
+        : minutesToTime(arrivalStart);
+
+    // Адрес с минутами
+    const addressLabel = booking.client_address
+        ? `${booking.client_address} (${booking.travel_before || 0} мин)`
+        : '';
 
     return (
         <div
@@ -293,32 +301,28 @@ function BookingBlock({ booking, startMin, pxPerMinute, isAway, isHovered, onHov
             {/* Дорога до */}
             {travelBeforeH > 0 && (
                 <div className={styles.travelRow} style={{ height: `${travelBeforeH}px` }}>
-                    {showAddress && (
+                    {addressLabel && (
                         <span className={styles.travelAddress}>
-                            <i className="fas fa-map-marker-alt" /> {booking.client_address}
+                            <i className="fas fa-map-marker-alt" /> {addressLabel}
                         </span>
                     )}
                 </div>
             )}
 
             {/* Приезд + услуга */}
-            <div className={`${styles.serviceRow} ${colorClass}`} style={{ height: `${serviceH}px` }}>
+            <div className={`${styles.serviceRow} ${colorClass}`} style={{ height: `${colorZoneH}px` }}>
                 <div className={styles.serviceInner}>
-                    {showClient && (
-                        <span className={styles.clientName}>{booking.client_name}</span>
-                    )}
-                    {showService && (
-                        <span className={styles.serviceName}>
-                            {booking.category_name ? `${booking.category_name}: ` : ''}
-                            {booking.service_name}
-                        </span>
-                    )}
-                    {showTime && (
-                        <span className={styles.serviceTime}>
-                            <i className="far fa-clock" /> {booking.service_start || booking.time}
-                            {isAway ? `—${booking.service_end}` : ''}
-                        </span>
-                    )}
+                    <span className={styles.arrivalTime}>
+                        {arrivalTimeStr}
+                    </span>
+                    <span className={styles.clientName}>{booking.client_name}</span>
+                    <span className={styles.serviceName}>
+                        {booking.category_name ? `${booking.category_name}: ` : ''}
+                        {booking.service_name}
+                        {booking.service_duration && (
+                            <> ({booking.service_duration} мин)</>
+                        )}
+                    </span>
                 </div>
             </div>
 

@@ -18,6 +18,8 @@ import styles from './SchedulePage.module.css';
 export default function SchedulePage({
     masterMode = 'home',
     initialAwayTravelBefore = 0,
+    initialAwayTravelAfter = 0,
+    initialArrivalWindow = 30,
 }) {
     // Данные
     const [schedules, setSchedules] = useState([]);
@@ -39,6 +41,8 @@ export default function SchedulePage({
 
     // Время на дорогу (away)
     const [awayTravelBefore, setAwayTravelBefore] = useState(initialAwayTravelBefore);
+    const [awayTravelAfter, setAwayTravelAfter] = useState(initialAwayTravelAfter || 0);
+    const [arrivalWindow, setArrivalWindow] = useState(initialArrivalWindow || 30);
     const [savingTravelTime, setSavingTravelTime] = useState(false);
 
     const { showAlert } = useModal();
@@ -115,9 +119,11 @@ export default function SchedulePage({
         try {
             const data = await updateAwayTravel({
                 away_travel_time_before_default: parseInt(awayTravelBefore) || 0,
+                away_travel_time_after_default: parseInt(awayTravelAfter) || 0,
+                arrival_window_minutes: parseInt(arrivalWindow) || 0,
             });
             if (data.success) {
-                showAlert('Время на дорогу сохранено', 'success');
+                showAlert('Настройки выезда сохранены', 'success');
             } else {
                 showAlert(data.error || 'Ошибка сохранения', 'error');
             }
@@ -139,6 +145,7 @@ export default function SchedulePage({
             {isAway && (
                 <div className={styles.card}>
                     <div className={styles.sectionTitle}>Выездной режим</div>
+
                     <div className={styles.travelTimeBlock}>
                         <div className={styles.travelTimeRow}>
                             <div className={styles.travelTimeField}>
@@ -156,28 +163,71 @@ export default function SchedulePage({
                                     placeholder="0"
                                 />
                             </div>
-                            <button
-                                type="button"
-                                className={styles.btnPrimary}
-                                onClick={handleSaveTravelTime}
-                                disabled={savingTravelTime}
-                            >
-                                {savingTravelTime ? (
-                                    <>
-                                        <i className="fas fa-spinner fa-spin" />
-                                        Сохранение...
-                                    </>
-                                ) : (
-                                    <>
-                                        <i className="fas fa-save" />
-                                        Сохранить
-                                    </>
-                                )}
-                            </button>
                         </div>
+
+                        <div className={styles.travelTimeRow}>
+                            <div className={styles.travelTimeField}>
+                                <label className={styles.travelTimeLabel}>
+                                    <i className="fas fa-undo me-1" />
+                                    Время на дорогу после клиента (мин)
+                                </label>
+                                <input
+                                    type="number"
+                                    className={styles.travelTimeInput}
+                                    min="0"
+                                    step="5"
+                                    value={awayTravelAfter}
+                                    onChange={e => setAwayTravelAfter(e.target.value)}
+                                    placeholder="0"
+                                />
+                            </div>
+                        </div>
+
+                        <div className={styles.travelTimeRow}>
+                            <div className={styles.travelTimeField}>
+                                <label className={styles.travelTimeLabel}>
+                                    <i className="fas fa-clock me-1" />
+                                    Интервал прибытия (мин)
+                                </label>
+                                <select
+                                    className={styles.travelTimeSelect}
+                                    value={arrivalWindow}
+                                    onChange={e => setArrivalWindow(e.target.value)}
+                                >
+                                    <option value="0">0 (точное время)</option>
+                                    <option value="15">15 минут</option>
+                                    <option value="30">30 минут</option>
+                                    <option value="45">45 минут</option>
+                                    <option value="60">60 минут</option>
+                                    <option value="100">100 минут</option>
+                                    <option value="120">120 минут</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button
+                            type="button"
+                            className={styles.btnPrimary}
+                            onClick={handleSaveTravelTime}
+                            disabled={savingTravelTime}
+                            style={{ marginTop: '12px' }}
+                        >
+                            {savingTravelTime ? (
+                                <>
+                                    <i className="fas fa-spinner fa-spin" />
+                                    Сохранение...
+                                </>
+                            ) : (
+                                <>
+                                    <i className="fas fa-save" />
+                                    Сохранить
+                                </>
+                            )}
+                        </button>
+
                         <small className={styles.travelTimeHint}>
-                            Это время будет автоматически добавляться к каждой выездной записи.
-                            Мастер может изменить его в карточке заказа.
+                            Дорога и интервал будут автоматически добавляться к каждой записи.
+                            Мастер может изменить их в карточке заказа.
                         </small>
                     </div>
                 </div>

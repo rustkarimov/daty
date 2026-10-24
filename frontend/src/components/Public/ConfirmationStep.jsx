@@ -21,6 +21,12 @@ export default function ConfirmationStep({
 }) {
     const totalDuration = selectedServices.reduce((sum, s) => sum + s.duration, 0);
     const totalPrice = selectedServices.reduce((sum, s) => sum + s.price, 0);
+    const timeLabel = (() => {
+        if (!selectedTime) return '';
+        if (typeof selectedTime === 'string') return selectedTime;
+        const { start, end } = selectedTime;
+        return end && end !== start ? `${start}—${end}` : start;
+    })();
 
     return (
         <div className="card mb-4">
@@ -45,7 +51,7 @@ export default function ConfirmationStep({
                     </div>
                     <div className={styles.detailRow}>
                         <span className={styles.detailLabel}>Время</span>
-                        <span>{selectedTime}</span>
+                        <span>{timeLabel}</span>
                     </div>
                     <div className={styles.detailRow}>
                         <span className={styles.detailLabel}>Услуги</span>

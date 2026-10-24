@@ -171,6 +171,8 @@ def api_update_booking(request, booking_id):
                 service.duration,
                 exclude_booking_id=booking.id,
                 original_booking_id=booking.id,
+                travel_before_override=int(travel_time_before or 0),
+                travel_after_override=int(travel_time_after or 0),
             )
             is_available = any(slot['start'] == time_str for slot in slots)
             if not is_available:

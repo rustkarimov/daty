@@ -14,6 +14,7 @@ export default function TimesStep({
     const [fullDuration, setFullDuration] = useState(0);
 
     const totalDuration = selectedServices.reduce((sum, s) => sum + s.duration, 0);
+    const selectedStart = selectedTime?.start || selectedTime;
 
     useEffect(() => {
         if (!selectedDate) return;
@@ -29,6 +30,10 @@ export default function TimesStep({
                 setLoading(false);
             });
     }, [identifier, totalDuration, selectedDate]);
+
+    function handleSelect(slot) {
+        if (onChange) onChange({ start: slot.start, end: slot.end || '' });
+    }
 
     return (
         <div className="card mb-4">
@@ -55,12 +60,12 @@ export default function TimesStep({
                         )}
                         <div className="row">
                             {slots.map(slot => (
-                                <div key={slot.start} className="col-4 col-md-2 mb-3">
+                                <div key={slot.start} className="col-6 col-md-3 mb-3">
                                     <div
-                                        className={`${styles.slotCard} ${selectedTime === slot.start ? styles.selected : ''}`}
-                                        onClick={() => onChange(slot.start)}
+                                        className={`${styles.slotCard} ${selectedStart === slot.start ? styles.selected : ''}`}
+                                        onClick={() => handleSelect(slot)}
                                     >
-                                        {slot.start}
+                                        {slot.start}{slot.end && slot.end !== slot.start ? `—${slot.end}` : ''}
                                     </div>
                                 </div>
                             ))}

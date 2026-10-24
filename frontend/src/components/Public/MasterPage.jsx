@@ -15,13 +15,12 @@ export default function MasterPage({
 }) {
     const [selectedServices, setSelectedServices] = useState([]);
     const [selectedDate, setSelectedDate] = useState(null);
-    const [selectedTime, setSelectedTime] = useState(null);
+    const [selectedTime, setSelectedTime] = useState(null);  // { start, end }
     const [confirmedBooking, setConfirmedBooking] = useState(null);
     const [authModalOpen, setAuthModalOpen] = useState(false);
 
     const isAway = masterMode === 'away';
 
-    // Сброс (после «Записаться ещё»)
     function handleReset() {
         setSelectedServices([]);
         setSelectedDate(null);
@@ -29,32 +28,22 @@ export default function MasterPage({
         setConfirmedBooking(null);
     }
 
-    // Услуга добавлена/удалена
     function handleServicesChange(services) {
         setSelectedServices(services);
-        // При изменении услуг — сбрасываем дату/время (если уже выбраны)
-        if (services.length === 0) {
-            setSelectedDate(null);
-            setSelectedTime(null);
-        } else {
-            // Меняется длительность — пересчёт дат/слотов
-            setSelectedDate(null);
-            setSelectedTime(null);
-        }
+        setSelectedDate(null);
+        setSelectedTime(null);
     }
 
-    // Дата выбрана
     function handleDateChange(d) {
         setSelectedDate(d);
         setSelectedTime(null);
     }
 
-    // Время выбрано
     function handleTimeChange(t) {
+        // t = { start, end }
         setSelectedTime(t);
     }
 
-    // Запись создана
     function handleBookingSuccess(result) {
         setConfirmedBooking(result);
     }
@@ -65,7 +54,6 @@ export default function MasterPage({
 
     return (
         <div className={styles.page}>
-            {/* Кнопка «Мои записи» */}
             <div className={styles.headerActions}>
                 <button
                     type="button"
@@ -76,7 +64,6 @@ export default function MasterPage({
                 </button>
             </div>
 
-            {/* Шаги */}
             {!confirmedBooking && (
                 <>
                     <ServicesStep
@@ -117,7 +104,6 @@ export default function MasterPage({
                 </>
             )}
 
-            {/* Экран успеха */}
             {confirmedBooking && (
                 <ConfirmationStep
                     result={confirmedBooking}
@@ -130,7 +116,6 @@ export default function MasterPage({
                 />
             )}
 
-            {/* Модалка авторизации */}
             {authModalOpen && (
                 <ClientAuthModal
                     identifier={identifier}

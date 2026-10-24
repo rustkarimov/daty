@@ -70,6 +70,8 @@ function PagePortals() {
                 <SchedulePage
                     masterMode={scheduleEl.dataset.masterMode || 'home'}
                     initialAwayTravelBefore={parseInt(scheduleEl.dataset.awayTravelBefore || '0', 10)}
+                    initialAwayTravelAfter={parseInt(scheduleEl.dataset.awayTravelAfter || '0', 10)}
+                    initialArrivalWindow={parseInt(scheduleEl.dataset.arrivalWindow || '30', 10)}
                 />,
                 scheduleEl
             )}

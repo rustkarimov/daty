@@ -726,7 +726,7 @@ def api_delete_day_off_by_date(request):
 @login_required
 @require_http_methods(["POST"])
 def api_update_away_travel(request):
-    """Сохраняет время на дорогу до клиента по умолчанию (для away)."""
+    """Сохраняет настройки выезда: дорога до/после, интервал прибытия."""
     try:
         master = request.user.master
         if master.work_mode != 'away':
@@ -735,6 +735,8 @@ def api_update_away_travel(request):
         data = json.loads(request.body)
 
         before = data.get('away_travel_time_before_default')
+        after = data.get('away_travel_time_after_default')
+        arrival = data.get('arrival_window_minutes')
 
         if before is not None:
             try:
@@ -742,10 +744,32 @@ def api_update_away_travel(request):
             except (ValueError, TypeError):
                 pass
 
+        if after is not None:
+            try:
+                master.away_travel_time_after_default = max(0, int(after))
+            except (ValueError, TypeError):
+                pass
+
+        if arrival is not None:
+            try:
+                v = int(arrival)
+                if v < 0: v = 0
+                if v > 120: v = 120
+                # Допустимые значения: 0, 15, 30, 45, 60, 100, 120
+                allowed = [0, 15, 30, 45, 60, 100, 120]
+                if v not in allowed:
+                    # округлим к ближайшему
+                    v = min(allowed, key=lambda x: abs(x - v))
+                master.arrival_window_minutes = v
+            except (ValueError, TypeError):
+                pass
+
         master.save()
 
         return api_success({
             'away_travel_time_before_default': master.away_travel_time_before_default,
+            'away_travel_time_after_default': master.away_travel_time_after_default,
+            'arrival_window_minutes': master.arrival_window_minutes,
         })
 
     except json.JSONDecodeError:
