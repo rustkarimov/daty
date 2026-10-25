@@ -51,7 +51,14 @@ export default function Timeline({
     const isDayOff = dayData?.is_day_off;
     const isAway = (bookings?.[0]?.service_mode === 'away') || dayData?.mode === 'away';
 
-    // ---- Диапазон шкалы ----
+    // Сортируем записи по времени начала приезда
+    const sortedBookings = useMemo(() => {
+        return [...(bookings || [])].sort(
+            (a, b) => timeToMinutes(a.arrival_start || a.time) - timeToMinutes(b.arrival_start || b.time)
+        );
+    }, [bookings]);
+
+    // Диапазон шкалы (от начала работы до конца работы + возможные выезды за пределы)
     const { startMin, endMin } = useMemo(() => {
         const workStart = dayData?.extra_start || dayData?.schedule_start || '09:00';
         const workEnd = dayData?.extra_end || dayData?.schedule_end || '18:00';
@@ -59,7 +66,7 @@ export default function Timeline({
         let startM = timeToMinutes(workStart);
         let endM = timeToMinutes(workEnd);
 
-        (bookings || []).forEach(b => {
+        sortedBookings.forEach(b => {
             if (isAway && b.busy_start) {
                 startM = Math.min(startM, timeToMinutes(b.busy_start));
             }
@@ -68,9 +75,8 @@ export default function Timeline({
             }
         });
 
-        // Без округления вниз/вверх
         return { startMin: startM, endMin: endM };
-    }, [dayData, bookings, isAway]);
+    }, [dayData, sortedBookings, isAway]);
 
     const totalMinutes = Math.max(endMin - startMin, 60);
     const isMobile = useIsMobile();
@@ -78,7 +84,7 @@ export default function Timeline({
     const pxPerMinute = hourHeight / 60;
     const totalHeight = totalMinutes * pxPerMinute;
 
-    // Метки — только целые часы
+    // Метки времени (целые часы)
     const hourMarks = [];
     const firstHour = Math.ceil(startMin / 60) * 60;
     for (let m = firstHour; m <= endMin; m += 60) {
@@ -91,7 +97,7 @@ export default function Timeline({
         end: timeToMinutes(b.end),
     }));
 
-    // Текущее время
+    // Текущее время (красная линия)
     const now = new Date();
     const nowMin = now.getHours() * 60 + now.getMinutes();
     const isToday = (() => {
@@ -106,24 +112,6 @@ export default function Timeline({
 
     const [hoveredId, setHoveredId] = useState(null);
 
-    // Пересечения
-    const conflicts = useMemo(() => {
-        const sorted = [...(bookings || [])].sort(
-            (a, b) => timeToMinutes(a.busy_start) - timeToMinutes(b.busy_start)
-        );
-        const result = [];
-        for (let i = 0; i < sorted.length - 1; i++) {
-            const cur = sorted[i];
-            const next = sorted[i + 1];
-            const curEnd = timeToMinutes(cur.busy_end);
-            const nextStart = timeToMinutes(next.busy_start);
-            if (curEnd > nextStart) {
-                result.push({ startMin: nextStart, endMin: curEnd });
-            }
-        }
-        return result;
-    }, [bookings]);
-
     // Клик по пустому месту
     function handleEmptyClick(e) {
         const rect = e.currentTarget.getBoundingClientRect();
@@ -135,7 +123,7 @@ export default function Timeline({
 
         if (breaksInMin.some(b => minutes >= b.start && minutes < b.end)) return;
 
-        if ((bookings || []).some(b => {
+        if (sortedBookings.some(b => {
             const bs = timeToMinutes(b.busy_start);
             const be = timeToMinutes(b.busy_end);
             return minutes >= bs && minutes < be;
@@ -153,6 +141,47 @@ export default function Timeline({
         );
     }
 
+    // Рассчитываем серые зоны дорог
+    const travelBlocks = [];
+    if (isAway) {
+        sortedBookings.forEach((b, i) => {
+            const arrivalStart = timeToMinutes(b.arrival_start || b.time);
+            const serviceEnd = timeToMinutes(b.service_end);
+            const busyStart = timeToMinutes(b.busy_start);
+            const busyEnd = timeToMinutes(b.busy_end);
+            const prev = i > 0 ? sortedBookings[i - 1] : null;
+            const next = i < sortedBookings.length - 1 ? sortedBookings[i + 1] : null;
+
+            // Дорога ДО (если это первая запись или есть разрыв)
+            const prevServiceEnd = prev ? timeToMinutes(prev.service_end) : null;
+            if (!prev || arrivalStart > prevServiceEnd) {
+                const start = prev ? prevServiceEnd : busyStart;
+                if (arrivalStart > start) {
+                    travelBlocks.push({
+                        startMin: start,
+                        endMin: arrivalStart,
+                        address: b.client_address,
+                        travelTime: b.travel_before,
+                    });
+                }
+            }
+
+            // Дорога ПОСЛЕ (если это последняя запись или следующая не встык)
+            const nextArrivalStart = next ? timeToMinutes(next.arrival_start || next.time) : null;
+            if (!next || busyEnd < nextArrivalStart) {
+                const end = next ? nextArrivalStart : busyEnd;
+                if (end > serviceEnd) {
+                    travelBlocks.push({
+                        startMin: serviceEnd,
+                        endMin: end,
+                        address: '', // Назад едем пустые
+                        travelTime: b.travel_after,
+                    });
+                }
+            }
+        });
+    }
+
     return (
         <div className={styles.wrapper}>
             <div className={styles.header}>
@@ -164,172 +193,109 @@ export default function Timeline({
 
             <div className={styles.canvas} onClick={handleEmptyClick}>
                 <div className={styles.grid} style={{ height: `${totalHeight}px` }}>
-                    {/* Метки времени и линии сетки */}
-                    {hourMarks.map(m => {
-                        const top = (m - startMin) * pxPerMinute;
-                        return (
-                            <React.Fragment key={m}>
-                                <div
-                                    className={styles.hourLine}
-                                    style={{ top: `${top}px` }}
-                                />
-                                <div
-                                    className={styles.hourLabel}
-                                    style={{ top: `${top}px` }}
-                                >
-                                    {minutesToTime(m)}
-                                </div>
-                            </React.Fragment>
-                        );
-                    })}
+                    
+                    {/* Сетка и метки времени */}
+                    {hourMarks.map(m => (
+                        <React.Fragment key={m}>
+                            <div className={styles.hourLine} style={{ top: `${(m - startMin) * pxPerMinute}px` }} />
+                            <div className={styles.hourLabel} style={{ top: `${(m - startMin) * pxPerMinute}px` }}>
+                                {minutesToTime(m)}
+                            </div>
+                        </React.Fragment>
+                    ))}
 
                     {/* Перерывы */}
-                    {breaksInMin.map((b, i) => {
-                        const top = Math.max(0, (b.start - startMin) * pxPerMinute);
-                        const height = (b.end - b.start) * pxPerMinute;
+                    {breaksInMin.map((b, i) => (
+                        <div
+                            key={`break-${i}`}
+                            className={styles.breakBlock}
+                            style={{
+                                top: `${Math.max(0, (b.start - startMin) * pxPerMinute)}px`,
+                                height: `${(b.end - b.start) * pxPerMinute}px`
+                            }}
+                        >
+                            {(b.end - b.start) * pxPerMinute >= 40 && <span>Перерыв</span>}
+                        </div>
+                    ))}
+
+                    {/* Серые зоны (дороги) */}
+                    {travelBlocks.map((tb, i) => {
+                        const top = (tb.startMin - startMin) * pxPerMinute;
+                        const height = (tb.endMin - tb.startMin) * pxPerMinute;
+                        if (height <= 0) return null;
+                        
+                        const label = tb.address ? `${tb.address} (${tb.travelTime || 0} мин)` : '';
+
                         return (
-                            <div
-                                key={`break-${i}`}
-                                className={styles.breakBlock}
-                                style={{ top: `${top}px`, height: `${height}px` }}
-                            >
-                                {height >= 40 && <span>Перерыв</span>}
+                            <div key={`travel-${i}`} className={styles.travelBg} style={{ top: `${top}px`, height: `${height}px` }}>
+                                {label && height >= 18 && (
+                                    <span className={styles.travelAddress}>
+                                        <i className="fas fa-map-marker-alt" /> {label}
+                                    </span>
+                                )}
                             </div>
                         );
                     })}
 
-                    {/* Блоки записей */}
-                    {(bookings || []).map(b => (
-                        <BookingBlock
-                            key={b.id}
-                            booking={b}
-                            startMin={startMin}
-                            pxPerMinute={pxPerMinute}
-                            isAway={isAway}
-                            isHovered={hoveredId === b.id}
-                            onHover={setHoveredId}
-                            onEdit={() => onEditBooking(b.id)}
-                        />
-                    ))}
+                    {/* Цветные блоки (услуги) */}
+                    {sortedBookings.map(b => {
+                        const arrivalStart = timeToMinutes(b.arrival_start || b.time);
+                        const serviceEnd = timeToMinutes(b.service_end);
+                        
+                        const top = (arrivalStart - startMin) * pxPerMinute;
+                        const height = (serviceEnd - arrivalStart) * pxPerMinute;
+                        
+                        const isPending = b.status === 'pending';
+                        const colorClass = isPending ? styles.pending : styles.confirmed;
+                        
+                        const arrivalEnd = timeToMinutes(b.arrival_end || b.arrival_start);
+                        const arrivalTimeStr = arrivalStart < arrivalEnd
+                            ? `${minutesToTime(arrivalStart)}—${minutesToTime(arrivalEnd)}`
+                            : minutesToTime(arrivalStart);
 
-                    {/* Пересечения */}
-                    {conflicts.map((c, i) => {
-                        const top = Math.max(0, (c.startMin - startMin) * pxPerMinute);
-                        const height = Math.max(3, (c.endMin - c.startMin) * pxPerMinute);
                         return (
                             <div
-                                key={`conflict-${i}`}
-                                className={styles.conflictZone}
+                                key={b.id}
+                                className={`${styles.serviceBlock} ${colorClass}`}
                                 style={{ top: `${top}px`, height: `${height}px` }}
-                                title="Пересечение дороги"
-                            />
+                                onClick={(e) => { e.stopPropagation(); onEditBooking(b.id); }}
+                            >
+                                <div className={styles.serviceInner}>
+                                    <span className={styles.arrivalTime}>{arrivalTimeStr}</span>
+                                    <span className={styles.clientName}>{b.client_name}</span>
+                                    <span className={styles.serviceName}>
+                                        {b.category_name ? `${b.category_name}: ` : ''}{b.service_name} ({b.service_duration} мин)
+                                    </span>
+                                </div>
+                            </div>
                         );
                     })}
 
-                    {/* Линия «сейчас» */}
+                    {/* Красные зоны (пересечения) */}
+                    {sortedBookings.map((cur, i) => {
+                        if (i === sortedBookings.length - 1) return null;
+                        const next = sortedBookings[i + 1];
+                        const curEnd = timeToMinutes(cur.busy_end);
+                        const nextStart = timeToMinutes(next.busy_start);
+                        
+                        if (curEnd > nextStart) {
+                            const top = (nextStart - startMin) * pxPerMinute;
+                            const height = (curEnd - nextStart) * pxPerMinute;
+                            return (
+                                <div key={`conflict-${i}`} className={styles.conflictZone} style={{ top: `${top}px`, height: `${height}px` }} />
+                            );
+                        }
+                        return null;
+                    })}
+
+                    {/* Текущее время */}
                     {showNowLine && (
-                        <div
-                            className={styles.nowLine}
-                            style={{ top: `${(nowMin - startMin) * pxPerMinute}px` }}
-                        >
+                        <div className={styles.nowLine} style={{ top: `${(nowMin - startMin) * pxPerMinute}px` }}>
                             <span className={styles.nowDot} />
                         </div>
                     )}
                 </div>
             </div>
-        </div>
-    );
-}
-
-// ============================================================
-// Блок записи
-// ============================================================
-
-function BookingBlock({ booking, startMin, pxPerMinute, isAway, isHovered, onHover, onEdit }) {
-    let busyStart, busyEnd, arrivalStart, serviceEnd;
-
-    if (isAway) {
-        busyStart = timeToMinutes(booking.busy_start);
-        busyEnd = timeToMinutes(booking.busy_end);
-        arrivalStart = timeToMinutes(booking.arrival_start);
-        serviceEnd = timeToMinutes(booking.service_end);
-    } else {
-        busyStart = timeToMinutes(booking.time);
-        arrivalStart = busyStart;
-        serviceEnd = busyStart + (booking.service_duration || 60);
-        busyEnd = serviceEnd;
-    }
-
-    const top = (busyStart - startMin) * pxPerMinute;
-    
-    // Считаем высоты
-    let travelBeforeH = (arrivalStart - busyStart) * pxPerMinute;
-    let colorZoneH = (serviceEnd - arrivalStart) * pxPerMinute;
-    let travelAfterH = (busyEnd - serviceEnd) * pxPerMinute;
-
-    // Минимальные высоты (чтобы влез текст и адрес)
-    const minTravelHeight = 24; 
-    const minColorHeight = 60; 
-
-    if (travelBeforeH < minTravelHeight) travelBeforeH = minTravelHeight;
-    if (travelAfterH > 0 && travelAfterH < minTravelHeight) travelAfterH = minTravelHeight;
-    if (colorZoneH < minColorHeight) colorZoneH = minColorHeight;
-
-    const height = travelBeforeH + colorZoneH + travelAfterH;
-
-    const colorClass = booking.status === 'pending' ? styles.pending : styles.confirmed;
-
-    // Время прибытия для первой строки
-    const arrivalEnd = timeToMinutes(booking.arrival_end);
-    const arrivalTimeStr = arrivalStart < arrivalEnd
-        ? `${minutesToTime(arrivalStart)}—${minutesToTime(arrivalEnd)}`
-        : minutesToTime(arrivalStart);
-
-    // Адрес с минутами
-    const addressLabel = booking.client_address
-        ? `${booking.client_address} (${booking.travel_before || 0} мин)`
-        : '';
-
-    return (
-        <div
-            className={`${styles.blockWrapper} ${isHovered ? styles.blockWrapperHovered : ''}`}
-            style={{ top: `${top}px`, height: `${height}px` }}
-            onMouseEnter={() => onHover(booking.id)}
-            onMouseLeave={() => onHover(null)}
-            onClick={(e) => { e.stopPropagation(); onEdit(); }}
-        >
-            {/* Дорога до */}
-            {travelBeforeH > 0 && (
-                <div className={styles.travelRow} style={{ height: `${travelBeforeH}px` }}>
-                    {addressLabel && (
-                        <span className={styles.travelAddress}>
-                            <i className="fas fa-map-marker-alt" /> {addressLabel}
-                        </span>
-                    )}
-                </div>
-            )}
-
-            {/* Приезд + услуга */}
-            <div className={`${styles.serviceRow} ${colorClass}`} style={{ height: `${colorZoneH}px` }}>
-                <div className={styles.serviceInner}>
-                    <span className={styles.arrivalTime}>
-                        {arrivalTimeStr}
-                    </span>
-                    <span className={styles.clientName}>{booking.client_name}</span>
-                    <span className={styles.serviceName}>
-                        {booking.category_name ? `${booking.category_name}: ` : ''}
-                        {booking.service_name}
-                        {booking.service_duration && (
-                            <> ({booking.service_duration} мин)</>
-                        )}
-                    </span>
-                </div>
-            </div>
-
-            {/* Дорога после */}
-            {travelAfterH > 0 && (
-                <div className={styles.travelRow} style={{ height: `${travelAfterH}px` }} />
-            )}
         </div>
     );
 }
