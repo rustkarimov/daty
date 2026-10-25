@@ -156,6 +156,43 @@ export default function DayModal({ dateStr, masterSlug, masterMode = 'home', onC
         }
     }
 
+    async function handleUpdateBooking(bookingId, payload) {
+        try {
+            const booking = bookings.find(b => b.id === bookingId);
+            if (!booking) return;
+
+            const data = await request(`/api/booking/${bookingId}/update/`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    service_id: booking.service_id,
+                    client_name: booking.client_name,
+                    client_phone: booking.phone_raw || booking.phone,
+                    date: dateStr,
+                    time: booking.time,
+                    comment: booking.comment || '',
+                    status: booking.status,
+                    client_address: booking.client_address || '',
+                    travel_time_before: booking.travel_before,
+                    travel_time_after: booking.travel_after,
+                    duration_extra_minutes: booking.duration_extra_minutes,
+                    ...payload,
+                }),
+            });
+
+            if (data.success) {
+                // НЕ вызываем loadBookingsByDate и НЕ вызываем onDataChanged, 
+                // чтобы не было перерендера и закрытия модалки.
+                // Просто молча сохраняем в БД.
+                // (Если нужно обновить дашборд сзади, это произойдет при закрытии модалки)
+            } else {
+                showAlert(data.error || 'Ошибка обновления', 'error');
+            }
+        } catch (error) {
+            console.error('Ошибка:', error);
+            showAlert('Ошибка соединения', 'error');
+        }
+    }
+
     function handleOpenAddBooking(time) {
         setAddBookingTime(time || null);
         setShowAddBooking(true);
@@ -340,6 +377,7 @@ export default function DayModal({ dateStr, masterSlug, masterMode = 'home', onC
                                         bookings={bookings}
                                         onEditBooking={handleEditBooking}
                                         onEmptyClick={(time) => handleOpenAddBooking(time)}
+                                        onUpdateBooking={handleUpdateBooking}
                                     />
                                 )}
 

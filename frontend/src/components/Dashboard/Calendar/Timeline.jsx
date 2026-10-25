@@ -5,7 +5,6 @@ const MONTH_NAMES = [
     'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
     'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'
 ];
-
 const WEEKDAY_NAMES = [
     'воскресенье', 'понедельник', 'вторник', 'среда',
     'четверг', 'пятница', 'суббота'
@@ -16,19 +15,16 @@ function timeToMinutes(t) {
     const [h, m] = t.split(':').map(Number);
     return h * 60 + m;
 }
-
 function minutesToTime(m) {
     const h = Math.floor(m / 60);
     const mm = m % 60;
     return `${String(h).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
 }
-
 function formatDateRu(dateStr) {
     if (!dateStr) return '';
     const d = new Date(dateStr);
     return `${d.getDate()} ${MONTH_NAMES[d.getMonth()]} (${WEEKDAY_NAMES[d.getDay()]})`;
 }
-
 function useIsMobile() {
     const [isMobile, setIsMobile] = useState(
         typeof window !== 'undefined' ? window.innerWidth <= 768 : true
@@ -47,36 +43,35 @@ export default function Timeline({
     bookings,
     onEditBooking,
     onEmptyClick,
+    onUpdateBooking,
 }) {
     const isDayOff = dayData?.is_day_off;
     const isAway = (bookings?.[0]?.service_mode === 'away') || dayData?.mode === 'away';
 
-    // Сортируем записи по времени начала приезда
     const sortedBookings = useMemo(() => {
         return [...(bookings || [])].sort(
             (a, b) => timeToMinutes(a.arrival_start || a.time) - timeToMinutes(b.arrival_start || b.time)
         );
     }, [bookings]);
 
-    // Диапазон шкалы (от начала работы до конца работы + возможные выезды за пределы)
+    const [localBookings, setLocalBookings] = useState(sortedBookings);
+
+    // Синхронизируем локальный стейт, если с сервера пришли новые данные
+    useEffect(() => {
+        setLocalBookings(sortedBookings);
+    }, [sortedBookings]);
+
     const { startMin, endMin } = useMemo(() => {
         const workStart = dayData?.extra_start || dayData?.schedule_start || '09:00';
         const workEnd = dayData?.extra_end || dayData?.schedule_end || '18:00';
-
         let startM = timeToMinutes(workStart);
         let endM = timeToMinutes(workEnd);
-
-        sortedBookings.forEach(b => {
-            if (isAway && b.busy_start) {
-                startM = Math.min(startM, timeToMinutes(b.busy_start));
-            }
-            if (isAway && b.busy_end) {
-                endM = Math.max(endM, timeToMinutes(b.busy_end));
-            }
+        localBookings.forEach(b => {
+            if (isAway && b.busy_start) startM = Math.min(startM, timeToMinutes(b.busy_start));
+            if (isAway && b.busy_end) endM = Math.max(endM, timeToMinutes(b.busy_end));
         });
-
         return { startMin: startM, endMin: endM };
-    }, [dayData, sortedBookings, isAway]);
+    }, [dayData, localBookings, isAway]);
 
     const totalMinutes = Math.max(endMin - startMin, 60);
     const isMobile = useIsMobile();
@@ -84,35 +79,58 @@ export default function Timeline({
     const pxPerMinute = hourHeight / 60;
     const totalHeight = totalMinutes * pxPerMinute;
 
-    // Метки времени (целые часы)
     const hourMarks = [];
     const firstHour = Math.ceil(startMin / 60) * 60;
     for (let m = firstHour; m <= endMin; m += 60) {
         hourMarks.push(m);
     }
 
-    // Перерывы
     const breaksInMin = (dayData?.breaks || []).map(b => ({
         start: timeToMinutes(b.start),
         end: timeToMinutes(b.end),
     }));
 
-    // Текущее время (красная линия)
     const now = new Date();
     const nowMin = now.getHours() * 60 + now.getMinutes();
     const isToday = (() => {
         if (!dateStr) return false;
         const d = new Date(dateStr);
         const t = new Date();
-        return d.getFullYear() === t.getFullYear()
-            && d.getMonth() === t.getMonth()
-            && d.getDate() === t.getDate();
+        return d.getFullYear() === t.getFullYear() && d.getMonth() === t.getMonth() && d.getDate() === t.getDate();
     })();
     const showNowLine = isToday && nowMin >= startMin && nowMin <= endMin;
 
-    const [hoveredId, setHoveredId] = useState(null);
+    // ---- Быстрое изменение дороги (Оптимистичное) ----
+    const handleQuickUpdate = (bookingId, type, delta) => {
+        // 1. Мгновенно обновляем локальный стейт (чтобы кнопки не лагали)
+        let payload = {};
+        setLocalBookings(prev => {
+            const newBookings = prev.map(b => {
+                if (b.id !== bookingId) return b;
+                const updated = { ...b };
+                if (type === 'travel_before') {
+                    const newVal = Math.max(0, (updated.travel_before || 0) + delta);
+                    updated.travel_before = newVal;
+                    updated.busy_start = minutesToTime(timeToMinutes(b.arrival_start) - newVal);
+                    payload = { travel_time_before: newVal };
+                }
+                if (type === 'travel_after') {
+                    const newVal = Math.max(0, (updated.travel_after || 0) + delta);
+                    updated.travel_after = newVal;
+                    updated.busy_end = minutesToTime(timeToMinutes(b.service_end) + newVal);
+                    payload = { travel_time_after: newVal };
+                }
+                return updated;
+            });
+            return newBookings;
+        });
 
-    // Клик по пустому месту
+        // 2. Отправляем на сервер в фоне
+        if (onUpdateBooking) {
+            onUpdateBooking(bookingId, payload);
+        }
+    };
+
     function handleEmptyClick(e) {
         const rect = e.currentTarget.getBoundingClientRect();
         const y = e.clientY - rect.top;
@@ -122,8 +140,7 @@ export default function Timeline({
         const minutes = Math.round(rawMinutes / step) * step;
 
         if (breaksInMin.some(b => minutes >= b.start && minutes < b.end)) return;
-
-        if (sortedBookings.some(b => {
+        if (localBookings.some(b => {
             const bs = timeToMinutes(b.busy_start);
             const be = timeToMinutes(b.busy_end);
             return minutes >= bs && minutes < be;
@@ -141,41 +158,36 @@ export default function Timeline({
         );
     }
 
-    // Рассчитываем серые зоны дорог
     const travelBlocks = [];
     if (isAway) {
-        sortedBookings.forEach((b, i) => {
+        localBookings.forEach((b, i) => {
             const arrivalStart = timeToMinutes(b.arrival_start || b.time);
             const serviceEnd = timeToMinutes(b.service_end);
             const busyStart = timeToMinutes(b.busy_start);
             const busyEnd = timeToMinutes(b.busy_end);
-            const prev = i > 0 ? sortedBookings[i - 1] : null;
-            const next = i < sortedBookings.length - 1 ? sortedBookings[i + 1] : null;
+            const prev = i > 0 ? localBookings[i - 1] : null;
+            const next = i < localBookings.length - 1 ? localBookings[i + 1] : null;
 
-            // Дорога ДО (если это первая запись или есть разрыв)
             const prevServiceEnd = prev ? timeToMinutes(prev.service_end) : null;
             if (!prev || arrivalStart > prevServiceEnd) {
                 const start = prev ? prevServiceEnd : busyStart;
                 if (arrivalStart > start) {
                     travelBlocks.push({
-                        startMin: start,
-                        endMin: arrivalStart,
-                        address: b.client_address,
-                        travelTime: b.travel_before,
+                        startMin: start, endMin: arrivalStart,
+                        address: b.client_address, travelTime: b.travel_before,
+                        bookingId: b.id, type: 'travel_before',
                     });
                 }
             }
 
-            // Дорога ПОСЛЕ (если это последняя запись или следующая не встык)
             const nextArrivalStart = next ? timeToMinutes(next.arrival_start || next.time) : null;
             if (!next || busyEnd < nextArrivalStart) {
                 const end = next ? nextArrivalStart : busyEnd;
                 if (end > serviceEnd) {
                     travelBlocks.push({
-                        startMin: serviceEnd,
-                        endMin: end,
-                        address: '', // Назад едем пустые
-                        travelTime: b.travel_after,
+                        startMin: serviceEnd, endMin: end,
+                        address: '', travelTime: b.travel_after,
+                        bookingId: b.id, type: 'travel_after',
                     });
                 }
             }
@@ -194,7 +206,6 @@ export default function Timeline({
             <div className={styles.canvas} onClick={handleEmptyClick}>
                 <div className={styles.grid} style={{ height: `${totalHeight}px` }}>
                     
-                    {/* Сетка и метки времени */}
                     {hourMarks.map(m => (
                         <React.Fragment key={m}>
                             <div className={styles.hourLine} style={{ top: `${(m - startMin) * pxPerMinute}px` }} />
@@ -204,7 +215,6 @@ export default function Timeline({
                         </React.Fragment>
                     ))}
 
-                    {/* Перерывы */}
                     {breaksInMin.map((b, i) => (
                         <div
                             key={`break-${i}`}
@@ -218,30 +228,47 @@ export default function Timeline({
                         </div>
                     ))}
 
-                    {/* Серые зоны (дороги) */}
                     {travelBlocks.map((tb, i) => {
                         const top = (tb.startMin - startMin) * pxPerMinute;
                         const height = (tb.endMin - tb.startMin) * pxPerMinute;
                         if (height <= 0) return null;
                         
-                        const label = tb.address ? `${tb.address} (${tb.travelTime || 0} мин)` : '';
+                        const label = tb.address ? `${tb.address} (${tb.travelTime || 0} мин)` : `${tb.travelTime} мин`;
 
                         return (
-                            <div key={`travel-${i}`} className={styles.travelBg} style={{ top: `${top}px`, height: `${height}px` }}>
+                            <div 
+                                key={`travel-${i}`} 
+                                className={styles.travelBg} 
+                                style={{ top: `${top}px`, height: `${height}px` }}
+                            >
                                 {label && height >= 18 && (
                                     <span className={styles.travelAddress}>
                                         <i className="fas fa-map-marker-alt" /> {label}
                                     </span>
                                 )}
+                                
+                                {/* Кнопки управления всегда видны */}
+                                <div className={styles.travelControls}>
+                                    <button 
+                                        className={styles.controlBtn} 
+                                        onClick={(e) => { e.stopPropagation(); handleQuickUpdate(tb.bookingId, tb.type, -5); }}
+                                    >
+                                        −
+                                    </button>
+                                    <button 
+                                        className={styles.controlBtn} 
+                                        onClick={(e) => { e.stopPropagation(); handleQuickUpdate(tb.bookingId, tb.type, 5); }}
+                                    >
+                                        +
+                                    </button>
+                                </div>
                             </div>
                         );
                     })}
 
-                    {/* Цветные блоки (услуги) */}
-                    {sortedBookings.map(b => {
+                    {localBookings.map(b => {
                         const arrivalStart = timeToMinutes(b.arrival_start || b.time);
                         const serviceEnd = timeToMinutes(b.service_end);
-                        
                         const top = (arrivalStart - startMin) * pxPerMinute;
                         const height = (serviceEnd - arrivalStart) * pxPerMinute;
                         
@@ -271,10 +298,9 @@ export default function Timeline({
                         );
                     })}
 
-                    {/* Красные зоны (пересечения) */}
-                    {sortedBookings.map((cur, i) => {
-                        if (i === sortedBookings.length - 1) return null;
-                        const next = sortedBookings[i + 1];
+                    {localBookings.map((cur, i) => {
+                        if (i === localBookings.length - 1) return null;
+                        const next = localBookings[i + 1];
                         const curEnd = timeToMinutes(cur.busy_end);
                         const nextStart = timeToMinutes(next.busy_start);
                         
@@ -288,7 +314,6 @@ export default function Timeline({
                         return null;
                     })}
 
-                    {/* Текущее время */}
                     {showNowLine && (
                         <div className={styles.nowLine} style={{ top: `${(nowMin - startMin) * pxPerMinute}px` }}>
                             <span className={styles.nowDot} />

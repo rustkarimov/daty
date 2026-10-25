@@ -506,6 +506,8 @@ def get_bookings_by_date(request):
             'status': booking.status,
             'service_mode': booking.service_mode,
             'client_address': booking.client_address or '',
+            'service_id': booking.service.id,
+            'phone_raw': phone_cleaned, 
         }
 
         # Для away — расширенные поля для timeline

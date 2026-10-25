@@ -118,6 +118,7 @@
     border-bottom: 1px solid var(--gray-200);
     display: flex;
     align-items: center;
+    justify-content: space-between; /* Адрес слева, кнопки справа */
     padding: 0 8px;
     z-index: 1;
     box-sizing: border-box;
@@ -135,12 +136,51 @@
     gap: 3px;
     max-width: 100%;
     font-weight: 500;
+    pointer-events: none;
 }
 
 .travelAddress i {
     font-size: 0.6rem;
     color: var(--gray-500);
     flex-shrink: 0;
+}
+
+/* ---- Кнопки управления (всегда видимы) ---- */
+.travelControls {
+    display: flex;
+    gap: 4px;
+    opacity: 1; /* Всегда видимы */
+    flex-shrink: 0;
+}
+
+.controlBtn {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%; /* Делаем кружочками */
+    border: 1px solid var(--gray-300);
+    background: white;
+    color: var(--gray-700);
+    font-weight: bold;
+    font-size: 14px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    transition: all 0.15s ease;
+}
+
+.controlBtn:hover {
+    background: var(--primary-light);
+    color: var(--primary);
+    border-color: var(--primary);
+    transform: scale(1.1);
+}
+
+.controlBtn:active {
+    transform: scale(0.95);
 }
 
 /* ---- Блок с услугой ---- */
@@ -266,4 +306,61 @@
 .emptyDay p {
     margin: 0;
     font-size: 0.9rem;
+}
+
+
+/* ============================================================ */
+/* ========== АДАПТИВ ========================================= */
+/* ============================================================ */
+
+@media (max-width: 480px) {
+    .canvas { padding: 8px 8px 8px 0; }
+    .grid { margin-left: 38px; }
+    .hourLabel { left: -38px; width: 32px; font-size: 0.6rem; }
+    .serviceBlock { border-radius: 6px; padding: 2px 6px; }
+    .arrivalTime { font-size: 0.6rem; }
+    .clientName { font-size: 0.75rem; }
+    .serviceName { font-size: 0.65rem; }
+    .travelAddress { font-size: 0.6rem; }
+    
+    .controlBtn {
+        width: 28px;
+        height: 28px;
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 768px) {
+    /* На мобилках прячем кнопки, пока не тапнули по зоне */
+
+    .travelControls {
+        gap: 2px;
+    }
+    .controlBtn {
+        width: 20px;
+        height: 20px;
+        font-size: 12px;
+    }
+    /* Адрес чуть меньше, чтобы не наезжал на кнопки */
+    .travelAddress {
+        font-size: 0.6rem;
+        max-width: calc(100% - 50px); 
+    }
+
+}
+
+@media (min-width: 769px) {
+    .canvas { padding: 16px 16px 16px 0; }
+    .grid { margin-left: 56px; }
+    .hourLabel { left: -56px; width: 48px; font-size: 0.75rem; }
+    .serviceBlock { border-radius: 10px; padding: 4px 12px; }
+    .arrivalTime { font-size: 0.7rem; }
+    .clientName { font-size: 0.9rem; }
+    .serviceName { font-size: 0.8rem; }
+    .travelAddress { font-size: 0.7rem; }
+    .controlBtn {
+        width: 24px;
+        height: 24px;
+        font-size: 16px;
+    }
 }
