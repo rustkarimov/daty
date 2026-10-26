@@ -127,7 +127,9 @@ def api_profile_update(request):
                 'address': master.address,
                 'public_slug': master.public_slug,
                 'work_mode': master.work_mode,
-                'away_travel_time_default': master.away_travel_time_default,
+                'away_travel_time_before_default': master.away_travel_time_before_default,
+                'away_travel_time_after_default': master.away_travel_time_after_default,
+                'arrival_window_minutes': master.arrival_window_minutes,
             }
         })
         

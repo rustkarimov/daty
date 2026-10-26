@@ -148,9 +148,9 @@ export default function DayModal({ dateStr, masterSlug, masterMode = 'home', onC
 
     async function handleSavedEdit() {
         try {
+            // Просто обновляем данные внутри модалки, НЕ вызываем onDataChanged
             const bookingsData = await loadBookingsByDate(dateStr);
             setBookings(bookingsData.bookings || []);
-            if (onDataChanged) onDataChanged('Запись обновлена');
         } catch (error) {
             console.error('Ошибка перезагрузки записей:', error);
         }
@@ -378,6 +378,7 @@ export default function DayModal({ dateStr, masterSlug, masterMode = 'home', onC
                                         onEditBooking={handleEditBooking}
                                         onEmptyClick={(time) => handleOpenAddBooking(time)}
                                         onUpdateBooking={handleUpdateBooking}
+                                        showAlert={showAlert}
                                     />
                                 )}
 

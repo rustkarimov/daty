@@ -255,7 +255,7 @@
 }
 
 /* ---- Конфликт (пересечение) ---- */
-.conflictZone {
+/* .conflictZone {
     position: absolute;
     left: 0;
     right: 0;
@@ -264,7 +264,7 @@
     border-bottom: 2px dashed #dc2626;
     z-index: 5;
     pointer-events: none;
-}
+} */
 
 /* ---- Линия «сейчас» ---- */
 .nowLine {
@@ -308,6 +308,151 @@
     font-size: 0.9rem;
 }
 
+/* ---- Серые зоны (Дорога) ---- */
+/* ---- Серые зоны (Дорога) ---- */
+.travelBg {
+    position: absolute;
+    left: 0;
+    right: 0;
+    background: var(--gray-100);
+    border-top: 1px solid var(--gray-200);
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    z-index: 1;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.travelBgEditing {
+    background: white; /* При редактировании делаем белым, как в модалке */
+    border: 1px solid var(--primary-light);
+    border-radius: 4px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* ---- Строка в режиме просмотра ---- */
+.viewRow {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    overflow: hidden;
+}
+
+.travelAddress {
+    font-size: 0.65rem;
+    color: var(--gray-600);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-weight: 500;
+}
+
+.travelAddress i {
+    font-size: 0.6rem;
+    color: var(--gray-500);
+    flex-shrink: 0;
+}
+
+/* Маленькая иконка карандаша прямо за текстом */
+.inlineEditBtn {
+    background: transparent;
+    border: none;
+    color: var(--gray-400);
+    cursor: pointer;
+    padding: 2px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.65rem;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+}
+
+.inlineEditBtn:hover {
+    color: var(--primary);
+    background: white;
+}
+
+/* ---- Режим редактирования (как в модалке) ---- */
+.editRow {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    overflow: hidden;
+}
+
+.editInput {
+    width: 50px;
+    height: 24px;
+    border-radius: 6px;
+    border: 1px solid var(--gray-300);
+    padding: 0 6px;
+    font-size: 0.75rem;
+    text-align: center;
+    box-sizing: border-box;
+    outline: none;
+}
+
+.editInput:focus {
+    border-color: var(--primary);
+}
+
+/* Прячем стрелочки у number input */
+.editInput::-webkit-outer-spin-button,
+.editInput::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.editUnit {
+    font-size: 0.65rem;
+    color: var(--gray-500);
+    flex-shrink: 0;
+}
+
+.editActions {
+    display: flex;
+    gap: 2px;
+    margin-left: auto; /* Прижимаем кнопки вправо */
+}
+
+/* Иконки (галочка, крестик) */
+.iconBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 0.75rem;
+    transition: all 0.15s ease;
+}
+
+.iconBtnSuccess {
+    color: var(--success);
+}
+.iconBtnSuccess:hover {
+    background: #dcfce7;
+}
+
+.iconBtnSecondary {
+    color: var(--gray-500);
+}
+.iconBtnSecondary:hover {
+    background: var(--gray-200);
+}
 
 /* ============================================================ */
 /* ========== АДАПТИВ ========================================= */
