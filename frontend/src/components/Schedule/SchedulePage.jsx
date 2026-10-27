@@ -14,12 +14,15 @@ import {
     loadDaysOff,
 } from '../../api/schedule';
 import styles from './SchedulePage.module.css';
+import { updateGeneralSettings } from '../../api/schedule';
 
 export default function SchedulePage({
     masterMode = 'home',
     initialAwayTravelBefore = 0,
     initialAwayTravelAfter = 0,
     initialArrivalWindow = 30,
+    initialMinLeadTime = 0,
+    initialHomeBuffer = 0,
 }) {
     // Данные
     const [schedules, setSchedules] = useState([]);
@@ -47,6 +50,10 @@ export default function SchedulePage({
 
     const { showAlert } = useModal();
     const isAway = masterMode === 'away';
+
+    const [minLeadTime, setMinLeadTime] = useState(0);
+    const [homeBuffer, setHomeBuffer] = useState(0);
+    const [savingSettings, setSavingSettings] = useState(false);
 
     // ---------- Загрузка данных ----------
 
@@ -110,6 +117,27 @@ export default function SchedulePage({
             .catch(error => {
                 console.error('Ошибка догрузки прошедших дней:', error);
             });
+    }
+
+
+    async function handleSaveGeneralSettings() {
+        setSavingSettings(true);
+        try {
+            const data = await updateGeneralSettings({
+                min_booking_lead_time: parseInt(minLeadTime) || 0,
+                home_buffer_between_bookings: parseInt(homeBuffer) || 0,
+            });
+            if (data.success) {
+                showAlert('Настройки сохранены', 'success');
+            } else {
+                showAlert(data.error || 'Ошибка сохранения', 'error');
+            }
+        } catch (error) {
+            console.error('Ошибка:', error);
+            showAlert('Ошибка соединения', 'error');
+        } finally {
+            setSavingSettings(false);
+        }
     }
 
     // ---------- Сохранение времени на дорогу ----------
@@ -232,6 +260,64 @@ export default function SchedulePage({
                     </div>
                 </div>
             )}
+
+            {/* Секция: Общие настройки */}
+            <div className={styles.card}>
+                <div className={styles.sectionTitle}>Общие настройки</div>
+
+                <div className={styles.travelTimeBlock}>
+                    <div className={styles.travelTimeRow}>
+                        <div className={styles.travelTimeField}>
+                            <label className={styles.travelTimeLabel}>
+                                <i className="fas fa-clock me-1" />
+                                Не принимать записи за (часов)
+                            </label>
+                            <input
+                                type="number"
+                                className={styles.travelTimeInput}
+                                min="0"
+                                value={minLeadTime}
+                                onChange={e => setMinLeadTime(e.target.value)}
+                                placeholder="0"
+                            />
+                        </div>
+                    </div>
+
+                    {!isAway && (
+                        <div className={styles.travelTimeRow}>
+                            <div className={styles.travelTimeField}>
+                                <label className={styles.travelTimeLabel}>
+                                    <i className="fas fa-coffee me-1" />
+                                    Буфер между записями (мин)
+                                </label>
+                                <input
+                                    type="number"
+                                    className={styles.travelTimeInput}
+                                    min="0"
+                                    step="5"
+                                    value={homeBuffer}
+                                    onChange={e => setHomeBuffer(e.target.value)}
+                                    placeholder="0"
+                                />
+                            </div>
+                        </div>
+                    )}
+
+                    <button
+                        type="button"
+                        className={styles.btnPrimary}
+                        onClick={handleSaveGeneralSettings}
+                        disabled={savingSettings}
+                        style={{ marginTop: '12px' }}
+                    >
+                        {savingSettings ? (
+                            <><i className="fas fa-spinner fa-spin" /> Сохранение...</>
+                        ) : (
+                            <><i className="fas fa-save" /> Сохранить настройки</>
+                        )}
+                    </button>
+                </div>
+            </div>
 
             {/* Секция 1: Регулярная работа */}
             <div className={styles.card}>

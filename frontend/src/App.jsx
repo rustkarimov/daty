@@ -72,6 +72,8 @@ function PagePortals() {
                     initialAwayTravelBefore={parseInt(scheduleEl.dataset.awayTravelBefore || '0', 10)}
                     initialAwayTravelAfter={parseInt(scheduleEl.dataset.awayTravelAfter || '0', 10)}
                     initialArrivalWindow={parseInt(scheduleEl.dataset.arrivalWindow || '30', 10)}
+                    initialMinLeadTime={parseInt(scheduleEl.dataset.minLeadTime || '0', 10)}
+                    initialHomeBuffer={parseInt(scheduleEl.dataset.homeBuffer || '0', 10)}
                 />,
                 scheduleEl
             )}

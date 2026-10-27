@@ -72,3 +72,10 @@ export function updateAwayTravel(data) {
         body: JSON.stringify(data),
     });
 }
+
+export function updateGeneralSettings(data) {
+    return request('/api/settings/general/', {
+        method: 'POST',
+        body: JSON.stringify(data),
+    });
+}

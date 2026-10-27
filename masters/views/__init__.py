@@ -73,6 +73,8 @@ from .schedule import (
     api_delete_day_off_by_date,
     # Время на дорогу (away)
     api_update_away_travel,
+
+    api_update_general_settings
 )
 
 from .bookings import (  

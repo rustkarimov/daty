@@ -278,6 +278,25 @@ if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/service-worker.js', { scope: '/' })
             .then(function(registration) {
                 console.log('SW зарегистрирован, scope:', registration.scope);
+                
+                // Проверяем обновления каждые 10 минут
+                setInterval(() => registration.update(), 10 * 60 * 1000);
+                
+                // Если найден новый SW
+                registration.onupdatefound = () => {
+                    const installingWorker = registration.installing;
+                    if (installingWorker == null) return;
+                    
+                    installingWorker.onstatechange = () => {
+                        if (installingWorker.state === 'installed') {
+                            if (navigator.serviceWorker.controller) {
+                                // Новый SW установлен, старый все еще работает
+                                console.log('Доступно обновление. Перезагрузка...');
+                                window.location.reload();
+                            }
+                        }
+                    };
+                };
             })
             .catch(function(error) {
                 console.warn('Ошибка регистрации SW:', error);
@@ -386,6 +405,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 })();
 </script>
+
 
 
 </body>

@@ -54,6 +54,8 @@ urlpatterns = [
     path('api/schedule/<int:schedule_id>/edit/', views.api_edit_schedule, name='api_edit_schedule'),
     path('api/schedule/<int:schedule_id>/delete/', views.api_delete_schedule, name='api_delete_schedule'),
 
+    path('api/settings/general/', views.api_update_general_settings, name='api_update_general_settings'),
+
     # Время на дорогу (away)
     path('api/away-travel/update/', views.api_update_away_travel, name='api_update_away_travel'),
 

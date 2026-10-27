@@ -185,22 +185,23 @@ class ScheduleCalculator:
             duration = base_duration + extra
 
             start_dt = datetime.combine(date.today(), booking.time)
+            # Добавляем ситуативные паузы
+            start_dt -= timedelta(minutes=booking.buffer_before_minutes or 0)
+            
             end_dt = start_dt + timedelta(minutes=duration)
+            end_dt += timedelta(minutes=booking.buffer_after_minutes or 0)
 
             travel_after = 0
             if self.is_away_mode():
                 before = booking.travel_time_before or 0
                 travel_after = booking.travel_time_after or 0
-                # arrival_window берём из мастера (одинаков для всех записей)
                 arrival_window = self.master.arrival_window_minutes or 0
-                if arrival_window < 0:
-                    arrival_window = 0
-                if arrival_window > 120:
-                    arrival_window = 120
-
-                # busy = [A - B, A + W + S + F]
+                
                 start_dt = start_dt - timedelta(minutes=before)
                 end_dt = end_dt + timedelta(minutes=arrival_window + travel_after)
+            else:
+                # Добавляем постоянный буфер для дома
+                end_dt += timedelta(minutes=self.master.home_buffer_between_bookings or 0)
 
             if start_dt.date() < date.today():
                 start_dt = datetime.combine(date.today(), time(0, 0))
@@ -290,15 +291,30 @@ class ScheduleCalculator:
         slot_display_duration = arrival_window if is_away else service_duration
 
         # ---- current_time ----
-        if current_time:
-            current_minutes = time_to_minutes(current_time)
-            current_minutes = (
-                (current_minutes + slot_step - 1) // slot_step
-            ) * slot_step
-            start_minutes = max(start_minutes, current_minutes)
+    
+        # Учитываем ограничитель (Lead Time) и текущее время
+        lead_time_hours = self.master.min_booking_lead_time or 0
+        now = datetime.now()
+        
+        # Определяем минимальное время начала (в минутах от начала дня)
+        if lead_time_hours > 0:
+            min_start_dt = now + timedelta(hours=lead_time_hours)
+        else:
+            min_start_dt = now if current_time else None
 
-        if start_minutes >= end_minutes:
-            return []
+        if min_start_dt:
+            if target_date > min_start_dt.date():
+                # Целевая дата в будущем, ограничений по времени нет
+                pass
+            elif target_date == min_start_dt.date():
+                current_minutes = min_start_dt.hour * 60 + min_start_dt.minute
+                current_minutes = (
+                    (current_minutes + slot_step - 1) // slot_step
+                ) * slot_step
+                start_minutes = max(start_minutes, current_minutes)
+            else:
+                # Целевая дата в прошлом
+                return []
 
         # ---- Перерывы ----
         breaks = self.get_breaks_for_date(target_date)
@@ -386,7 +402,9 @@ class ScheduleCalculator:
 
             if is_free:
                 start_time_str = f"{slot_start // 60:02d}:{slot_start % 60:02d}"
-                end_time_str = f"{slot_display_end // 60:02d}:{slot_display_end % 60:02d}"
+                # Для дома end не нужен (клиент приходит к точке), для away - интервал приезда
+                end_time_str = f"{slot_display_end // 60:02d}:{slot_display_end % 60:02d}" if is_away else ''
+                
                 all_slots.append({
                     'start': start_time_str,
                     'end': end_time_str,
@@ -396,6 +414,7 @@ class ScheduleCalculator:
                     'id': len(all_slots),
                 })
                 current += slot_step
+                
             else:
                 if conflict_end is None:
                     conflict_end = slot_start + slot_step

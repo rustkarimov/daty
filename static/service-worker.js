@@ -1,4 +1,4 @@
-const CACHE_NAME = 'daty-v12';
+const CACHE_NAME = 'daty-v14'; // ← Версия поднята для сброса старого кэша
 const OFFLINE_URL = '/static/offline.html';
 
 // Что кешируем при установке
@@ -23,7 +23,7 @@ self.addEventListener('install', event => {
             });
         })
     );
-    self.skipWaiting();
+    self.skipWaiting(); // Принудительно активируем новый SW
 });
 
 // ============================================================
@@ -35,9 +35,8 @@ self.addEventListener('activate', event => {
             return Promise.all(
                 keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
             );
-        })
+        }).then(() => self.clients.claim()) // Захватываем контроль над вкладками
     );
-    self.clients.claim();
 });
 
 // ============================================================

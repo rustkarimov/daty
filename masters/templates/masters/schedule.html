@@ -13,6 +13,8 @@
      data-master-mode="{{ master.work_mode }}"
      data-away-travel-before="{{ master.away_travel_time_before_default|default:0 }}"
      data-away-travel-after="{{ master.away_travel_time_after_default|default:0 }}"
-     data-arrival-window="{{ master.arrival_window_minutes|default:30 }}"></div>
+     data-arrival-window="{{ master.arrival_window_minutes|default:30 }}"
+     data-min-lead-time="{{ master.min_booking_lead_time|default:0 }}"
+     data-home-buffer="{{ master.home_buffer_between_bookings|default:0 }}"></div>
 {% csrf_token %}
 {% endblock %}

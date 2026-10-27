@@ -92,6 +92,15 @@ class Master(models.Model):
         verbose_name="Режим работы",
     )
 
+    min_booking_lead_time = models.IntegerField(
+        default=0,
+        verbose_name="Не принимать записи за (часов)",
+    )
+    home_buffer_between_bookings = models.IntegerField(
+        default=0,
+        verbose_name="Пауза между записями (мин)",
+    )
+
     # ---- Выездной режим ----
     away_base_address = models.CharField(
         max_length=255,
@@ -647,7 +656,7 @@ class Notification(models.Model):
         ('new_booking', 'Новая запись'),
         ('cancelled_booking', 'Отмена записи'),
         ('changed_booking', 'Изменение записи'),
-        ('pending_booking', 'Ожидает подтверждения'),
+        ('pending_booking', 'Заявка'),
         ('system', 'Системное'),
         ('promo', 'Реклама/Акция'),
         ('warning', 'Предупреждение'),

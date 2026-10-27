@@ -17,6 +17,7 @@ const TYPE_NAMES = {
     'system': 'Системное',
     'promo': 'Акция',
     'warning': 'Важно',
+    'pending_booking': 'Заявка',
 };
 
 const TYPE_BADGE_CLASSES = {
