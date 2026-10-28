@@ -51,8 +51,8 @@ export default function SchedulePage({
     const { showAlert } = useModal();
     const isAway = masterMode === 'away';
 
-    const [minLeadTime, setMinLeadTime] = useState(0);
-    const [homeBuffer, setHomeBuffer] = useState(0);
+    const [minLeadTime, setMinLeadTime] = useState(initialMinLeadTime);
+    const [homeBuffer, setHomeBuffer] = useState(initialHomeBuffer);
     const [savingSettings, setSavingSettings] = useState(false);
 
     // ---------- Загрузка данных ----------

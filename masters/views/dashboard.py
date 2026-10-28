@@ -503,11 +503,14 @@ def get_bookings_by_date(request):
             ),
             'service_duration': booking.service.duration,
             'phone': formatted_phone,
+            'phone_raw': phone_cleaned,
+            'service_id': booking.service.id,
             'status': booking.status,
             'service_mode': booking.service_mode,
             'client_address': booking.client_address or '',
-            'service_id': booking.service.id,
-            'phone_raw': phone_cleaned, 
+            'buffer_before_minutes': booking.buffer_before_minutes or 0,
+            'buffer_after_minutes': booking.buffer_after_minutes or 0,
+            'duration_extra_minutes': booking.duration_extra_minutes or 0,
         }
 
         # Для away — расширенные поля для timeline
@@ -535,8 +538,26 @@ def get_bookings_by_date(request):
                 'busy_end': busy_end.strftime('%H:%M'),
                 'travel_before': B,
                 'travel_after': F,
-                'duration_extra_minutes': extra,
                 'arrival_window': W,
+            })
+        # Для дома рассчитываем начало и конец услуги
+        else:
+            S = booking.service.duration if booking.service else 0
+            extra = booking.duration_extra_minutes or 0
+            
+            A_dt = datetime.combine(target_date, booking.time)
+            service_start = A_dt
+            service_end = service_start + timedelta(minutes=S + extra)
+            
+            actual_buffer = booking.buffer_after_minutes or master.home_buffer_between_bookings or 0
+
+            item.update({
+                'arrival_start': service_start.strftime('%H:%M'),
+                'arrival_end': service_start.strftime('%H:%M'),
+                'service_start': service_start.strftime('%H:%M'),
+                'service_end': service_end.strftime('%H:%M'),
+                'home_buffer_after': actual_buffer,
+                'buffer_after_minutes': booking.buffer_after_minutes or 0, # <--- ДОБАВИТЬ ЭТО
             })
 
         data.append(item)

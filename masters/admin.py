@@ -56,8 +56,12 @@ class MasterAdmin(admin.ModelAdmin):
     list_filter = ['created_at']
     search_fields = ['user__phone', 'phone', 'first_name', 'last_name', 'login']
     readonly_fields = ['encryption_key', 'created_at', 'updated_at']
+
     fields = [
         'user', 'phone', 'first_name', 'last_name', 'bio', 'login',
+        'work_mode',
+        'away_travel_time_before_default', 'away_travel_time_after_default', 'arrival_window_minutes',
+        'min_booking_lead_time', 'home_buffer_between_bookings',
         'encryption_key', 'created_at', 'updated_at',
     ]
 

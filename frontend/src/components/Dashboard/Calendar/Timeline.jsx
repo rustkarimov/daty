@@ -20,11 +20,6 @@ function minutesToTime(m) {
     const mm = m % 60;
     return `${String(h).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
 }
-function formatDateRu(dateStr) {
-    if (!dateStr) return '';
-    const d = new Date(dateStr);
-    return `${d.getDate()} ${MONTH_NAMES[d.getMonth()]} (${WEEKDAY_NAMES[d.getDay()]})`;
-}
 function useIsMobile() {
     const [isMobile, setIsMobile] = useState(
         typeof window !== 'undefined' ? window.innerWidth <= 768 : true
@@ -57,6 +52,7 @@ export default function Timeline({
 
     const [localBookings, setLocalBookings] = useState(sortedBookings);
     const [editingTravel, setEditingTravel] = useState(null);
+    const [editingBuffer, setEditingBuffer] = useState(null);
 
     useEffect(() => {
         setLocalBookings(sortedBookings);
@@ -104,49 +100,35 @@ export default function Timeline({
     function handleSaveTravel(e) {
         e.stopPropagation();
         if (!editingTravel) return;
-        
         const { bookingId, type, value } = editingTravel;
         const numValue = parseInt(value, 10);
-        
-        if (isNaN(numValue) || numValue < 0) {
-            setEditingTravel(null);
-            return;
-        }
+        if (isNaN(numValue) || numValue < 0) { setEditingTravel(null); return; }
 
         const booking = localBookings.find(b => b.id === bookingId);
         if (!booking) return;
 
-        // Проверка на наложение
         if (type === 'travel_before') {
             const newBusyStart = timeToMinutes(booking.arrival_start) - numValue;
-            // Ищем предыдущую запись
             const prevBooking = localBookings
                 .filter(b => timeToMinutes(b.arrival_start) < timeToMinutes(booking.arrival_start))
                 .sort((a, b) => timeToMinutes(b.arrival_start) - timeToMinutes(a.arrival_start))[0];
-
             if (prevBooking && newBusyStart < timeToMinutes(prevBooking.service_end)) {
-                // Заезжает на предыдущую услугу
-                // (здесь можно вызвать showAlert, но так как у нас нет доступа к нему в Timeline, 
-                // мы можем просто не сохранять и вернуть ошибку, либо передать showAlert через пропсы)
-                alert('Дорога не может начинаться раньше окончания предыдущей услуги.');
-                return; 
+                showAlert('Дорога не может начинаться раньше окончания предыдущей услуги.', 'warning');
+                return;
             }
         }
 
         if (type === 'travel_after') {
             const newBusyEnd = timeToMinutes(booking.service_end) + numValue;
-            // Ищем следующую запись
             const nextBooking = localBookings
                 .filter(b => timeToMinutes(b.arrival_start) > timeToMinutes(booking.arrival_start))
                 .sort((a, b) => timeToMinutes(a.arrival_start) - timeToMinutes(b.arrival_start))[0];
-
             if (nextBooking && newBusyEnd > timeToMinutes(nextBooking.arrival_start)) {
-                alert('Дорога не может заезжать на следующую запись.');
+                showAlert('Дорога не может заезжать на следующую запись.', 'warning');
                 return;
             }
         }
 
-        // Если проверки пройдены — сохраняем
         setLocalBookings(prev => prev.map(b => {
             if (b.id !== bookingId) return b;
             const updated = { ...b };
@@ -172,6 +154,52 @@ export default function Timeline({
     function handleCancelTravel(e) {
         e.stopPropagation();
         setEditingTravel(null);
+    }
+
+    function handleSaveBuffer(e, bookingId, forceValue = null) {
+        e.stopPropagation();
+        
+        let numValue = 0;
+        if (forceValue !== null) {
+            numValue = forceValue;
+        } else {
+            if (!editingBuffer) return;
+            numValue = parseInt(editingBuffer.value, 10);
+            if (isNaN(numValue) || numValue < 0) { setEditingBuffer(null); return; }
+        }
+
+        // Проверка на наложение на следующую запись
+        const booking = localBookings.find(b => b.id === bookingId);
+        if (booking && numValue > 0) {
+            const serviceEnd = timeToMinutes(booking.service_end);
+            const arrivalStart = timeToMinutes(booking.arrival_start || booking.time);
+            
+            const nextBooking = localBookings
+                .filter(b => timeToMinutes(b.arrival_start || b.time) > arrivalStart)
+                .sort((a, b) => timeToMinutes(a.arrival_start || a.time) - timeToMinutes(b.arrival_start || b.time))[0];
+                
+            if (nextBooking) {
+                const nextArrival = timeToMinutes(nextBooking.arrival_start || nextBooking.time);
+                const maxBuffer = nextArrival - serviceEnd;
+                if (numValue > maxBuffer) {
+                    showAlert(`Пауза не может превышать ${maxBuffer} мин, так как следующая запись в ${nextBooking.time}`, 'warning');
+                    return;
+                }
+            }
+        }
+
+        // Обновляем локально
+        setLocalBookings(prev => prev.map(b => {
+            if (b.id !== bookingId) return b;
+            return { ...b, buffer_after_minutes: numValue, home_buffer_after: numValue };
+        }));
+
+        // Отправляем на сервер
+        if (onUpdateBooking) {
+            onUpdateBooking(bookingId, { buffer_after_minutes: numValue });
+        }
+        
+        setEditingBuffer(null);
     }
 
     function handleEmptyClick(e) {
@@ -211,15 +239,11 @@ export default function Timeline({
             const prev = i > 0 ? localBookings[i - 1] : null;
             const next = i < localBookings.length - 1 ? localBookings[i + 1] : null;
 
-            // Дорога ДО
             const prevServiceEnd = prev ? timeToMinutes(prev.service_end) : null;
             if (!prev || arrivalStart > prevServiceEnd) {
                 const start = prev ? prevServiceEnd : busyStart;
                 if (arrivalStart > start) {
-                    // Если это разрыв между записями, привязываем дорогу к НАЧАЛУ новой записи (arrivalStart)
-                    // чтобы не растягивать серую зону на всю паузу
                     const blockStart = prev ? Math.max(start, arrivalStart - (b.travel_before || 0)) : start;
-                    
                     if (arrivalStart > blockStart) {
                         travelBlocks.push({
                             startMin: blockStart, endMin: arrivalStart,
@@ -230,14 +254,11 @@ export default function Timeline({
                 }
             }
 
-            // Дорога ПОСЛЕ
             const nextArrivalStart = next ? timeToMinutes(next.arrival_start || next.time) : null;
             if (!next || busyEnd < nextArrivalStart) {
                 const end = next ? nextArrivalStart : busyEnd;
                 if (end > serviceEnd) {
-                    // Если разрыв, привязываем к КОНЦУ текущей услуги (serviceEnd)
                     const blockEnd = next ? Math.min(end, serviceEnd + (b.travel_after || 0)) : end;
-                    
                     if (blockEnd > serviceEnd) {
                         travelBlocks.push({
                             startMin: serviceEnd, endMin: blockEnd,
@@ -252,13 +273,6 @@ export default function Timeline({
 
     return (
         <div className={styles.wrapper}>
-            <div className={styles.header}>
-                <span className={styles.headerDate}>{formatDateRu(dateStr)}</span>
-                <span className={styles.headerHint}>
-                    <i className="fas fa-hand-pointer" /> Нажмите на свободное время
-                </span>
-            </div>
-
             <div className={styles.canvas} onClick={handleEmptyClick}>
                 <div className={styles.grid} style={{ height: `${totalHeight}px` }}>
                     
@@ -298,12 +312,10 @@ export default function Timeline({
                                 style={{ top: `${top}px`, height: `${height}px` }}
                             >
                                 {isEditing ? (
-                                    /* РЕЖИМ РЕДАКТИРОВАНИЯ */
                                     <div className={styles.editRow}>
                                         <span className={styles.travelAddress}>
                                             {tb.address ? `${tb.address} —` : 'Дорога —'}
                                         </span>
-                                        
                                         <input 
                                             type="number"
                                             className={styles.editInput}
@@ -314,7 +326,6 @@ export default function Timeline({
                                             onClick={(e) => e.stopPropagation()}
                                         />
                                         <span className={styles.editUnit}>мин</span>
-                                        
                                         <div className={styles.editActions}>
                                             <button className={`${styles.iconBtn} ${styles.iconBtnSuccess}`} onClick={handleSaveTravel} title="Сохранить">
                                                 <i className="fas fa-check" />
@@ -325,7 +336,6 @@ export default function Timeline({
                                         </div>
                                     </div>
                                 ) : (
-                                    /* РЕЖИМ ПРОСМОТРА */
                                     <div className={styles.viewRow}>
                                         <span className={styles.travelAddress}>
                                             <i className="fas fa-map-marker-alt" /> 
@@ -349,8 +359,11 @@ export default function Timeline({
                     {localBookings.map(b => {
                         const arrivalStart = timeToMinutes(b.arrival_start || b.time);
                         const serviceEnd = timeToMinutes(b.service_end);
+                        
+                        const realHeight = (serviceEnd - arrivalStart) * pxPerMinute;
+                        const renderHeight = Math.max(realHeight, 40); 
+                        
                         const top = (arrivalStart - startMin) * pxPerMinute;
-                        const height = (serviceEnd - arrivalStart) * pxPerMinute;
                         
                         const isPending = b.status === 'pending';
                         const colorClass = isPending ? styles.pending : styles.confirmed;
@@ -360,25 +373,92 @@ export default function Timeline({
                             ? `${minutesToTime(arrivalStart)}—${minutesToTime(arrivalEnd)}`
                             : minutesToTime(arrivalStart);
 
+                        const bufferAfter = isAway ? 0 : (b.home_buffer_after || 0);
+                        const bufferTop = top + renderHeight; 
+                        const bufferHeight = bufferAfter * pxPerMinute;
+                        const isEditingBuffer = editingBuffer?.bookingId === b.id;
+
                         return (
-                            <div
-                                key={b.id}
-                                className={`${styles.serviceBlock} ${colorClass}`}
-                                style={{ top: `${top}px`, height: `${height}px` }}
-                                onClick={(e) => { e.stopPropagation(); onEditBooking(b.id); }}
-                            >
-                                <div className={styles.serviceInner}>
-                                    <span className={styles.arrivalTime}>{arrivalTimeStr}</span>
-                                    <span className={styles.clientName}>{b.client_name}</span>
-                                    <span className={styles.serviceName}>
-                                        {b.category_name ? `${b.category_name}: ` : ''}{b.service_name} ({b.service_duration} мин)
-                                    </span>
+                            <React.Fragment key={b.id}>
+                                <div
+                                    className={`${styles.serviceBlock} ${colorClass}`}
+                                    style={{ 
+                                        top: `${top}px`, 
+                                        height: `${renderHeight}px` 
+                                    }}
+                                    onClick={(e) => { e.stopPropagation(); onEditBooking(b.id); }}
+                                >
+                                    <div className={styles.serviceInner}>
+                                        <span className={styles.line1}>
+                                            {arrivalTimeStr} · {b.client_name}
+                                        </span>
+                                        <span className={styles.line2}>
+                                            {b.category_name ? `${b.category_name}: ` : ''}{b.service_name} ({b.service_duration} мин)
+                                        </span>
+                                    </div>
                                 </div>
-                            </div>
+
+                                {!isAway && (
+                                    <div 
+                                        className={`${styles.homeBuffer} ${bufferAfter === 0 && !isEditingBuffer ? styles.homeBufferEmpty : ''}`}
+                                        style={{ 
+                                            top: `${bufferTop}px`,
+                                            height: bufferAfter > 0 ? `${Math.max(bufferHeight, 24)}px` : '24px' 
+                                        }}
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        {isEditingBuffer ? (
+                                            <div className={styles.bufferEditRow} onClick={e => e.stopPropagation()}>
+                                                <span>Пауза:</span>
+                                                <input 
+                                                    type="number"
+                                                    className={styles.bufferInput}
+                                                    value={editingBuffer.value}
+                                                    onChange={(e) => setEditingBuffer({ ...editingBuffer, value: e.target.value })}
+                                                    autoFocus
+                                                    min="0"
+                                                    step="5"
+                                                />
+                                                <span>мин</span>
+                                                <button className={`${styles.iconBtn} ${styles.iconBtnSuccess}`} onClick={(e) => handleSaveBuffer(e, b.id)}>
+                                                    <i className="fas fa-check" />
+                                                </button>
+                                                <button className={`${styles.iconBtn} ${styles.iconBtnSecondary}`} onClick={(e) => { e.stopPropagation(); setEditingBuffer(null); }}>
+                                                    <i className="fas fa-times" />
+                                                </button>
+                                            </div>
+                                        ) : bufferAfter > 0 ? (
+                                            <div className={styles.bufferDisplay} onClick={(e) => { e.stopPropagation(); setEditingBuffer({ bookingId: b.id, value: bufferAfter }); }}>
+                                                <span>Пауза {bufferAfter} мин</span>
+                                                <button 
+                                                    className={styles.removeBufferBtn}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleSaveBuffer(e, b.id, 0);
+                                                    }}
+                                                    title="Удалить паузу"
+                                                >
+                                                    <i className="fas fa-times" />
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <button 
+                                                className={styles.addBufferBtn}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setEditingBuffer({ bookingId: b.id, value: 0 });
+                                                }}
+                                                title="Добавить паузу"
+                                            >
+                                                <i className="fas fa-plus" />
+                                            </button>
+                                        )}
+                                    </div>
+                                )}
+                            </React.Fragment>
                         );
                     })}
 
-              
                     {showNowLine && (
                         <div className={styles.nowLine} style={{ top: `${(nowMin - startMin) * pxPerMinute}px` }}>
                             <span className={styles.nowDot} />

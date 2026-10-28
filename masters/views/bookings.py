@@ -97,7 +97,7 @@ def get_booking_for_edit(request, booking_id):
 @login_required
 @require_http_methods(["POST"])
 def api_update_booking(request, booking_id):
-    """API: обновляет запись (имя, телефон, услугу, дату, время, away-поля)."""
+    """API: обновляет запись (имя, телефон, услугу, дату, время, away-поля, буферы)."""
     try:
         try:
             booking = Booking.objects.get(id=booking_id, master=request.user.master)
@@ -114,11 +114,15 @@ def api_update_booking(request, booking_id):
         comment = data.get('comment', '')
         status = data.get('status', 'confirmed')
 
-        # away-поля (могут не прийти — тогда оставляем как есть)
+        # away-поля
         client_address = data.get('client_address', booking.client_address)
         travel_time_before = data.get('travel_time_before', booking.travel_time_before)
         travel_time_after = data.get('travel_time_after', booking.travel_time_after)
         duration_extra_minutes = data.get('duration_extra_minutes', booking.duration_extra_minutes)
+
+        # Буферы (пауза) - вот их мы добавляем!
+        buffer_before_minutes = data.get('buffer_before_minutes', booking.buffer_before_minutes)
+        buffer_after_minutes = data.get('buffer_after_minutes', booking.buffer_after_minutes)
 
         # Валидация обязательных полей
         if not all([service_id, client_name, client_phone, date_str, time_str]):
@@ -146,9 +150,6 @@ def api_update_booking(request, booking_id):
         else:
             encrypted_phone = client_phone_cleaned.encode()
 
-        old_date = booking.date
-        old_time = booking.time
-
         # Обновление записи
         booking.service = service
         booking.client_name = client_name
@@ -161,6 +162,10 @@ def api_update_booking(request, booking_id):
         booking.travel_time_before = int(travel_time_before or 0)
         booking.travel_time_after = int(travel_time_after or 0)
         booking.duration_extra_minutes = int(duration_extra_minutes or 0)
+        
+        # СОХРАНЯЕМ БУФЕРЫ
+        booking.buffer_before_minutes = int(buffer_before_minutes or 0)
+        booking.buffer_after_minutes = int(buffer_after_minutes or 0)
 
         # Проверка на конфликт (warning, не блок)
         warning = None
