@@ -169,7 +169,66 @@ export default function SchedulePage({
                 <h2>Расписание</h2>
             </div>
 
-            {/* Блок «Время на дорогу» — только для away */}
+            {/* Секция: Общие настройки (лид-тайм для всех) */}
+            <div className={styles.card}>
+                <div className={styles.sectionTitle}>Общие настройки</div>
+
+                <div className={styles.travelTimeBlock}>
+                    <div className={styles.travelTimeRow}>
+                        <div className={styles.travelTimeField}>
+                            <label className={styles.travelTimeLabel}>
+                                <i className="fas fa-clock me-1" />
+                                Не принимать записи за (часов)
+                            </label>
+                            <input
+                                type="number"
+                                className={styles.travelTimeInput}
+                                min="0"
+                                value={minLeadTime}
+                                onChange={e => setMinLeadTime(e.target.value)}
+                                placeholder="0"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Буфер показываем только для дома */}
+                    {!isAway && (
+                        <div className={styles.travelTimeRow}>
+                            <div className={styles.travelTimeField}>
+                                <label className={styles.travelTimeLabel}>
+                                    <i className="fas fa-coffee me-1" />
+                                    Буфер между записями (мин)
+                                </label>
+                                <input
+                                    type="number"
+                                    className={styles.travelTimeInput}
+                                    min="0"
+                                    step="5"
+                                    value={homeBuffer}
+                                    onChange={e => setHomeBuffer(e.target.value)}
+                                    placeholder="0"
+                                />
+                            </div>
+                        </div>
+                    )}
+
+                    <button
+                        type="button"
+                        className={styles.btnPrimary}
+                        onClick={handleSaveGeneralSettings}
+                        disabled={savingSettings}
+                        style={{ marginTop: '12px' }}
+                    >
+                        {savingSettings ? (
+                            <><i className="fas fa-spinner fa-spin" /> Сохранение...</>
+                        ) : (
+                            <><i className="fas fa-save" /> Сохранить настройки</>
+                        )}
+                    </button>
+                </div>
+            </div>
+
+            {/* Блок «Выездной режим» — только для away */}
             {isAway && (
                 <div className={styles.card}>
                     <div className={styles.sectionTitle}>Выездной режим</div>
@@ -260,64 +319,6 @@ export default function SchedulePage({
                     </div>
                 </div>
             )}
-
-            {/* Секция: Общие настройки */}
-            <div className={styles.card}>
-                <div className={styles.sectionTitle}>Общие настройки</div>
-
-                <div className={styles.travelTimeBlock}>
-                    <div className={styles.travelTimeRow}>
-                        <div className={styles.travelTimeField}>
-                            <label className={styles.travelTimeLabel}>
-                                <i className="fas fa-clock me-1" />
-                                Не принимать записи за (часов)
-                            </label>
-                            <input
-                                type="number"
-                                className={styles.travelTimeInput}
-                                min="0"
-                                value={minLeadTime}
-                                onChange={e => setMinLeadTime(e.target.value)}
-                                placeholder="0"
-                            />
-                        </div>
-                    </div>
-
-                    {!isAway && (
-                        <div className={styles.travelTimeRow}>
-                            <div className={styles.travelTimeField}>
-                                <label className={styles.travelTimeLabel}>
-                                    <i className="fas fa-coffee me-1" />
-                                    Буфер между записями (мин)
-                                </label>
-                                <input
-                                    type="number"
-                                    className={styles.travelTimeInput}
-                                    min="0"
-                                    step="5"
-                                    value={homeBuffer}
-                                    onChange={e => setHomeBuffer(e.target.value)}
-                                    placeholder="0"
-                                />
-                            </div>
-                        </div>
-                    )}
-
-                    <button
-                        type="button"
-                        className={styles.btnPrimary}
-                        onClick={handleSaveGeneralSettings}
-                        disabled={savingSettings}
-                        style={{ marginTop: '12px' }}
-                    >
-                        {savingSettings ? (
-                            <><i className="fas fa-spinner fa-spin" /> Сохранение...</>
-                        ) : (
-                            <><i className="fas fa-save" /> Сохранить настройки</>
-                        )}
-                    </button>
-                </div>
-            </div>
 
             {/* Секция 1: Регулярная работа */}
             <div className={styles.card}>

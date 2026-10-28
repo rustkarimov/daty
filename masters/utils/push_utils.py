@@ -67,13 +67,15 @@ def send_push_to_master(master, title, body, url='/dashboard/', tag=None):
             logger.info(f"Push отправлен мастеру {master.id}: {sub.endpoint[:60]}...")
             
         except WebPushException as e:
-            if e.response and e.response.status_code in (404, 410):
-                logger.warning(f"Подписка устарела, удаляем: {sub.endpoint[:60]}...")
+            status_code = getattr(e.response, 'status_code', None) if e.response else None
+            if status_code in (404, 410):
+                logger.warning(f"Подписка устарела (код {status_code}), удаляем: {sub.endpoint[:60]}...")
                 sub.delete()
                 deleted += 1
             else:
                 logger.error(f"Ошибка push мастеру {master.id}: {e}")
                 failed += 1
+                
         except Exception as e:
             logger.error(f"Неожиданная ошибка push мастеру {master.id}: {e}")
             failed += 1
