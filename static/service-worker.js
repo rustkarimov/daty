@@ -1,4 +1,4 @@
-const CACHE_NAME = 'daty-v14'; // ← Версия поднята для сброса старого кэша
+const CACHE_NAME = 'daty-v15'; // ← Версия поднята для сброса старого кэша
 const OFFLINE_URL = '/static/offline.html';
 
 // Что кешируем при установке

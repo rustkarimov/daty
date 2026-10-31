@@ -13,7 +13,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.core.files.base import ContentFile
 from django.views.decorators.http import require_http_methods
-from PIL import Image
+from PIL import Image, ImageOps
 
 from ..models import Master
 
@@ -154,6 +154,7 @@ def upload_avatar(request):
         
         try:
             img = Image.open(avatar_file)
+            img = ImageOps.exif_transpose(img)
         except Exception:
             return JsonResponse({'error': 'Неверный формат изображения'}, status=400)
         

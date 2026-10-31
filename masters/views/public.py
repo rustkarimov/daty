@@ -263,6 +263,40 @@ def create_booking(request, identifier):
             duration_extra_minutes=final_extra_minutes,
         )
 
+        # --- ДОБАВЛЯЕМ УВЕДОМЛЕНИЕ И PUSH ---
+        if created_by == 'client':
+            from ..models import Notification
+            months_ru = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+                         'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']
+            date_human = f"{booking_date.day} {months_ru[booking_date.month - 1]}"
+
+            notif_msg = f"{date_human} в {booking_time.strftime('%H:%M')}\n{service.name}"
+            if is_away and client_address:
+                notif_msg = f"{date_human} в {booking_time.strftime('%H:%M')}\n📍 {client_address}\n{service.name}"
+
+            Notification.objects.create(
+                master=master,
+                type='pending_booking' if is_away else 'new_booking',
+                title=client_name,
+                message=notif_msg,
+                content_object=booking
+            )
+
+            # Отправляем Push
+            from ..utils.push_utils import send_push_to_master
+            import logging
+            logger = logging.getLogger(__name__)
+            try:
+                send_push_to_master(
+                    master=master,
+                    title='Выездная запись (ожидает)' if is_away else 'Новая запись',
+                    body=f'{client_name} · {booking_time.strftime("%H:%M")} · {service.name}',
+                    url='/dashboard/',
+                    tag=f'booking-{booking.id}'
+                )
+            except Exception as e:
+                logger.error(f"Ошибка отправки push для записи {booking.id}: {e}")
+
         message = 'Предварительная запись оформлена. Ждите подтверждения мастера.' if is_away else 'Запись создана!'
 
         return api_success({

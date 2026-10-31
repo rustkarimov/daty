@@ -53,15 +53,10 @@ def mobile_register(request):
         if CustomUser.objects.filter(phone=phone).exists():
             return api_error('Пользователь с таким телефоном уже существует', status=409)
         
-        # Сразу создаём пользователя
+        # Создаём пользователя (сигнал post_save автоматически создаст Master)
         user = CustomUser.objects.create_user(
             phone=phone,
             password=password,
-            first_name=first_name,
-        )
-        Master.objects.create(
-            user=user,
-            phone=phone,
             first_name=first_name,
         )
         
@@ -73,6 +68,9 @@ def mobile_register(request):
     except json.JSONDecodeError:
         return api_error('Неверный формат данных', status=400)
     except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.exception(f'Ошибка при регистрации: {e}')
         return api_error('Ошибка при регистрации', status=500)
 
 
