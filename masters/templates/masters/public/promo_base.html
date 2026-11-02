@@ -53,12 +53,16 @@
         
     
         <!-- Логотип -->
-        <a class="logo-daty" href="{% url 'home' %}">
+        <!-- <a class="logo-daty" href="{% url 'home' %}">
             <span class="letter-light">д</span>
             <span class="letter-bold">а</span>
             <span class="letter-light">т</span>
             <span class="letter-medium">ы</span>
             <span class="dot"></span>
+        </a> -->
+
+        <a class="logo-daty" href="{% url 'home' %}">
+            <img src="{% static 'images/logo-small.png' %}" alt="Logo" class="logo-img">
         </a>
 
         <!-- Правая часть (мобильная): кнопка "Начать" + бургер -->

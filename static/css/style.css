@@ -986,12 +986,11 @@ body {
 /* ========== 5. ЛОГОТИП ========== */
 /* ============================================================ */
 
-.logo-wrapper {
+/* .logo-wrapper {
     transform: translateY(-5px);
 }
 
 .logo-daty {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     font-size: 40px;
     color: #1a1a2e;
     text-decoration: none;
@@ -1023,8 +1022,32 @@ body {
     margin-left: 1px;
     margin-bottom: -1px;
     vertical-align: bottom;
+} */
+
+/* Ограничиваем размер логотипа */
+/* Ограничиваем размер логотипа */
+.logo-img {
+    height: 25px;      /* Высота логотипа (подберите 40-50px по вкусу) */
+    width: auto;       /* Ширина подстроится автоматически */
+    max-width: 100%;   /* Чтобы не вылезал за пределы контейнера */
+    object-fit: contain;
+    display: block;
 }
 
+/* На всякий случай ограничиваем размеры самой ссылки */
+.logo-daty {
+    display: inline-flex;
+    align-items: center;
+    padding: 0;        /* Убираем возможные отступы Bootstrap */
+    margin-right: 20px; /* Отступ от логотипа до меню (по желанию) */
+}
+
+/* Мобильная версия (чтобы логотип стал чуть меньше на телефонах) */
+@media (max-width: 778px) {
+    .logo-img {
+        height: 18px;
+    }
+}
 
 /* ============================================================ */
 /* ========== 6. ЭЛЕМЕНТЫ ШАПКИ (ДЕСКТОП) ========== */

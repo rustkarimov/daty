@@ -36,7 +36,31 @@ export default function ProfilePage({ initialData, masterId }) {
 
         setUploadingAvatar(true);
         try {
-            const data = await uploadAvatar(file);
+            // --- ХИТРОСТЬ С CANVAS ---
+            // Читаем файл, рисуем на холсте (браузер сам повернет как надо)
+            // и отправляем на сервер уже ровную картинку.
+            const img = new Image();
+            const objectUrl = URL.createObjectURL(file);
+            
+            await new Promise((resolve, reject) => {
+                img.onload = resolve;
+                img.onerror = reject;
+                img.src = objectUrl;
+            });
+
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            URL.revokeObjectURL(objectUrl);
+
+            // Конвертируем canvas обратно в Blob (файл)
+            const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
+            const newFile = new File([blob], file.name, { type: 'image/jpeg' });
+            // -------------------------
+
+            const data = await uploadAvatar(newFile);
             if (data.success) {
                 setAvatarUrl(`${data.avatar_url}?t=${Date.now()}`);
                 showAlert('Аватар загружен!', 'success');
@@ -45,7 +69,7 @@ export default function ProfilePage({ initialData, masterId }) {
             }
         } catch (error) {
             console.error('Ошибка:', error);
-            showAlert('Ошибка соединения', 'error');
+            showAlert('Ошибка обработки изображения', 'error');
         } finally {
             setUploadingAvatar(false);
             e.target.value = '';
