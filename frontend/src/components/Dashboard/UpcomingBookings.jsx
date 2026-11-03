@@ -161,7 +161,7 @@ export default function UpcomingBookings({ masterSlug, masterMaxLink, onEdit, on
                 <div className={styles.cardHeader}>
                     <h5>
                         <i className="fas fa-clock" style={{ color: 'var(--primary)' }} />
-                        Ближайшие записи
+                        Ближайшие ТВОИ записи 
                     </h5>
                 </div>
                 <div className={styles.cardBody}>

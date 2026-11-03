@@ -1,5 +1,5 @@
 // service-worker.js
-const CACHE_NAME = 'daty-v18'; // <--- ОБЯЗАТЕЛЬНО ПОДНИМАЕМ ВЕРСИЮ
+const CACHE_NAME = 'daty-v19'; // <--- ОБЯЗАТЕЛЬНО ПОДНИМАЕМ ВЕРСИЮ
 const OFFLINE_URL = '/static/offline.html';
 
 const STATIC_ASSETS = [
