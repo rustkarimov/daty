@@ -57,6 +57,8 @@ function PagePortals() {
                     totalServices={parseInt(dashboardEl.dataset.totalServices || '0', 10)}
                     totalClients={parseInt(dashboardEl.dataset.totalClients || '0', 10)}
                     publicLink={dashboardEl.dataset.publicLink}
+                    hasServices={dashboardEl.dataset.hasServices === 'true'}
+                    hasSchedule={dashboardEl.dataset.hasSchedule === 'true'}
                 />,
                 dashboardEl
             )}

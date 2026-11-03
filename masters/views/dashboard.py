@@ -64,6 +64,9 @@ def dashboard(request):
             unique_phones.add(phone_cleaned)
     
     total_clients = len(unique_phones)
+
+    has_services = Service.objects.filter(master=master).exists()
+    has_schedule = Schedule.objects.filter(master=master).exists()
     
     context = {
         'master': master,
@@ -71,6 +74,8 @@ def dashboard(request):
         'upcoming_bookings': upcoming_bookings,
         'total_services': total_services,
         'total_clients': total_clients,
+        'has_services': has_services,
+        'has_schedule': has_schedule,
     }
     return render(request, 'masters/dashboard.html', context)
 

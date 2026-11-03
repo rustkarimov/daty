@@ -18,6 +18,12 @@
     overflow: visible;
 }
 
+/* Если меню открыто, поднимаем z-index всей карточки */
+.cardMenuOpen {
+    position: relative;
+    z-index: 1300;
+}
+
 .cardHeader {
     background: white;
     padding: 16px 20px;
@@ -164,7 +170,7 @@
     border-radius: 12px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
     padding: 6px 0;
-    z-index: 1200;
+    z-index: 2000;
     animation: slideDown 0.2s ease;
 }
 
@@ -340,6 +346,45 @@
     background: #dcfce7;
     color: #15803d;
     white-space: nowrap;
+}
+
+/* Разрешаем выпадающему меню выходить за пределы таблицы */
+.table,
+.table tbody,
+.table tr,
+.table td {
+    overflow: visible !important;
+}
+
+.contactMenuPortal {
+    position: fixed;
+    min-width: 180px;
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    padding: 6px 0;
+    z-index: 9999;
+    animation: slideDown 0.2s ease;
+}
+
+.contactMenuPortal button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 14px;
+    border: none;
+    background: none;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    color: var(--gray-700);
+    text-align: left;
+}
+
+.contactMenuPortal button:hover {
+    background: var(--gray-50);
 }
 
 /* ---- Анимация ---- */

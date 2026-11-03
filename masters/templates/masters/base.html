@@ -84,6 +84,10 @@
                     <i class="fas fa-user"></i>
                     <span>Профиль</span>
                 </a>
+                <a href="#" class="nav-item" onclick="window.dispatchEvent(new Event('openOnboarding')); return false;">
+                    <i class="fas fa-question-circle"></i>
+                    <span>Подсказки</span>
+                </a>
 
             </nav>
             <div class="sidebar-footer">
@@ -119,6 +123,7 @@
             </div>
             <ul class="dropdown-menu dropdown-menu-start">
                 <li><a class="dropdown-item" href="{% url 'profile' %}">Профиль</a></li>
+                <li><a class="dropdown-item" href="#" onclick="window.dispatchEvent(new Event('openOnboarding')); return false;">Подсказки</a></li>
                 <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item text-danger" href="{% url 'logout' %}">Выйти</a></li>
             </ul>
@@ -133,10 +138,11 @@
                 <span class="dot"></span>
             </a>
         </div> -->
-
-        <a class="logo-daty" href="{% url 'home' %}">
-            <img src="{% static 'images/logo-small.png' %}" alt="Logo" class="logo-img">
-        </a>
+        <div class="logo-wrapper">
+            <a class="logo-daty" href="{% url 'home' %}">
+                <img src="{% static 'images/logo-small.png' %}" alt="Logo" class="logo-img">
+            </a>
+         </div>
         
     </div>
 

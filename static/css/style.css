@@ -986,11 +986,9 @@ body {
 /* ========== 5. ЛОГОТИП ========== */
 /* ============================================================ */
 
-/* .logo-wrapper {
-    transform: translateY(-5px);
-}
 
-.logo-daty {
+
+/* .logo-daty {
     font-size: 40px;
     color: #1a1a2e;
     text-decoration: none;
@@ -1022,7 +1020,7 @@ body {
     margin-left: 1px;
     margin-bottom: -1px;
     vertical-align: bottom;
-} */
+}  */
 
 /* Ограничиваем размер логотипа */
 /* Ограничиваем размер логотипа */
@@ -1258,7 +1256,7 @@ body {
     .logo-wrapper {
         position: absolute !important;
         left: 50% !important;
-        top: 45% !important;
+        top: 55% !important;
         transform: translate(-50%, -50%) !important;
         z-index: 1 !important;
     

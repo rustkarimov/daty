@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { loadBookings, confirmBooking, unconfirmBooking } from '../../api/bookingsList';
 import { deleteBooking } from '../../api/day';
 import BookingDetailsModal from './BookingDetailsModal';
+import PortalMenu from './PortalMenu';
 import styles from './UpcomingBookings.module.css';
 import useModal from '../../hooks/useModal';
 
@@ -13,7 +14,11 @@ export default function UpcomingBookings({ masterSlug, masterMaxLink, onEdit, on
     const [loading, setLoading] = useState(true);
     const [hasMore, setHasMore] = useState(false);
     const [detailsBookingId, setDetailsBookingId] = useState(null);
+    
+    // Состояния для меню
     const [contactMenuId, setContactMenuId] = useState(null);
+    const [menuAnchor, setMenuAnchor] = useState(null);
+
     const { showAlert, showConfirm } = useModal();
 
     useEffect(() => {
@@ -98,6 +103,7 @@ export default function UpcomingBookings({ masterSlug, masterMaxLink, onEdit, on
     useEffect(() => {
         function handleClickOutside() {
             setContactMenuId(null);
+            setMenuAnchor(null);
         }
         document.addEventListener('click', handleClickOutside);
         return () => document.removeEventListener('click', handleClickOutside);
@@ -140,7 +146,13 @@ export default function UpcomingBookings({ masterSlug, masterMaxLink, onEdit, on
 
     function toggleContactMenu(e, bookingId) {
         e.stopPropagation();
-        setContactMenuId(prev => prev === bookingId ? null : bookingId);
+        if (contactMenuId === bookingId) {
+            setContactMenuId(null);
+            setMenuAnchor(null);
+        } else {
+            setContactMenuId(bookingId);
+            setMenuAnchor(e.currentTarget); // Сохраняем кнопку, чтобы меню встало ровно под ней
+        }
     }
 
     return (
@@ -221,24 +233,29 @@ export default function UpcomingBookings({ masterSlug, masterMaxLink, onEdit, on
                                                             <span>Связаться</span>
                                                             <i className="fas fa-chevron-down" />
                                                         </button>
-                                                        {contactMenuId === b.id && (
-                                                            <div className={styles.contactMenu} onClick={e => e.stopPropagation()}>
-                                                                <button onClick={() => callClient(b.phone)}>
+                                                        
+                                                        {contactMenuId === b.id && menuAnchor && (
+                                                            <PortalMenu
+                                                                anchorRef={{ current: menuAnchor }}
+                                                                onClose={() => { setContactMenuId(null); setMenuAnchor(null); }}
+                                                                styles={styles}
+                                                            >
+                                                                <button onClick={() => { callClient(b.phone); setContactMenuId(null); setMenuAnchor(null); }}>
                                                                     <i className="fas fa-phone" /> Позвонить
                                                                 </button>
-                                                                <button onClick={() => sendSms(b.phone)}>
+                                                                <button onClick={() => { sendSms(b.phone); setContactMenuId(null); setMenuAnchor(null); }}>
                                                                     <i className="fas fa-sms" /> SMS
                                                                 </button>
-                                                                <button onClick={() => openTelegram(b.phone)}>
+                                                                <button onClick={() => { openTelegram(b.phone); setContactMenuId(null); setMenuAnchor(null); }}>
                                                                     <i className="fab fa-telegram-plane" /> Telegram
                                                                 </button>
-                                                                <button onClick={() => openWhatsApp(b.phone)}>
+                                                                <button onClick={() => { openWhatsApp(b.phone); setContactMenuId(null); setMenuAnchor(null); }}>
                                                                     <i className="fab fa-whatsapp" /> WhatsApp
                                                                 </button>
-                                                                <button onClick={openMax} disabled={!masterMaxLink}>
+                                                                <button onClick={() => { openMax(); setContactMenuId(null); setMenuAnchor(null); }} disabled={!masterMaxLink}>
                                                                     <span className={styles.maxIcon}>M</span> MAX
                                                                 </button>
-                                                            </div>
+                                                            </PortalMenu>
                                                         )}
                                                     </div>
                                                     <button

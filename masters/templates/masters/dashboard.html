@@ -16,6 +16,8 @@
      data-total-bookings="{{ total_bookings }}"
      data-total-services="{{ total_services }}"
      data-total-clients="{{ total_clients }}"
+     data-has-services="{{ has_services|yesno:'true,false' }}"
+     data-has-schedule="{{ has_schedule|yesno:'true,false' }}"
      data-public-link="{{ request.scheme }}://{{ request.get_host }}/{{ master.public_slug }}/"></div>
 
 {% endblock %}

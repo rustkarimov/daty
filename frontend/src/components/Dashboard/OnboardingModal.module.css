@@ -1,0 +1,234 @@
+.backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 1080;
+    overflow-y: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+}
+
+.modal {
+    background: white;
+    border-radius: 20px;
+    border: 1px solid var(--gray-200);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 600px;
+    max-height: calc(100vh - 48px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: fadeInUp 0.3s ease;
+}
+
+.header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--gray-800);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.title i {
+    color: var(--primary);
+}
+
+.closeBtn {
+    background: transparent;
+    border: none;
+    font-size: 1.2rem;
+    color: var(--gray-500);
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    line-height: 1;
+}
+
+.closeBtn:hover {
+    background: var(--gray-100);
+    color: var(--gray-800);
+}
+
+.body {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.intro {
+    font-size: 0.95rem;
+    color: var(--gray-600);
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+.stepsList {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.stepItem {
+    display: flex;
+    gap: 16px;
+    padding: 16px;
+    background: var(--gray-50);
+    border-radius: 12px;
+    border: 1px solid var(--gray-100);
+    transition: all 0.2s ease;
+}
+
+.stepDone {
+    opacity: 0.6;
+    background: transparent;
+    border-color: transparent;
+}
+
+.iconDone {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.stepDoneText {
+    font-size: 0.75rem;
+    color: #16a34a;
+    font-weight: 600;
+}
+
+.stepCurrent {
+    border-color: var(--primary);
+    background: white;
+    box-shadow: 0 4px 12px rgba(64, 83, 211, 0.1);
+}
+
+.stepCurrent .stepTitle {
+    color: var(--primary);
+}
+
+.stepIcon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--primary-light);
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.stepContent {
+    flex: 1;
+    min-width: 0;
+}
+
+.stepTitle {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--gray-800);
+    margin: 0 0 4px 0;
+}
+
+.stepText {
+    font-size: 0.85rem;
+    color: var(--gray-600);
+    margin: 0 0 12px 0;
+    line-height: 1.4;
+}
+
+.stepLink {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: white;
+    background: var(--primary);
+    padding: 6px 14px;
+    border-radius: 12px;
+    text-decoration: none;
+    transition: background 0.2s;
+}
+
+.stepLink:hover {
+    background: var(--primary-dark);
+    color: white;
+}
+
+.footer {
+    padding: 12px 20px;
+    border-top: 1px solid var(--gray-200);
+    background: var(--gray-50);
+    display: flex;
+    justify-content: flex-end;
+    flex-shrink: 0;
+}
+
+.btnSecondary {
+    padding: 8px 24px;
+    border-radius: 30px;
+    border: none;
+    background: var(--gray-200);
+    color: var(--gray-700);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btnSecondary:hover {
+    background: var(--gray-300);
+    color: var(--gray-800);
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+    .backdrop {
+        padding: 0;
+        align-items: stretch;
+    }
+    .modal {
+        max-width: 100%;
+        border-radius: 0;
+        max-height: none;
+        height: 100%;
+        border: none;
+        box-shadow: none;
+    }
+    .header {
+        padding: 14px 16px;
+    }
+    .title {
+        font-size: 1rem;
+    }
+    .body {
+        padding: 16px;
+    }
+    .footer {
+        padding: 12px 16px;
+        flex-direction: column-reverse;
+    }
+    .footer .btnSecondary {
+        width: 100%;
+    }
+}
