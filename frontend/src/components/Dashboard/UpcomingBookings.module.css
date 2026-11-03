@@ -4,7 +4,7 @@
 
 /* ---- Карточка ---- */
 .card {
-    background: white;
+    background: rgb(204, 9, 9);
     border-radius: 30px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     margin-bottom: 24px;
@@ -13,7 +13,7 @@
 }
 
 .cardInner {
-    background: white;
+    background: rgb(47, 175, 14);
     border-radius: 30px;
     overflow: visible;
 }

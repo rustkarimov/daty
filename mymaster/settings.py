@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'masters.apps.MastersConfig',
     'crispy_forms',
     'crispy_bootstrap5',
+
 ]
 
 MIDDLEWARE = [

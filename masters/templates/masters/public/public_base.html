@@ -1,4 +1,5 @@
 {% load static %}
+{% load vite_tags %}
 
 <!DOCTYPE html>
 <html lang="ru">
@@ -19,7 +20,9 @@
     <link rel="icon" type="image/png" href="{% static 'images/favicon.ico' %}">
 
     <!-- React: CSS-модули (собирается Vite) -->
-    <link rel="stylesheet" href="{% static 'js/react/public-app.css' %}">
+    <!-- <link rel="stylesheet" href="{% static 'js/react/public-app.css' %}"> -->
+
+    <link rel="stylesheet" href="{% vite_css 'src/entries/app.jsx' %}">
 
     <!-- PWA -->
     <link rel="manifest" href="{% static 'manifest.json' %}">
@@ -84,7 +87,8 @@
 
      <!-- React: корень для публичных страниц -->
     <div id="react-public-app"></div>
-    <script src="{% static 'js/react/public-app.js' %}" type="module"></script>
+    <!-- <script src="{% static 'js/react/public-app.js' %}" type="module"></script> -->
+    <script src="{% vite_asset 'src/entries/public_app.jsx' %}" type="module"></script>
 
     {% block extra_js %}{% endblock %}
 </body>

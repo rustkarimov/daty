@@ -1,7 +1,7 @@
-const CACHE_NAME = 'daty-v16'; 
+// service-worker.js
+const CACHE_NAME = 'daty-v18'; // <--- ОБЯЗАТЕЛЬНО ПОДНИМАЕМ ВЕРСИЮ
 const OFFLINE_URL = '/static/offline.html';
 
-// Что кешируем при установке
 const STATIC_ASSETS = [
     '/static/css/bootstrap.min.css',
     '/static/css/all.min.css',
@@ -12,36 +12,25 @@ const STATIC_ASSETS = [
     OFFLINE_URL
 ];
 
-// ============================================================
-// INSTALL — кешируем базовую статику
-// ============================================================
 self.addEventListener('install', event => {
     event.waitUntil(
         caches.open(CACHE_NAME).then(cache => {
-            return cache.addAll(STATIC_ASSETS).catch(err => {
-                console.warn('SW: не все ресурсы закешированы', err);
-            });
+            return cache.addAll(STATIC_ASSETS).catch(err => console.warn('SW: не все ресурсы закешированы', err));
         })
     );
     self.skipWaiting(); // Принудительно активируем новый SW
 });
 
-// ============================================================
-// ACTIVATE — удаляем старые кеши
-// ============================================================
 self.addEventListener('activate', event => {
     event.waitUntil(
         caches.keys().then(keys => {
             return Promise.all(
                 keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
             );
-        }).then(() => self.clients.claim()) // Захватываем контроль над вкладками
+        }).then(() => self.clients.claim()) // Захватываем контроль
     );
 });
 
-// ============================================================
-// Вспомогательная функция: fetch с таймаутом
-// ============================================================
 function fetchWithTimeout(request, timeoutMs) {
     return new Promise((resolve, reject) => {
         const timer = setTimeout(() => reject(new Error('timeout')), timeoutMs);
@@ -52,33 +41,22 @@ function fetchWithTimeout(request, timeoutMs) {
     });
 }
 
-// ============================================================
-// FETCH — безопасная стратегия
-// ============================================================
 self.addEventListener('fetch', event => {
     const { request } = event;
     const url = new URL(request.url);
 
-    // Пропускаем non-GET и внешние запросы
     if (request.method !== 'GET') return;
     if (url.origin !== location.origin) return;
 
-    // --------------------------------------------------------
-    // HTML — Network First
-    // --------------------------------------------------------
+    // 1. HTML — Всегда из сети (Network Only)
     if (request.mode === 'navigate' || request.headers.get('accept')?.includes('text/html')) {
         event.respondWith(
-            fetchWithTimeout(request, 8000)
-                .catch(() => fetchWithTimeout(request, 15000))
-                .catch(() => caches.match(OFFLINE_URL))
+            fetchWithTimeout(request, 8000).catch(() => caches.match(OFFLINE_URL))
         );
         return;
     }
 
-    // --------------------------------------------------------
-    // JS, CSS — Network First (свежие бандлы всегда с сервера,
-    // кеш используется только при отсутствии сети)
-    // --------------------------------------------------------
+    // 2. JS и CSS — Network First (сначала сеть, потом кэш)
     if (url.pathname.match(/\.(js|css)$/)) {
         event.respondWith(
             fetch(request)
@@ -92,10 +70,7 @@ self.addEventListener('fetch', event => {
         return;
     }
 
-    // --------------------------------------------------------
-    // Картинки, шрифты, иконки — Cache First
-    // (меняются редко, ускоряем загрузку)
-    // --------------------------------------------------------
+    // 3. Картинки — Cache First
     if (url.pathname.match(/\.(png|jpg|jpeg|gif|svg|webp|ico|woff|woff2|ttf|eot)$/)) {
         event.respondWith(
             caches.match(request).then(cached => {
@@ -110,97 +85,39 @@ self.addEventListener('fetch', event => {
         return;
     }
 
-    // --------------------------------------------------------
-    // Manifest, offline.html — Cache First
-    // --------------------------------------------------------
-    if (url.pathname.match(/\/(manifest\.json|offline\.html)$/)) {
-        event.respondWith(
-            caches.match(request).then(cached => cached || fetch(request))
-        );
-        return;
-    }
-
-    // --------------------------------------------------------
-    // Всё остальное (API, AJAX) — только из сети
-    // --------------------------------------------------------
+    // 4. Всё остальное — Network
     event.respondWith(
         fetch(request).catch(() => {
-            return new Response(
-                JSON.stringify({
-                    success: false,
-                    error: 'Нет соединения с сервером. Проверьте интернет и попробуйте снова.'
-                }),
-                {
-                    status: 503,
-                    statusText: 'Service Unavailable',
-                    headers: { 'Content-Type': 'application/json' }
-                }
-            );
+            return new Response(JSON.stringify({ success: false, error: 'Нет соединения' }), {
+                status: 503,
+                headers: { 'Content-Type': 'application/json' }
+            });
         })
     );
 });
 
-// ============================================================
-// PUSH-УВЕДОМЛЕНИЯ
-// ============================================================
-
 self.addEventListener('push', function(event) {
-    console.log('🔔 PUSH ПОЛУЧЕН');
-    
-    let data = {
-        title: 'ДАТЫ',
-        body: 'Новое уведомление',
-        url: '/dashboard/'
-    };
-    
+    let data = { title: 'ДАТЫ', body: 'Новое уведомление', url: '/dashboard/' };
     if (event.data) {
-        try {
-            const text = event.data.text();
-            try {
-                data = JSON.parse(text);
-            } catch (e) {
-                data.body = text;
-            }
-        } catch (e) {
-            console.error('Ошибка чтения event.data:', e);
-        }
+        try { data = JSON.parse(event.data.text()); } catch (e) { data.body = event.data.text(); }
     }
-    
-    const options = {
-        body: data.body,
-        icon: '/static/images/pwa/icon-192.png',
-        badge: '/static/images/pwa/icon-192.png',
-        data: {
-            url: data.url || '/dashboard/'
-        },
-        tag: data.tag || 'daty-notification'
-    };
-    
     event.waitUntil(
-        self.registration.showNotification(data.title, options)
-            .catch((err) => console.error('❌ Ошибка showNotification:', err))
+        self.registration.showNotification(data.title, {
+            body: data.body,
+            icon: '/static/images/pwa/icon-192.png',
+            data: { url: data.url || '/dashboard/' }
+        })
     );
 });
 
-// ============================================================
-// КЛИК ПО УВЕДОМЛЕНИЮ
-// ============================================================
 self.addEventListener('notificationclick', function(event) {
     event.notification.close();
-    
     event.waitUntil(
-        clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList) {
-            for (let i = 0; i < clientList.length; i++) {
-                const client = clientList[i];
-                if (client.url.includes(self.location.origin) && 'focus' in client) {
-                    client.focus();
-                    client.postMessage({ type: 'OPEN_NOTIFICATIONS' });
-                    return;
-                }
+        clients.matchAll({ type: 'window' }).then(clientList => {
+            for (let client of clientList) {
+                if (client.url.includes(self.location.origin)) { client.focus(); return; }
             }
-            if (clients.openWindow) {
-                return clients.openWindow('/dashboard/?open_notifications=1');
-            }
+            if (clients.openWindow) return clients.openWindow('/dashboard/');
         })
     );
 });

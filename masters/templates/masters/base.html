@@ -1,4 +1,5 @@
 {% load static %}
+{% load vite_tags %}
 
 <!DOCTYPE html>
 <html lang="ru">
@@ -14,8 +15,10 @@
     <!-- Наш CSS -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <!-- React-модалки (глобальные) -->
-    <link rel="stylesheet" href="{% static 'js/react/app.css' %}">
-    <link rel="stylesheet" href="{% static 'js/react/modals.css' %}">
+    <!-- <link rel="stylesheet" href="{% static 'js/react/app.css' %}">
+    <link rel="stylesheet" href="{% static 'js/react/modals.css' %}"> -->
+
+    <link rel="stylesheet" href="{% vite_css 'src/entries/app.jsx' %}">
 
     <!-- CSRF-утилиты (getCookie, getCsrfToken) — должны быть загружены до inline-скриптов -->
     <script src="{% static 'js/utils/csrf.js' %}"></script>
@@ -294,12 +297,9 @@ if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {
         navigator.serviceWorker.register('/service-worker.js', { scope: '/' })
             .then(function(registration) {
-                console.log('SW зарегистрирован, scope:', registration.scope);
+                // Проверяем обновления каждую минуту (для частой разработки)
+                setInterval(() => registration.update(), 60 * 1000);
                 
-                // Проверяем обновления каждые 10 минут
-                setInterval(() => registration.update(), 10 * 60 * 1000);
-                
-                // Если найден новый SW
                 registration.onupdatefound = () => {
                     const installingWorker = registration.installing;
                     if (installingWorker == null) return;
@@ -307,7 +307,7 @@ if ('serviceWorker' in navigator) {
                     installingWorker.onstatechange = () => {
                         if (installingWorker.state === 'installed') {
                             if (navigator.serviceWorker.controller) {
-                                // Новый SW установлен, старый все еще работает
+                                // Новый SW установлен, перезагружаем страницу
                                 console.log('Доступно обновление. Перезагрузка...');
                                 window.location.reload();
                             }
@@ -389,7 +389,8 @@ document.addEventListener('DOMContentLoaded', function() {
 <div id="react-app"
      data-master-slug="{{ request.user.master.public_slug }}"
      data-master-mode="{{ request.user.master.work_mode }}"></div>
-<script src="{% static 'js/react/app.js' %}" type="module"></script>
+<!-- <script src="{% static 'js/react/app.js' %}" type="module"></script> -->
+ <script src="{% vite_asset 'src/entries/app.jsx' %}" type="module"></script>
 
 
 
