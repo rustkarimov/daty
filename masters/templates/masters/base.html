@@ -297,8 +297,8 @@ if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {
         navigator.serviceWorker.register('/service-worker.js', { scope: '/' })
             .then(function(registration) {
-                // Проверяем обновления каждую минуту (для частой разработки)
-                setInterval(() => registration.update(), 60 * 1000);
+                // Проверяем обновления каждые сутки
+                setInterval(() => registration.update(), 24 * 60 * 60 * 1000);
                 
                 registration.onupdatefound = () => {
                     const installingWorker = registration.installing;
