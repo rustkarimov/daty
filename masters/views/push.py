@@ -80,6 +80,28 @@ def api_push_vapid_public_key(request):
 
 @login_required
 @require_http_methods(["POST"])
+def api_push_status(request):
+    """Сохраняет статус Push-уведомлений (allowed / denied / unknown)."""
+    try:
+        master = request.user.master
+        data = json.loads(request.body)
+        status = data.get('status')
+
+        if status not in ('allowed', 'denied', 'unknown'):
+            return api_error('Неверный статус', status=400)
+
+        master.push_status = status
+        master.save(update_fields=['push_status'])
+
+        return api_success({'status': status})
+    except json.JSONDecodeError:
+        return api_error('Неверный формат данных', status=400)
+    except Exception:
+        return api_error('Ошибка сохранения', status=500)
+
+
+@login_required
+@require_http_methods(["POST"])
 def api_push_check(request):
     """Проверяет, есть ли у мастера подписка с таким endpoint."""
     try:

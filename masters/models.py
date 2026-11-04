@@ -61,6 +61,12 @@ class Master(models.Model):
         ('away', 'Выезд'),
     ]
 
+    PUSH_STATUS_CHOICES = [
+        ('unknown', 'Не решено'),
+        ('allowed', 'Разрешено'),
+        ('denied', 'Отказано'),
+    ]
+
     user = models.OneToOneField(
         CustomUser, on_delete=models.CASCADE, verbose_name="Пользователь"
     )
@@ -82,6 +88,13 @@ class Master(models.Model):
         blank=True,
         verbose_name="Адрес мастера",
         help_text="Где вы принимаете клиентов",
+    )
+
+    push_status = models.CharField(
+        max_length=10,
+        choices=PUSH_STATUS_CHOICES,
+        default='unknown',
+        verbose_name="Статус Push-уведомлений",
     )
 
     # ---- Режим работы ----

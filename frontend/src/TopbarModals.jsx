@@ -20,7 +20,16 @@ export default function TopbarModals() {
     // Читаем статус Push из data-атрибута #react-app
     const [pushStatus, setPushStatus] = useState(() => {
         const el = document.getElementById('react-app');
-        return el?.dataset.pushStatus || 'unknown';
+        const fromData = el?.dataset.pushStatus || 'unknown';
+        
+        // Если на сервере unknown, но в localStorage есть — используем localStorage
+        if (fromData === 'unknown') {
+            return localStorage.getItem('daty_push_status') || 'unknown';
+        }
+        
+        // Сохраняем статус с сервера в localStorage
+        localStorage.setItem('daty_push_status', fromData);
+        return fromData;
     });
 
     const masterSlug = document.getElementById('react-app')?.dataset.masterSlug || '';

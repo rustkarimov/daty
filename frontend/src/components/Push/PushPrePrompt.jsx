@@ -33,15 +33,21 @@ export default function PushPrePrompt({ pushStatus, onStatusChange }) {
         try {
             await subscribe();
             await savePushStatus('allowed');
+            localStorage.setItem('daty_push_status', 'allowed');
             onStatusChange('allowed');
             setVisible(false);
-        } catch (error) {
-            showAlert(error.message || 'Не удалось включить уведомления', 'error');
+        } catch (e) {
+            showAlert(e.message || 'Не удалось включить уведомления', 'error');
         }
     }
 
     async function handleDeny() {
-        await savePushStatus('denied');
+        try {
+            await savePushStatus('denied');
+        } catch (e) {
+            console.error(e);
+        }
+        localStorage.setItem('daty_push_status', 'denied');
         onStatusChange('denied');
         setVisible(false);
     }
