@@ -1,68 +1,67 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { usePush } from './PushProvider';
+import { savePushStatus } from '../../api/push';
 import useModal from '../../hooks/useModal';
 import styles from './PushPrePrompt.module.css';
 
-const DISMISSED_KEY = 'push_dismissed';
-const DELAY_MS = 2000;
+const DELAY_MS = 3000;
 
-export default function PushPrePrompt() {
-    const { supported, iosHint, subscribed, loading, busy, subscribe } = usePush();
+export default function PushPrePrompt({ pushStatus, onStatusChange }) {
+    const { supported, iosHint, loading, busy, subscribe } = usePush();
     const { showAlert } = useModal();
     const [visible, setVisible] = useState(false);
 
     useEffect(() => {
-        // Ждём, пока PushProvider проверит подписку
+        // Показываем, только если:
+        // - браузер поддерживает Push
+        // - это не iOS без PWA
+        // - загрузка проверки завершена
+        // - статус "unknown" (то есть мастер еще не решил)
         if (loading) return;
+        if (!supported || iosHint) return;
+        if (pushStatus !== 'unknown') return;
 
-        // Проверяем базовые условия
-        if (!supported) return;
-        if (iosHint) return;
-        if (subscribed) return;
-        if (localStorage.getItem(DISMISSED_KEY) === 'true') return;
-
-        // Показываем с задержкой
         const timer = setTimeout(() => {
             setVisible(true);
         }, DELAY_MS);
 
         return () => clearTimeout(timer);
-    }, [loading, supported, iosHint, subscribed]);
-
-    function handleDismiss() {
-        localStorage.setItem(DISMISSED_KEY, 'true');
-        setVisible(false);
-    }
+    }, [loading, supported, iosHint, pushStatus]);
 
     async function handleEnable() {
         try {
             await subscribe();
+            await savePushStatus('allowed');
+            onStatusChange('allowed');
             setVisible(false);
         } catch (error) {
-            showAlert(error.message || 'Не удалось подписаться', 'error');
+            showAlert(error.message || 'Не удалось включить уведомления', 'error');
         }
     }
 
-    if (!visible) return null;
+    async function handleDeny() {
+        await savePushStatus('denied');
+        onStatusChange('denied');
+        setVisible(false);
+    }
 
-    // Портал в body — чтобы модалка была поверх всего
+    function handleLater() {
+        setVisible(false);
+    }
+
+    if (!visible) return null;
     if (typeof document === 'undefined') return null;
 
     return createPortal(
-        <div className={styles.backdrop} onClick={handleDismiss}>
+        <div className={styles.backdrop} onClick={handleLater}>
             <div className={styles.modal} onClick={e => e.stopPropagation()}>
                 <div className={styles.header}>
                     <h5 className={styles.title}>
                         <i className="fas fa-bell" />
                         Уведомления о записях
                     </h5>
-                    <button
-                        type="button"
-                        className={styles.closeBtn}
-                        onClick={handleDismiss}
-                        aria-label="Закрыть"
-                    >
+                    <button type="button" className={styles.closeBtn} onClick={handleLater}>
                         ✕
                     </button>
                 </div>
@@ -81,8 +80,16 @@ export default function PushPrePrompt() {
                 <div className={styles.footer}>
                     <button
                         type="button"
+                        className={styles.btnDanger}
+                        onClick={handleDeny}
+                        disabled={busy}
+                    >
+                        Нет
+                    </button>
+                    <button
+                        type="button"
                         className={styles.btnSecondary}
-                        onClick={handleDismiss}
+                        onClick={handleLater}
                         disabled={busy}
                     >
                         Позже
@@ -94,15 +101,9 @@ export default function PushPrePrompt() {
                         disabled={busy}
                     >
                         {busy ? (
-                            <>
-                                <i className="fas fa-spinner fa-spin" />
-                                Включение...
-                            </>
+                            <><i className="fas fa-spinner fa-spin" /> Включение...</>
                         ) : (
-                            <>
-                                <i className="fas fa-bell" />
-                                Включить
-                            </>
+                            <><i className="fas fa-bell" /> Включить</>
                         )}
                     </button>
                 </div>

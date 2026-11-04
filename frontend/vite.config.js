@@ -26,7 +26,7 @@ export default defineConfig({
                         if (id.includes('react')) return 'react';
                         return 'vendor';
                     }
-                    if (id.includes('/components/modals/')) return 'modals';
+                    // if (id.includes('/components/modals/')) return 'modals';
                 },
             },
         },

@@ -16,8 +16,13 @@ export default function TopbarModals() {
     const [addBookingOpen, setAddBookingOpen] = useState(false);
     const { isModalOpen } = useNotifications();
     const { isModalOpen: isSupportOpen } = useSupport();
+    
+    // Читаем статус Push из data-атрибута #react-app
+    const [pushStatus, setPushStatus] = useState(() => {
+        const el = document.getElementById('react-app');
+        return el?.dataset.pushStatus || 'unknown';
+    });
 
-    // masterSlug для AddBookingModal берём из #react-app (общий для всех страниц)
     const masterSlug = document.getElementById('react-app')?.dataset.masterSlug || '';
     const masterMode = document.getElementById('react-app')?.dataset.masterMode || 'home';
 
@@ -25,11 +30,8 @@ export default function TopbarModals() {
         function handleOpenAddBooking() {
             setAddBookingOpen(true);
         }
-
         window.addEventListener('openAddBooking', handleOpenAddBooking);
-        return () => {
-            window.removeEventListener('openAddBooking', handleOpenAddBooking);
-        };
+        return () => window.removeEventListener('openAddBooking', handleOpenAddBooking);
     }, []);
 
     function handleCreated() {
@@ -54,7 +56,10 @@ export default function TopbarModals() {
                 />
             )}
 
-            <PushPrePrompt />
+            <PushPrePrompt
+                pushStatus={pushStatus}
+                onStatusChange={setPushStatus}
+            />
         </>
     );
 }

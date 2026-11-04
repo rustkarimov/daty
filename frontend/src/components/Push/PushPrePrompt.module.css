@@ -145,6 +145,25 @@
     cursor: not-allowed;
 }
 
+.btnDanger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 20px;
+    border-radius: 30px;
+    border: 1px solid var(--danger);
+    background: transparent;
+    color: var(--danger);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.btnDanger:hover:not(:disabled) {
+    background: var(--danger);
+    color: white;
+}
+
 @keyframes fadeInUp {
     from {
         opacity: 0;

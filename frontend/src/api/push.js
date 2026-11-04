@@ -4,6 +4,13 @@ export async function getVapidPublicKey() {
     return getJson('/api/push/vapid-key/');
 }
 
+export async function savePushStatus(status) {
+    return request('/api/push/status/', {
+        method: 'POST',
+        body: JSON.stringify({ status }),
+    });
+}
+
 export async function saveSubscription(subscription) {
     return request('/api/push/subscribe/', {
         method: 'POST',

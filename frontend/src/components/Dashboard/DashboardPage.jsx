@@ -28,6 +28,11 @@ export default function DashboardPage({
     });
     const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
 
+    const [pushStatus, setPushStatus] = useState(() => {
+    const el = document.getElementById('react-app');
+        return el?.dataset.pushStatus || 'unknown';
+    });
+
     const { showAlert } = useModal();
 
     useEffect(() => {
@@ -117,7 +122,10 @@ export default function DashboardPage({
 
             <PublicLinkCard publicLink={publicLink} />
 
-            <PushSettings />
+            <PushSettings 
+                pushStatus={pushStatus}
+                onStatusChange={setPushStatus}
+            />
 
             <WorkModeToggle currentMode={masterMode} />
 

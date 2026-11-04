@@ -2,14 +2,17 @@ import React from 'react';
 import { usePush } from './PushProvider';
 import useModal from '../../hooks/useModal';
 import styles from './PushSettings.module.css';
+import { savePushStatus } from '../../api/push';
 
-export default function PushSettings() {
+export default function PushSettings({ pushStatus, onStatusChange }) { 
     const { supported, iosHint, subscribed, loading, busy, subscribe, unsubscribe } = usePush();
     const { showAlert } = useModal();
 
     async function handleEnable() {
         try {
             await subscribe();
+            await savePushStatus('allowed');
+            if (onStatusChange) onStatusChange('allowed');
             showAlert('Push-уведомления включены', 'success');
         } catch (error) {
             showAlert(error.message || 'Не удалось подписаться', 'error');
@@ -19,6 +22,8 @@ export default function PushSettings() {
     async function handleDisable() {
         try {
             await unsubscribe();
+            await savePushStatus('denied');
+            if (onStatusChange) onStatusChange('denied');
             showAlert('Push-уведомления отключены', 'success');
         } catch (error) {
             showAlert(error.message || 'Не удалось отписаться', 'error');

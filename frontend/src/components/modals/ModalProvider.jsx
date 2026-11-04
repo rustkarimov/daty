@@ -1,4 +1,5 @@
 import React, { createContext, useCallback, useState } from 'react';
+import { createPortal } from 'react-dom'; // <--- ДОБАВИТЬ
 import AlertModal from './AlertModal';
 import ConfirmModal from './ConfirmModal';
 
@@ -8,17 +9,8 @@ export default function ModalProvider({ children }) {
     const [alertState, setAlertState] = useState(null);
     const [confirmState, setConfirmState] = useState(null);
 
-    /**
-     * Показать alert.
-     * @param {string} message
-     * @param {object|string} options — либо { type, title }, либо просто строка = type
-     * @returns {Promise<void>}
-     */
     const showAlert = useCallback((message, options = {}) => {
-        const opts = typeof options === 'string'
-            ? { type: options }
-            : options;
-
+        const opts = typeof options === 'string' ? { type: options } : options;
         return new Promise((resolve) => {
             setAlertState({
                 message,
@@ -29,12 +21,6 @@ export default function ModalProvider({ children }) {
         });
     }, []);
 
-    /**
-     * Показать подтверждение.
-     * @param {string} message
-     * @param {object} options — { title, confirmText, cancelText, type }
-     * @returns {Promise<boolean>}
-     */
     const showConfirm = useCallback((message, options = {}) => {
         return new Promise((resolve) => {
             setConfirmState({
@@ -67,25 +53,30 @@ export default function ModalProvider({ children }) {
         <ModalContext.Provider value={{ showAlert, showConfirm }}>
             {children}
 
-            {alertState && (
-                <AlertModal
-                    message={alertState.message}
-                    title={alertState.title}
-                    type={alertState.type}
-                    onClose={handleAlertClose}
-                />
-            )}
-
-            {confirmState && (
-                <ConfirmModal
-                    message={confirmState.message}
-                    title={confirmState.title}
-                    confirmText={confirmState.confirmText}
-                    cancelText={confirmState.cancelText}
-                    type={confirmState.type}
-                    onConfirm={handleConfirmOk}
-                    onCancel={handleConfirmCancel}
-                />
+            {/* Рендерим модалки через портал в document.body */}
+            {createPortal(
+                <>
+                    {alertState && (
+                        <AlertModal
+                            message={alertState.message}
+                            title={alertState.title}
+                            type={alertState.type}
+                            onClose={handleAlertClose}
+                        />
+                    )}
+                    {confirmState && (
+                        <ConfirmModal
+                            message={confirmState.message}
+                            title={confirmState.title}
+                            confirmText={confirmState.confirmText}
+                            cancelText={confirmState.cancelText}
+                            type={confirmState.type}
+                            onConfirm={handleConfirmOk}
+                            onCancel={handleConfirmCancel}
+                        />
+                    )}
+                </>,
+                document.body
             )}
         </ModalContext.Provider>
     );
