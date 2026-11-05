@@ -121,8 +121,7 @@ class ScheduleCalculator:
         """
         if AwayDayOff.objects.filter(master=self.master, date=target_date).exists():
             return None
-        ...
-
+        
         extra_day = AwayExtraDay.objects.filter(
             master=self.master, date=target_date
         ).first()

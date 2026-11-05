@@ -556,8 +556,14 @@ class Booking(models.Model):
         return f"{self.client_name} - {self.date} {self.time}"
 
     def get_decrypted_phone(self, key):
-        f = Fernet(key)
-        return f.decrypt(bytes(self.encrypted_phone)).decode()
+        """
+        Расшифровывает телефон.
+
+        Делегирует в utils.crypto_utils.decrypt_phone — единая логика
+        с fallback (Fernet → UTF-8 → str), не бросает исключений.
+        """
+        from .utils.crypto_utils import decrypt_phone
+        return decrypt_phone(self.encrypted_phone, key)
 
     @property
     def total_duration_minutes(self):
@@ -635,8 +641,14 @@ class CancelledBooking(models.Model):
         return f"{self.client_name} - {self.date} {self.time} (отменена)"
 
     def get_decrypted_phone(self, key):
-        f = Fernet(key)
-        return f.decrypt(bytes(self.encrypted_phone)).decode()
+        """
+        Расшифровывает телефон.
+
+        Делегирует в utils.crypto_utils.decrypt_phone — единая логика
+        с fallback (Fernet → UTF-8 → str), не бросает исключений.
+        """
+        from .utils.crypto_utils import decrypt_phone
+        return decrypt_phone(self.encrypted_phone, key)
 
 
 # ============================================================
@@ -756,8 +768,13 @@ class ClientSession(models.Model):
     Сессия клиента для доступа к своим записям.
 
     Жизненный цикл:
-    1. Создаётся при запросе звонка (is_confirmed=False)
-    2. После подтверждения — is_confirmed=True, session_key генерируется
+    1. Создаётся при запросе звонка (is_confirmed=False).
+    2. После подтверждения звонка — is_confirmed=True.
+       Доступ к записям даётся через Django-сессию
+       (request.session['client_phone']), а не через session_key.
+
+    session_key генерируется, но пока не используется —
+    оставлен для будущей фичи «вход по ключу» (например, по ссылке из SMS).
     """
     master = models.ForeignKey(
         Master, on_delete=models.CASCADE, related_name='client_sessions', verbose_name="Мастер"
@@ -769,6 +786,9 @@ class ClientSession(models.Model):
 
     is_confirmed = models.BooleanField(default=False, verbose_name="Подтверждён")
 
+    # Пока не используется для авторизации: клиент входит по звонку
+    # (request.session['client_phone']). Поле оставлено для будущей
+    # фичи «вход по ключу сессии» (например, по ссылке из SMS).
     session_key = models.CharField(
         max_length=100, unique=True, null=True, blank=True, verbose_name="Ключ сессии"
     )

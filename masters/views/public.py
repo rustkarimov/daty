@@ -208,6 +208,10 @@ def create_booking(request, identifier):
         if booking_date < date.today():
             return api_error('Нельзя записаться на прошедшую дату', status=400)
 
+        # Отдельная проверка: время уже прошло (сегодня)
+        if booking_date == date.today() and booking_time < datetime.now().time():
+            return api_error('Время уже прошло. Выберите другое время.', status=409)
+
         calculator = ScheduleCalculator(master)
         slots = calculator.generate_time_slots(booking_date, service.duration)
         is_available = any(slot['start'] == time_str for slot in slots)
@@ -377,6 +381,10 @@ def create_multiple_bookings(request, identifier):
 
         if booking_date < date.today():
             return api_error('Нельзя записаться на прошедшую дату', status=400)
+
+        # Отдельная проверка: время уже прошло (сегодня)
+        if booking_date == date.today() and start_time < datetime.now().time():
+            return api_error('Время уже прошло. Выберите другое время.', status=409)
 
         calculator = ScheduleCalculator(master)
         slots = calculator.generate_time_slots(booking_date, total_duration)

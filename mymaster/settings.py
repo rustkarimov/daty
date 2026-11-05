@@ -159,8 +159,6 @@ LOGOUT_REDIRECT_URL = 'home'
 CSRF_TRUSTED_ORIGINS = [
     'https://daty.pro',
     'https://www.daty.pro',
-    'http://daty.pro',
-    'http://www.daty.pro',
 ]
 
 

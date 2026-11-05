@@ -267,6 +267,10 @@ def api_client_update_booking(request, identifier, token):
     except ValueError:
         return api_error('Неверный формат даты/времени', status=400)
 
+    # Отдельная проверка: время уже прошло (сегодня)
+    if new_date == date.today() and new_time < datetime.now().time():
+        return api_error('Время уже прошло. Выберите другое.', status=409)
+
     # Проверяем доступность
     calculator = ScheduleCalculator(booking.master)
 
@@ -458,7 +462,8 @@ def api_client_check_call(request, identifier):
     if not is_confirmed:
         return api_success({'is_confirmed': False})
 
-    # Подтверждён! Генерируем session_key
+    # Подтверждён! Генерируем session_key (пока не используется для
+    # авторизации — клиент входит через Django-сессию ниже).
     session_key = secrets.token_urlsafe(32)
 
     session.is_confirmed = True

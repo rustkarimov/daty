@@ -1,7 +1,6 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
 from . import views
-from django.shortcuts import redirect
 
 urlpatterns = [
 
@@ -59,9 +58,6 @@ urlpatterns = [
     # Время на дорогу (away)
     path('api/away-travel/update/', views.api_update_away_travel, name='api_update_away_travel'),
 
-    # Ручное добавление записи
-    # path('add-booking/', views.add_manual_booking, name='add_manual_booking'),
-    path('add-booking/', lambda request: redirect('dashboard'), name='add_manual_booking'),
     path('api/get-slots/', views.get_booking_slots_for_master, name='api_get_slots'),
 
     path('api/booking/<int:booking_id>/get/', views.get_booking_for_edit, name='api_booking_get'),
