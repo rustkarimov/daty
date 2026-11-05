@@ -294,30 +294,48 @@ class ScheduleCalculator:
         slot_display_duration = arrival_window if is_away else service_duration
 
         # ---- current_time ----
-    
-        # Учитываем ограничитель (Lead Time) и текущее время
+        #
+        # ВАЖНО: для сегодняшнего дня ВСЕГДА учитываем реальное «сейчас»,
+        # даже если вызывающий не передал current_time. Иначе создание записи
+        # (create_booking, api_update_booking и т.д.) может принять слот
+        # на прошедший час сегодня.
         lead_time_hours = self.master.min_booking_lead_time or 0
         now = datetime.now()
-        
-        # Определяем минимальное время начала (в минутах от начала дня)
-        if lead_time_hours > 0:
-            min_start_dt = now + timedelta(hours=lead_time_hours)
-        else:
-            min_start_dt = now if current_time else None
 
-        if min_start_dt:
-            if target_date > min_start_dt.date():
-                # Целевая дата в будущем, ограничений по времени нет
-                pass
-            elif target_date == min_start_dt.date():
-                current_minutes = min_start_dt.hour * 60 + min_start_dt.minute
-                current_minutes = (
-                    (current_minutes + slot_step - 1) // slot_step
-                ) * slot_step
-                start_minutes = max(start_minutes, current_minutes)
-            else:
-                # Целевая дата в прошлом
-                return []
+        if target_date == now.date():
+            # Сегодня: берём max(current_time, реальное now) — и сверху накладываем лид-тайм
+            effective_now = current_time if current_time is not None else now.time()
+            effective_dt = datetime.combine(target_date, effective_now)
+
+            if lead_time_hours > 0:
+                lead_dt = now + timedelta(hours=lead_time_hours)
+                effective_dt = max(effective_dt, lead_dt)
+
+            # Округляем вверх по шагу слотов
+            current_minutes = effective_dt.hour * 60 + effective_dt.minute
+            current_minutes = (
+                (current_minutes + slot_step - 1) // slot_step
+            ) * slot_step
+            start_minutes = max(start_minutes, current_minutes)
+
+        elif target_date > now.date():
+            # Будущая дата: только лид-тайм (если задан)
+            if lead_time_hours > 0:
+                lead_dt = now + timedelta(hours=lead_time_hours)
+                if lead_dt.date() > target_date:
+                    # Лид-тайм настолько велик, что захватывает будущую дату
+                    return []
+                if lead_dt.date() == target_date:
+                    # Лид-тайм попадает на target_date — обрезаем start по нему
+                    current_minutes = lead_dt.hour * 60 + lead_dt.minute
+                    current_minutes = (
+                        (current_minutes + slot_step - 1) // slot_step
+                    ) * slot_step
+                    start_minutes = max(start_minutes, current_minutes)
+
+        else:
+            # Целевая дата в прошлом
+            return []
 
         # ---- Перерывы ----
         breaks = self.get_breaks_for_date(target_date)
@@ -402,7 +420,7 @@ class ScheduleCalculator:
                 start_time_str = f"{slot_start // 60:02d}:{slot_start % 60:02d}"
                 # Для дома end не нужен (клиент приходит к точке), для away - интервал приезда
                 end_time_str = f"{slot_display_end // 60:02d}:{slot_display_end % 60:02d}" if is_away else ''
-                
+
                 all_slots.append({
                     'start': start_time_str,
                     'end': end_time_str,
@@ -412,7 +430,7 @@ class ScheduleCalculator:
                     'id': len(all_slots),
                 })
                 current += slot_step
-                
+
             else:
                 if conflict_end is None:
                     conflict_end = slot_start + slot_step

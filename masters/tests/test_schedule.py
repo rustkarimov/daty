@@ -164,6 +164,38 @@ class AwayScheduleCalculatorTest(TestCase):
             f"Первый слот {slots[0]['start']} раньше 12:00 — лид-тайм не соблюдён"
         )
 
+    def test_no_past_slots_today_without_current_time(self):
+        """Сегодня, лид-тайм=0, current_time=None — слоты до 'сейчас' не генерируются."""
+        from unittest.mock import patch
+        from datetime import datetime as real_datetime
+
+        today = date.today()
+
+        # Убедимся, что у мастера есть расписание на сегодня
+        from ..models import Schedule
+        Schedule.objects.filter(master=self.master).delete()
+        create_schedule(self.master, days=[today.weekday()], start=time(9, 0), end=time(18, 0))
+
+        frozen_now = real_datetime(today.year, today.month, today.day, 15, 0, 0)
+
+        class FrozenDateTime(real_datetime):
+            @classmethod
+            def now(cls, tz=None):
+                return frozen_now
+
+        with patch('masters.utils.schedule_utils.datetime', FrozenDateTime):
+            # current_time=None — как в create_booking
+            slots = self.calc.generate_time_slots(today, 60)
+
+        self.assertGreater(
+            len(slots), 0,
+            "После 15:00 должны быть слоты (рабочий день до 18:00)"
+        )
+        self.assertGreaterEqual(
+            slots[0]['start'], '15:00',
+            f"Слот {slots[0]['start']} раньше 15:00 — прошедшее время не отсекается"
+        )
+
 
 
 class MidnightScheduleTest(TestCase):
