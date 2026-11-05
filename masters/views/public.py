@@ -7,7 +7,7 @@ from datetime import datetime, date, timedelta
 
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse, Http404
-from cryptography.fernet import Fernet
+from ..utils.crypto_utils import encrypt_phone
 
 from ..models import Master, Service, Booking, BlacklistedClient
 from ..utils.schedule_utils import ScheduleCalculator
@@ -215,12 +215,9 @@ def create_booking(request, identifier):
         if not is_available:
             return api_error('Это время уже занято. Выберите другое время.', status=409)
 
+        # стало
         key = master.get_encryption_key()
-        if key:
-            f = Fernet(key)
-            encrypted_phone = f.encrypt(client_phone_cleaned.encode())
-        else:
-            encrypted_phone = client_phone_cleaned.encode()
+        encrypted_phone = encrypt_phone(client_phone_cleaned, key)
 
         travel_before_default = (master.away_travel_time_before_default or 0) if is_away else 0
         travel_after_default = (master.away_travel_time_after_default or 0) if is_away else 0
@@ -389,11 +386,7 @@ def create_multiple_bookings(request, identifier):
             return api_error('Это время уже занято. Выберите другое время.', status=409)
 
         key = master.get_encryption_key()
-        if key:
-            f = Fernet(key)
-            encrypted_phone = f.encrypt(client_phone_cleaned.encode())
-        else:
-            encrypted_phone = client_phone_cleaned.encode()
+        encrypted_phone = encrypt_phone(client_phone_cleaned, key)
 
         created_bookings = []
         time_offset = 0

@@ -13,6 +13,7 @@ from cryptography.fernet import Fernet, InvalidToken
 
 from ..models import Booking, Schedule, DayOff, ExtraWorkingDay, AwaySchedule, AwayExtraDay, AwayDayOff, Master, Service, CustomUser
 from ..utils.response_utils import api_success, api_error
+from ..utils.crypto_utils import decrypt_phone
 
 
 # ============================================================
@@ -26,48 +27,32 @@ def dashboard(request):
         master = request.user.master
     except Master.DoesNotExist:
         master = Master.objects.create(user=request.user)
-    
+
     total_bookings = Booking.objects.filter(master=master).count()
     upcoming_bookings = Booking.objects.filter(
-        master=master, 
+        master=master,
         status='confirmed'
     ).order_by('date', 'time')[:5]
-    
+
     total_services = Service.objects.filter(master=master).count()
-    
+
     # Добавляем количество уникальных клиентов
     key = master.get_encryption_key()
-    
+
     unique_phones = set()
     bookings = Booking.objects.filter(master=master, status='confirmed')
-    
+
     for booking in bookings:
-        phone = ''
-        if key:
-            try:
-                f = Fernet(key)
-                decrypted = f.decrypt(bytes(booking.encrypted_phone)).decode()
-                phone = decrypted
-            except (InvalidToken, Exception):
-                try:
-                    phone = booking.encrypted_phone.decode('utf-8')
-                except:
-                    phone = str(booking.encrypted_phone)
-        else:
-            try:
-                phone = booking.encrypted_phone.decode('utf-8')
-            except:
-                phone = str(booking.encrypted_phone)
-        
+        phone = decrypt_phone(booking.encrypted_phone, key)
         phone_cleaned = re.sub(r'\D', '', phone)
         if phone_cleaned:
             unique_phones.add(phone_cleaned)
-    
+
     total_clients = len(unique_phones)
 
     has_services = Service.objects.filter(master=master).exists()
     has_schedule = Schedule.objects.filter(master=master).exists()
-    
+
     context = {
         'master': master,
         'total_bookings': total_bookings,
@@ -166,11 +151,11 @@ def get_bookings_api(request):
     page = int(request.GET.get('page', 1))
     limit = int(request.GET.get('limit', 10))
     offset = (page - 1) * limit
-    
+
     now = datetime.now()
     today = date.today()
     current_time = now.time()
-    
+
     # Получаем все подтверждённые записи от сегодняшней даты и позже
     bookings = Booking.objects.filter(
         master=master,
@@ -178,68 +163,53 @@ def get_bookings_api(request):
         date__gte=today,
         service_mode=master.work_mode,   # ← фильтр по режиму
     ).order_by('date', 'time').select_related('service', 'service__category')
-    
-    
+
+
     # Фильтруем: если запись на сегодня, но время уже прошло — исключаем
     filtered_bookings = []
     for booking in bookings:
         if booking.date == today and booking.time < current_time:
             continue
         filtered_bookings.append(booking)
-    
+
     key = master.get_encryption_key()
-    
+
     # Пагинация
     total = len(filtered_bookings)
     has_more = offset + limit < total
     bookings_page = filtered_bookings[offset:offset + limit]
-    
+
     def get_month_name(month_num):
         months = [
             'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
             'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'
         ]
         return months[month_num - 1]
-    
+
     def is_today(date_obj):
         return date_obj == today
-    
+
     data = []
     for booking in bookings_page:
         if is_today(booking.date):
             date_display = f"{booking.date.day} {get_month_name(booking.date.month)} (сегодня)"
         else:
             date_display = f"{booking.date.day} {get_month_name(booking.date.month)}"
-        
-        # Расшифровываем телефон
-        phone = ''
-        if key:
-            try:
-                f = Fernet(key)
-                decrypted = f.decrypt(bytes(booking.encrypted_phone)).decode()
-                phone = decrypted
-            except (InvalidToken, Exception):
-                try:
-                    phone = booking.encrypted_phone.decode('utf-8')
-                except:
-                    phone = str(booking.encrypted_phone)
-        else:
-            try:
-                phone = booking.encrypted_phone.decode('utf-8')
-            except:
-                phone = str(booking.encrypted_phone)
-        
+
+        # Расшифровываем телефон через утилиту
+        phone = decrypt_phone(booking.encrypted_phone, key)
+
         phone_cleaned = re.sub(r'\D', '', phone)
         if len(phone_cleaned) == 11:
             formatted_phone = f"{phone_cleaned[0]} {phone_cleaned[1:4]} {phone_cleaned[4:7]}-{phone_cleaned[7:9]}-{phone_cleaned[9:11]}"
         else:
             formatted_phone = phone
-        
+
         # Формируем название услуги с категорией
         service_name = booking.service.name
         if booking.service.category:
             service_name = f"{booking.service.category.name}: {service_name}"
-        
+
         data.append({
             'id': booking.id,
             'date': date_display,
@@ -250,7 +220,7 @@ def get_bookings_api(request):
             'confirmed_by_master': booking.confirmed_by_master,
             'status': booking.status,
         })
-    
+
     return JsonResponse({
         'bookings': data,
         'total': total,
@@ -265,65 +235,37 @@ def get_booking_details(request, booking_id):
     try:
         booking = get_object_or_404(Booking, id=booking_id, master=request.user.master)
         master = request.user.master
-        
-        # Расшифровываем телефон
+
+        # Расшифровываем телефон через утилиту
         key = master.get_encryption_key()
-        
-        phone = ''
-        if key:
-            try:
-                f = Fernet(key)
-                decrypted = f.decrypt(bytes(booking.encrypted_phone)).decode()
-                phone = decrypted
-            except (InvalidToken, Exception) as e:
-                import logging
-                logger = logging.getLogger(__name__)
-                logger.error(f"Ошибка расшифровки телефона (booking_id={booking.id}): {e}")
-                try:
-                    phone = booking.encrypted_phone.decode('utf-8')
-                except:
-                    phone = str(booking.encrypted_phone)
-        else:
-            try:
-                phone = booking.encrypted_phone.decode('utf-8')
-            except:
-                phone = str(booking.encrypted_phone)
-        
+        phone = decrypt_phone(booking.encrypted_phone, key)
+
         phone_cleaned = re.sub(r'\D', '', phone)
-        
+
         # Функция для форматирования телефона
         def format_phone_num(phone_num):
             if not phone_num or len(phone_num) != 11:
                 return phone_num
             return f"{phone_num[0]} {phone_num[1:4]} {phone_num[4:7]}-{phone_num[7:9]}-{phone_num[9:11]}"
-        
+
         # Получаем все записи этого клиента для статистики
         client_bookings = Booking.objects.filter(
             master=master,
             status='confirmed'
         ).select_related('service', 'service__category')
-        
+
         # Группируем по этому телефону
         visits = []
         total_visits = 0
         first_visit = None
         last_visit = None
-        
+
         for b in client_bookings:
-            # Расшифровываем телефон каждой записи
-            b_phone = ''
-            if key:
-                try:
-                    f = Fernet(key)
-                    b_phone = f.decrypt(bytes(b.encrypted_phone)).decode()
-                except:
-                    continue
-            else:
-                try:
-                    b_phone = b.encrypted_phone.decode('utf-8')
-                except:
-                    continue
-            
+            # Расшифровываем телефон каждой записи через утилиту
+            b_phone = decrypt_phone(b.encrypted_phone, key)
+            if not b_phone:
+                continue
+
             if re.sub(r'\D', '', b_phone) == phone_cleaned:
                 total_visits += 1
                 if first_visit is None or b.date < first_visit:
@@ -336,10 +278,10 @@ def get_booking_details(request, booking_id):
                     'service': b.service.name,
                     'category': b.service.category.name if b.service.category else None,
                 })
-        
+
         # Сортируем визиты по дате (сначала новые)
         visits.sort(key=lambda x: x['date'], reverse=True)
-        
+
         current_services = [{
             'booking_id': booking.id,
             'name': booking.service.name,
@@ -349,14 +291,14 @@ def get_booking_details(request, booking_id):
             'service_id': booking.service.id,
             'status': booking.status
         }]
-        
+
         # Статус по-русски
         status_map = {
             'confirmed': 'Подтверждена',
             'cancelled': 'Отменена',
             'completed': 'Выполнена'
         }
-        
+
         return JsonResponse({
             'success': True,
             'booking_id': booking.id,
@@ -385,7 +327,7 @@ def get_booking_details(request, booking_id):
             'duration_extra_minutes': booking.duration_extra_minutes,
             'status_raw': booking.status,
         })
-        
+
     except Exception as e:
         import logging
         logger = logging.getLogger(__name__)
@@ -408,7 +350,7 @@ def api_confirm_booking(request, booking_id):
         return api_error('Запись не найдена', status=404)
     except Exception as e:
         return api_error('Ошибка подтверждения', status=500)
- 
+
 
 @login_required
 @require_http_methods(["POST"])
@@ -440,12 +382,12 @@ def get_bookings_counts(request):
         status__in=['confirmed', 'pending'],
         service_mode=master.work_mode,
     )
-    
+
     counts = {}
     for booking in bookings:
         date_str = booking.date.strftime('%Y-%m-%d')
         counts[date_str] = counts.get(date_str, 0) + 1
-    
+
     return JsonResponse({'counts': counts})
 
 
@@ -472,22 +414,8 @@ def get_bookings_by_date(request):
 
     data = []
     for booking in bookings:
-        # Расшифровываем телефон
-        phone = ''
-        if key:
-            try:
-                f = Fernet(key)
-                phone = f.decrypt(bytes(booking.encrypted_phone)).decode()
-            except (InvalidToken, Exception):
-                try:
-                    phone = booking.encrypted_phone.decode('utf-8')
-                except Exception:
-                    phone = str(booking.encrypted_phone)
-        else:
-            try:
-                phone = booking.encrypted_phone.decode('utf-8')
-            except Exception:
-                phone = str(booking.encrypted_phone)
+        # Расшифровываем телефон через утилиту
+        phone = decrypt_phone(booking.encrypted_phone, key)
 
         phone_cleaned = re.sub(r'\D', '', phone)
         if len(phone_cleaned) == 11:
@@ -549,11 +477,11 @@ def get_bookings_by_date(request):
         else:
             S = booking.service.duration if booking.service else 0
             extra = booking.duration_extra_minutes or 0
-            
+
             A_dt = datetime.combine(target_date, booking.time)
             service_start = A_dt
             service_end = service_start + timedelta(minutes=S + extra)
-            
+
             actual_buffer = booking.buffer_after_minutes or master.home_buffer_between_bookings or 0
 
             item.update({
@@ -562,7 +490,7 @@ def get_bookings_by_date(request):
                 'service_start': service_start.strftime('%H:%M'),
                 'service_end': service_end.strftime('%H:%M'),
                 'home_buffer_after': actual_buffer,
-                'buffer_after_minutes': booking.buffer_after_minutes or 0, # <--- ДОБАВИТЬ ЭТО
+                'buffer_after_minutes': booking.buffer_after_minutes or 0,
             })
 
         data.append(item)
@@ -632,5 +560,4 @@ def get_day_status(request):
         'arrival_window_minutes': master.arrival_window_minutes or 0,
         'away_travel_time_before_default': master.away_travel_time_before_default or 0,
         'away_travel_time_after_default': master.away_travel_time_after_default or 0,
-    })
-    
+    })   

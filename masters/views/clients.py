@@ -14,29 +14,12 @@ from cryptography.fernet import Fernet, InvalidToken
 
 from ..models import Booking, BlacklistedClient, CancelledBooking
 from ..utils.response_utils import api_success, api_error
+from ..utils.crypto_utils import decrypt_phone, decrypt_phone_normalized
 
 
 # ============================================================
 # ВСПОМОГАТЕЛЬНОЕ
 # ============================================================
-
-def _decrypt_phone(booking, key):
-    """Расшифровывает телефон записи. Возвращает строку или ''."""
-    if key:
-        try:
-            f = Fernet(key)
-            return f.decrypt(bytes(booking.encrypted_phone)).decode()
-        except (InvalidToken, Exception):
-            try:
-                return booking.encrypted_phone.decode('utf-8')
-            except Exception:
-                return str(booking.encrypted_phone)
-    else:
-        try:
-            return booking.encrypted_phone.decode('utf-8')
-        except Exception:
-            return str(booking.encrypted_phone)
-
 
 def _format_phone(phone_cleaned):
     """Форматирует 11-значный номер в 'X XXX XXX-XX-XX'."""
@@ -79,8 +62,7 @@ def _collect_clients(master, only_confirmed=False):
     today = date.today()
 
     for booking in bookings:
-        phone = _decrypt_phone(booking, key)
-        phone_cleaned = re.sub(r'\D', '', phone)
+        phone_cleaned = decrypt_phone_normalized(booking.encrypted_phone, key)
         if not phone_cleaned:
             continue
 
@@ -321,15 +303,7 @@ def get_decrypted_phone(request, booking_id):
         if not key:
             return api_error('Ключ шифрования не найден', status=400)
 
-        try:
-            f = Fernet(key)
-            decrypted = f.decrypt(bytes(booking.encrypted_phone)).decode()
-        except InvalidToken:
-            try:
-                decrypted = booking.encrypted_phone.decode('utf-8')
-            except Exception:
-                return api_error('Ошибка расшифровки', status=400)
-
+        decrypted = decrypt_phone(booking.encrypted_phone, key)
         phone_cleaned = re.sub(r'\D', '', decrypted)
         return api_success({'phone': _format_phone(phone_cleaned)})
 
@@ -371,36 +345,42 @@ def api_blacklist_add(request):
         key = master.get_encryption_key()
 
         cancelled_count = 0
-        if key:
-            f = Fernet(key)
-            future_bookings = Booking.objects.filter(
-                master=master,
-                date__gte=today,
-                status='confirmed',
-            )
+        future_bookings = Booking.objects.filter(
+            master=master,
+            date__gte=today,
+            status='confirmed',
+        )
 
-            for booking in future_bookings:
-                try:
-                    decrypted = f.decrypt(bytes(booking.encrypted_phone)).decode()
-                    if re.sub(r'\D', '', decrypted) == phone_cleaned:
-                        # Сохраняем в CancelledBooking
-                        CancelledBooking.objects.create(
-                            master=master,
-                            service=booking.service,
-                            client_name=booking.client_name,
-                            encrypted_phone=bytes(booking.encrypted_phone),
-                            client_comment=booking.client_comment,
-                            date=booking.date,
-                            time=booking.time,
-                            cancelled_by='blacklist',
-                            reason=f'Клиент добавлен в ЧС: {reason}',
-                            original_booking_id=booking.id,
-                        )
-                        # Удаляем оригинальную запись
-                        booking.delete()
-                        cancelled_count += 1
-                except Exception:
-                    pass
+        import logging
+        logger = logging.getLogger(__name__)
+
+        for booking in future_bookings:
+            # decrypt_phone никогда не бросает исключение — возвращает ''
+            decrypted = decrypt_phone(booking.encrypted_phone, key)
+            if not decrypted:
+                logger.warning(
+                    f"Не удалось расшифровать телефон записи #{booking.id} "
+                    f"при добавлении в ЧС — запись не отменена"
+                )
+                continue
+
+            if re.sub(r'\D', '', decrypted) == phone_cleaned:
+                # Сохраняем в CancelledBooking
+                CancelledBooking.objects.create(
+                    master=master,
+                    service=booking.service,
+                    client_name=booking.client_name,
+                    encrypted_phone=bytes(booking.encrypted_phone),
+                    client_comment=booking.client_comment,
+                    date=booking.date,
+                    time=booking.time,
+                    cancelled_by='blacklist',
+                    reason=f'Клиент добавлен в ЧС: {reason}',
+                    original_booking_id=booking.id,
+                )
+                # Удаляем оригинальную запись
+                booking.delete()
+                cancelled_count += 1
 
         return api_success({
             'created': created,

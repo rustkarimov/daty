@@ -16,6 +16,7 @@ from ..utils.response_utils import api_success, api_error
 from ..utils.schedule_utils import ScheduleCalculator
 from ..utils.master_utils import get_master_by_identifier
 from ..utils.call_utils import request_call_verification, check_call_status
+from ..utils.crypto_utils import decrypt_phone, decrypt_phone_normalized
 
 
 # ============================================================
@@ -28,23 +29,14 @@ def client_booking_view(request, identifier, token):
     Открывается по ссылке из push/SMS: /booking/<token>/
     """
     booking = get_object_or_404(Booking, token=token, status='confirmed')
-    
+
     # Расшифровываем телефон для отображения (частично)
     key = booking.master.get_encryption_key()
-    phone = ''
-    if key:
-        try:
-            f = Fernet(key)
-            phone = f.decrypt(bytes(booking.encrypted_phone)).decode()
-        except (InvalidToken, Exception):
-            try:
-                phone = booking.encrypted_phone.decode('utf-8')
-            except:
-                phone = ''
-    
+    phone = decrypt_phone(booking.encrypted_phone, key)
+
     phone_cleaned = re.sub(r'\D', '', phone)
     phone_display = f"+7 *** *** {phone_cleaned[-4:]}" if len(phone_cleaned) == 11 else phone
-    
+
     context = {
         'booking': booking,
         'master': booking.master,
@@ -53,7 +45,7 @@ def client_booking_view(request, identifier, token):
         'identifier': identifier,
         'today': date.today(),
     }
-    
+
     return render(request, 'masters/public/booking_client.html', context)
 
 
@@ -63,30 +55,30 @@ def api_client_get_booking(request, identifier, token):
         booking = Booking.objects.get(token=token, status='confirmed')
     except Booking.DoesNotExist:
         return api_error('Запись не найдена', status=404)
-    
+
     calculator = ScheduleCalculator(booking.master)
-    
+
     # Получаем доступные даты
     dates = calculator.get_available_dates(
         days_ahead=60,
         min_service_duration=booking.service.duration
     )
-    
+
     def get_month_ru(d):
         months = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
                   'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']
         return months[d.month - 1]
-    
+
     def get_weekday_ru(d):
         weekdays = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс']
         return weekdays[d.weekday()]
-    
+
     dates_data = [{
         'date': d.strftime('%Y-%m-%d'),
         'display': f"{d.day} {get_month_ru(d)}",
         'day_of_week': get_weekday_ru(d),
     } for d in dates[:30]]
-    
+
     return api_success({
         'booking': {
             'id': booking.id,
@@ -109,22 +101,22 @@ def api_client_get_slots(request, identifier, token):
         booking = Booking.objects.get(token=token, status='confirmed')
     except Booking.DoesNotExist:
         return api_error('Запись не найдена', status=404)
-    
+
     date_str = request.GET.get('date')
     if not date_str:
         return api_error('Дата не указана', status=400)
-    
+
     try:
         target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
     except ValueError:
         return api_error('Неверный формат даты', status=400)
-    
+
     calculator = ScheduleCalculator(booking.master)
-    
+
     current_time = None
     if target_date == date.today():
         current_time = datetime.now().time()
-    
+
     slots = calculator.generate_time_slots(
         target_date,
         booking.service.duration,
@@ -132,7 +124,7 @@ def api_client_get_slots(request, identifier, token):
         current_time=current_time,
         original_booking_id=booking.id
     )
-    
+
     return api_success({'slots': slots})
 
 
@@ -145,28 +137,28 @@ def api_client_cancel_booking(request, identifier, token):
     """API: отменяет запись клиентом (с проверкой, что запись не прошла)."""
     if request.method != 'POST':
         return api_error('Метод не поддерживается', status=405)
-    
+
     try:
         booking = Booking.objects.get(token=token, status='confirmed')
     except Booking.DoesNotExist:
         return api_error('Запись не найдена', status=404)
-    
+
     # Проверка: запись уже прошла
     if booking.date < date.today():
         return api_error('Запись уже прошла, отменить её нельзя', status=400)
-    
+
     # Проверка: запись сегодня, но время уже прошло
     if booking.date == date.today():
         if booking.time < datetime.now().time():
             return api_error('Время записи уже прошло, отменить её нельзя', status=400)
-    
+
     # Меняем статус
     booking.status = 'cancelled'
     booking.save()
 
     import logging
     logger = logging.getLogger(__name__)
-    
+
     # Сохраняем данные ДО удаления (пока booking в памяти с id)
     original_booking_id = booking.id
     master = booking.master
@@ -177,12 +169,12 @@ def api_client_cancel_booking(request, identifier, token):
     service_name = service.name
     if service.category:
         service_name = f"{service.category.name}: {service_name}"
-    
+
     logger.info(
         f"Клиент {client_name} отменил запись #{original_booking_id} "
         f"у мастера {master.id}"
     )
-    
+
     # 1. Сохраняем историю в CancelledBooking
     CancelledBooking.objects.create(
         master=master,
@@ -195,11 +187,11 @@ def api_client_cancel_booking(request, identifier, token):
         cancelled_by='client',
         original_booking_id=original_booking_id,
     )
-    
-    # 2. Уведомление мастеру 
+
+    # 2. Уведомление мастеру
     # Форматируем дату: «18 октября»
     months_ru = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
-                'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']
+                 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']
     date_human = f"{booking_date.day} {months_ru[booking_date.month - 1]}"
 
     Notification.objects.create(
@@ -211,7 +203,7 @@ def api_client_cancel_booking(request, identifier, token):
             f"{service_name}"
         ),
     )
-    
+
     # 3. Push мастеру
     from ..utils.push_utils import send_push_to_master
     try:
@@ -224,10 +216,10 @@ def api_client_cancel_booking(request, identifier, token):
         )
     except Exception as e:
         logger.error(f"Ошибка push при отмене записи #{original_booking_id}: {e}")
-    
+
     # 4. Удаляем оригинальную запись — слот освобождается
     booking.delete()
-    
+
     return api_success({'message': 'Запись отменена'})
 
 
@@ -236,56 +228,56 @@ def api_client_update_booking(request, identifier, token):
     """API: изменяет запись клиентом (с проверкой, что запись не прошла)."""
     if request.method != 'POST':
         return api_error('Метод не поддерживается', status=405)
-    
+
     try:
         booking = Booking.objects.get(token=token, status='confirmed')
     except Booking.DoesNotExist:
         return api_error('Запись не найдена', status=404)
-    
+
     # Проверка: запись уже прошла
     if booking.date < date.today():
         return api_error('Запись уже прошла, перенести её нельзя', status=400)
-    
+
     # Проверка: запись сегодня, но время уже прошло
     if booking.date == date.today():
         if booking.time < datetime.now().time():
             return api_error('Время записи уже прошло, перенести её нельзя', status=400)
-    
+
     try:
         data = json.loads(request.body)
     except json.JSONDecodeError:
         return api_error('Неверный формат данных', status=400)
-    
+
     date_str = data.get('date')
     time_str = data.get('time')
-    
+
     if not date_str or not time_str:
         return api_error('Укажите дату и время', status=400)
-    
+
     try:
         new_date = datetime.strptime(date_str, '%Y-%m-%d').date()
         new_time = datetime.strptime(time_str, '%H:%M').time()
     except ValueError:
         return api_error('Неверный формат даты/времени', status=400)
-    
+
     # Проверяем доступность
     calculator = ScheduleCalculator(booking.master)
-    
+
     slots = calculator.generate_time_slots(
         new_date,
         booking.service.duration,
         exclude_booking_id=booking.id,
         original_booking_id=booking.id
     )
-    
+
     is_available = any(slot['start'] == time_str for slot in slots)
     if not is_available:
         return api_error('Это время уже занято. Выберите другое.', status=409)
-    
+
     # Сохраняем старые значения
     old_date = booking.date
     old_time = booking.time
-    
+
     # Обновляем
     booking.date = new_date
     booking.time = new_time
@@ -297,16 +289,15 @@ def api_client_update_booking(request, identifier, token):
         f"Клиент {booking.client_name} перенёс запись #{booking.id} "
         f"с {old_date} {old_time} на {new_date} {new_time}"
     )
-    
+
     # Уведомление мастеру
     service_name = booking.service.name
     if booking.service.category:
         service_name = f"{booking.service.category.name}: {service_name}"
 
     # Форматируем даты: «18 октября»
-    # Форматируем даты: «18 октября»
     months_ru = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
-                'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']
+                 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']
     old_date_human = f"{old_date.day} {months_ru[old_date.month - 1]}"
     new_date_human = f"{new_date.day} {months_ru[new_date.month - 1]}"
 
@@ -321,7 +312,7 @@ def api_client_update_booking(request, identifier, token):
         ),
         content_object=booking
     )
-    
+
     # Push мастеру
     from ..utils.push_utils import send_push_to_master
     try:
@@ -334,7 +325,7 @@ def api_client_update_booking(request, identifier, token):
         )
     except Exception as e:
         logger.error(f"Ошибка push при изменении записи #{booking.id}: {e}")
-    
+
     return api_success({'message': 'Запись изменена'})
 
 
@@ -347,41 +338,36 @@ def api_client_check_phone(request, identifier):
     """API: проверяет, есть ли записи у клиента с указанным телефоном."""
     if request.method != 'POST':
         return api_error('Метод не поддерживается', status=405)
-    
+
     try:
         master = get_master_by_identifier(identifier)
     except Http404:
         return api_error('Мастер не найден', status=404)
-    
+
     try:
         data = json.loads(request.body)
         phone = data.get('phone', '')
     except json.JSONDecodeError:
         return api_error('Неверный формат данных', status=400)
-    
+
     phone_cleaned = re.sub(r'\D', '', phone)
     if len(phone_cleaned) != 11:
         return api_error('Введите корректный номер телефона (11 цифр)', status=400)
-    
+
     # Ищем записи с таким телефоном
     key = master.get_encryption_key()
-    
+
     has_bookings = False
-    if key:
-        f = Fernet(key)
-        bookings = Booking.objects.filter(master=master, status='confirmed')
-        for b in bookings:
-            try:
-                b_phone = f.decrypt(bytes(b.encrypted_phone)).decode()
-                if re.sub(r'\D', '', b_phone) == phone_cleaned:
-                    has_bookings = True
-                    break
-            except:
-                pass
-    
+    bookings = Booking.objects.filter(master=master, status='confirmed')
+    for b in bookings:
+        b_phone = decrypt_phone_normalized(b.encrypted_phone, key)
+        if b_phone == phone_cleaned:
+            has_bookings = True
+            break
+
     if not has_bookings:
         return api_error('Записи с таким номером не найдены', status=404)
-    
+
     return api_success({'phone': phone_cleaned})
 
 
@@ -390,32 +376,32 @@ def api_client_request_call(request, identifier):
     """API: запрашивает звонок для подтверждения клиента."""
     if request.method != 'POST':
         return api_error('Метод не поддерживается', status=405)
-    
+
     try:
         master = get_master_by_identifier(identifier)
     except Http404:
         return api_error('Мастер не найден', status=404)
-    
+
     try:
         data = json.loads(request.body)
         phone = data.get('phone', '')
     except json.JSONDecodeError:
         return api_error('Неверный формат данных', status=400)
-    
+
     phone_cleaned = re.sub(r'\D', '', phone)
-    
+
     # Проверка rate limit (защита от спама и слива баланса SMS.ru)
     from ..utils.rate_limit import check_call_limits
     allowed, error_msg = check_call_limits(request, phone_cleaned)
     if not allowed:
         return api_error(error_msg, status=429)
-    
+
     # Запрашиваем звонок через SMS.ru
     success, check_id, call_phone, call_phone_pretty, error = request_call_verification(phone_cleaned)
-    
+
     if not success:
         return api_error(error or 'Ошибка запроса звонка', status=500)
-    
+
     # Создаём сессию (неподтверждённую)
     ClientSession.objects.create(
         master=master,
@@ -424,7 +410,7 @@ def api_client_request_call(request, identifier):
         call_phone=call_phone,
         is_confirmed=False,
     )
-    
+
     return api_success({
         'check_id': check_id,
         'call_phone': call_phone,
@@ -437,45 +423,45 @@ def api_client_check_call(request, identifier):
     """API: проверяет статус звонка; если подтверждён — генерирует session_key."""
     if request.method != 'POST':
         return api_error('Метод не поддерживается', status=405)
-    
+
     try:
         master = get_master_by_identifier(identifier)
     except Http404:
         return api_error('Мастер не найден', status=404)
-    
+
     try:
         data = json.loads(request.body)
         check_id = data.get('check_id', '')
     except json.JSONDecodeError:
         return api_error('Неверный формат данных', status=400)
-    
+
     session = ClientSession.objects.filter(
         master=master, check_id=check_id
     ).first()
-    
+
     if not session:
         return api_error('Проверка не найдена', status=404)
-    
+
     # Проверяем статус звонка
     success, is_confirmed, status_text, error = check_call_status(check_id)
-    
+
     if not success:
         return api_error(error or 'Ошибка проверки', status=500)
-    
+
     if not is_confirmed:
         return api_success({'is_confirmed': False})
-    
+
     # Подтверждён! Генерируем session_key
     session_key = secrets.token_urlsafe(32)
-    
+
     session.is_confirmed = True
     session.session_key = session_key
     session.save()
-    
+
     # Сохраняем в Django-сессию
     request.session['client_phone'] = session.phone
     request.session['client_master_id'] = master.id
-    
+
     return api_success({
         'is_confirmed': True,
         'redirect': f'/{identifier}/my-bookings/',
@@ -492,36 +478,29 @@ def my_bookings_view(request, identifier):
         master = get_master_by_identifier(identifier)
     except Http404:
         return api_error('Мастер не найден', status=404)
-    
+
     client_phone = request.session.get('client_phone')
     client_master_id = request.session.get('client_master_id')
-    
+
     if not client_phone or client_master_id != master.id:
         return redirect(f'/{identifier}/')
-    
+
     # Находим все записи клиента
     key = master.get_encryption_key()
-    
+
     bookings = []
-    if key:
-        f = Fernet(key)
-        
-        # Фильтруем только будущие записи (сегодня и позже)
-        today = date.today()
-        all_bookings = Booking.objects.filter(
-            master=master,
-            status='confirmed',
-            date__gte=today  # ← фильтр на уровне БД
-        ).order_by('date', 'time')
-        
-        for b in all_bookings:
-            try:
-                b_phone = f.decrypt(bytes(b.encrypted_phone)).decode()
-                if re.sub(r'\D', '', b_phone) == client_phone:
-                    bookings.append(b)
-            except:
-                pass
-    
+    today = date.today()
+    all_bookings = Booking.objects.filter(
+        master=master,
+        status='confirmed',
+        date__gte=today
+    ).order_by('date', 'time')
+
+    for b in all_bookings:
+        b_phone = decrypt_phone_normalized(b.encrypted_phone, key)
+        if b_phone == client_phone:
+            bookings.append(b)
+
     return render(request, 'masters/public/my_bookings.html', {
         'master': master,
         'identifier': identifier,

@@ -15,7 +15,7 @@ from cryptography.fernet import Fernet, InvalidToken
 from ..models import Booking, Service, BlacklistedClient
 from ..utils.schedule_utils import ScheduleCalculator
 from ..utils.response_utils import api_success, api_error
-
+from ..utils.crypto_utils import decrypt_phone
 
 
 @login_required
@@ -24,29 +24,29 @@ def get_booking_slots_for_master(request):
     master = request.user.master
     service_id = request.GET.get('service_id')
     date_str = request.GET.get('date')
-    
+
     if not service_id or not date_str:
         return JsonResponse({'error': 'Не указаны параметры'}, status=400)
-    
+
     try:
         service = Service.objects.get(id=service_id, master=master)
         target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
     except (Service.DoesNotExist, ValueError):
         return JsonResponse({'error': 'Неверные параметры'}, status=404)
-    
+
     calculator = ScheduleCalculator(master)
-    
+
     # Определяем, нужно ли передавать текущее время
     current_time = None
     if target_date == date.today():
         current_time = datetime.now().time()
-    
+
     slots = calculator.generate_time_slots(
-        target_date, 
+        target_date,
         service.duration,
         current_time=current_time
     )
-    
+
     return JsonResponse({'slots': slots})
 
 
@@ -54,27 +54,11 @@ def get_booking_slots_for_master(request):
 def get_booking_for_edit(request, booking_id):
     """API: возвращает данные записи для формы редактирования."""
     booking = get_object_or_404(Booking, id=booking_id, master=request.user.master)
-    
-    # Расшифровываем телефон
+
+    # Расшифровываем телефон через утилиту
     key = request.user.master.get_encryption_key()
-    
-    phone = ''
-    if key:
-        try:
-            f = Fernet(key)
-            decrypted = f.decrypt(bytes(booking.encrypted_phone)).decode()
-            phone = decrypted
-        except (InvalidToken, Exception):
-            try:
-                phone = booking.encrypted_phone.decode('utf-8')
-            except:
-                phone = str(booking.encrypted_phone)
-    else:
-        try:
-            phone = booking.encrypted_phone.decode('utf-8')
-        except:
-            phone = str(booking.encrypted_phone)
-    
+    phone = decrypt_phone(booking.encrypted_phone, key)
+
     return JsonResponse({
         'id': booking.id,
         'client_name': booking.client_name,
@@ -120,7 +104,7 @@ def api_update_booking(request, booking_id):
         travel_time_after = data.get('travel_time_after', booking.travel_time_after)
         duration_extra_minutes = data.get('duration_extra_minutes', booking.duration_extra_minutes)
 
-        # Буферы (пауза) - вот их мы добавляем!
+        # Буферы (пауза)
         buffer_before_minutes = data.get('buffer_before_minutes', booking.buffer_before_minutes)
         buffer_after_minutes = data.get('buffer_after_minutes', booking.buffer_after_minutes)
 
@@ -143,12 +127,9 @@ def api_update_booking(request, booking_id):
         target_time = datetime.strptime(time_str, '%H:%M').time()
 
         # Шифрование телефона
+        from ..utils.crypto_utils import encrypt_phone
         key = request.user.master.get_encryption_key()
-        if key:
-            f = Fernet(key)
-            encrypted_phone = f.encrypt(client_phone_cleaned.encode())
-        else:
-            encrypted_phone = client_phone_cleaned.encode()
+        encrypted_phone = encrypt_phone(client_phone_cleaned, key)
 
         # Обновление записи
         booking.service = service
@@ -162,7 +143,7 @@ def api_update_booking(request, booking_id):
         booking.travel_time_before = int(travel_time_before or 0)
         booking.travel_time_after = int(travel_time_after or 0)
         booking.duration_extra_minutes = int(duration_extra_minutes or 0)
-        
+
         # СОХРАНЯЕМ БУФЕРЫ
         booking.buffer_before_minutes = int(buffer_before_minutes or 0)
         booking.buffer_after_minutes = int(buffer_after_minutes or 0)
