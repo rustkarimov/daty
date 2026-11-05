@@ -170,7 +170,9 @@ class ScheduleCalculator:
         away: [time - travel_before, time + arrival_window + service + extra + travel_after]
             (дорога после ВХОДИТ в busy — резервирует время до следующего клиента)
 
-        Возвращает [(start_time, end_time, booking_id, travel_after)].
+        Возвращает [(start_minutes, end_minutes, booking_id, travel_after)], где
+        минуты считаются от 00:00 target_date и могут превышать 1440 (переход через
+        полночь). Потребитель (generate_time_slots) обрезает range до 1440.
         """
         bookings = Booking.objects.filter(
             master=self.master,
@@ -178,16 +180,19 @@ class ScheduleCalculator:
             status__in=['confirmed', 'pending'],
         ).select_related('service')
 
+        def to_minutes(dt):
+            """Минуты от полуночи target_date. Может быть < 0 или > 1440."""
+            return (dt.date() - target_date).days * 1440 + dt.hour * 60 + dt.minute
+
         booked_slots = []
         for booking in bookings:
             base_duration = (booking.service.duration if booking.service else 0)
             extra = booking.duration_extra_minutes or 0
             duration = base_duration + extra
 
-            start_dt = datetime.combine(date.today(), booking.time)
-            # Добавляем ситуативные паузы
+            start_dt = datetime.combine(target_date, booking.time)
             start_dt -= timedelta(minutes=booking.buffer_before_minutes or 0)
-            
+
             end_dt = start_dt + timedelta(minutes=duration)
             end_dt += timedelta(minutes=booking.buffer_after_minutes or 0)
 
@@ -196,22 +201,20 @@ class ScheduleCalculator:
                 before = booking.travel_time_before or 0
                 travel_after = booking.travel_time_after or 0
                 arrival_window = self.master.arrival_window_minutes or 0
-                
+
                 start_dt = start_dt - timedelta(minutes=before)
                 end_dt = end_dt + timedelta(minutes=arrival_window + travel_after)
             else:
-                # Добавляем постоянный буфер для дома
                 end_dt += timedelta(minutes=self.master.home_buffer_between_bookings or 0)
 
-            if start_dt.date() < date.today():
-                start_dt = datetime.combine(date.today(), time(0, 0))
+            # Обрезаем «вчерашний» хвост — он не должен блокировать сегодня
+            start_minutes = to_minutes(start_dt)
+            if start_minutes < 0:
+                start_minutes = 0
 
-            booked_slots.append((
-                start_dt.time(),
-                end_dt.time(),
-                booking.id,
-                travel_after,
-            ))
+            end_minutes = to_minutes(end_dt)
+
+            booked_slots.append((start_minutes, end_minutes, booking.id, travel_after))
 
         return booked_slots
 
@@ -321,15 +324,10 @@ class ScheduleCalculator:
 
         # ---- Занятые интервалы: (busy_start, busy_end, F_i, booking_id) ----
         booked_slots = []
-        for start, end, booking_id, travel_after_i in self.get_booked_slots_for_date(target_date):
+        for start_min, end_min, booking_id, travel_after_i in self.get_booked_slots_for_date(target_date):
             if exclude_booking_id and booking_id == exclude_booking_id:
                 continue
-            booked_slots.append((
-                time_to_minutes(start),
-                time_to_minutes(end),
-                travel_after_i,
-                booking_id,
-            ))
+            booked_slots.append((start_min, end_min, travel_after_i, booking_id))
 
         # ---- Разблокируем исходную запись (при редактировании) ----
         if original_booking_id:

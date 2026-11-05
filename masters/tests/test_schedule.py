@@ -163,3 +163,113 @@ class AwayScheduleCalculatorTest(TestCase):
             to_mins(slots[0]['start']), to_mins('12:00'),
             f"Первый слот {slots[0]['start']} раньше 12:00 — лид-тайм не соблюдён"
         )
+
+
+
+class MidnightScheduleTest(TestCase):
+    """
+    Тесты расчёта слотов на границе суток.
+
+    Рабочий день 00:00–23:59, чтобы покрыть и раннее утро, и поздний вечер.
+    """
+
+    def setUp(self):
+        self.master = create_master()
+        self.master.work_mode = 'away'
+        self.master.away_travel_time_before_default = 0
+        self.master.away_travel_time_after_default = 0
+        self.master.arrival_window_minutes = 0
+        self.master.save()
+
+        self.service = create_service(self.master, duration=240)  # 4 часа
+
+        from ..models import AwaySchedule
+        for day in range(7):
+            AwaySchedule.objects.create(
+                master=self.master, day_of_week=day,
+                start_time=time(0, 0), end_time=time(23, 59), is_working=True
+            )
+
+        self.test_date = get_next_monday()
+        self.calc = ScheduleCalculator(self.master)
+
+    def test_yesterday_booking_does_not_block_today(self):
+        """A: бронь вчера 23:00 на 4 часа не должна блокировать сегодня"""
+        from datetime import timedelta
+        yesterday = self.test_date - timedelta(days=1)
+
+        Booking.objects.create(
+            master=self.master, service=self.service,
+            client_name='Вчерашний', encrypted_phone=b'fake',
+            date=yesterday, time=time(23, 0),
+            status='confirmed', service_mode='away',
+            travel_time_before=0, travel_time_after=0
+        )
+
+        slots = self.calc.generate_time_slots(self.test_date, 60)
+
+        self.assertGreater(len(slots), 0, "Сегодня не должно быть блокировок от вчера")
+        self.assertEqual(slots[0]['start'], '00:00')
+
+    def test_today_late_booking_blocks_evening(self):
+        """
+        B: бронь сегодня 22:00 на 4 часа (до 02:00 завтра).
+        Слоты на сегодня до 22:00 должны быть, после — нет.
+        Сейчас (с багом) end_dt.time() = '02:00', range(22:00, 02:00) пуст,
+        и бронь НЕ блокирует вечер. Тест это поймает.
+        """
+        Booking.objects.create(
+            master=self.master, service=self.service,
+            client_name='Поздний', encrypted_phone=b'fake',
+            date=self.test_date, time=time(22, 0),
+            status='confirmed', service_mode='away',
+            travel_time_before=0, travel_time_after=0
+        )
+
+        # Ищем слот на 22:00 и позже — их не должно быть
+        # (услуга 60 мин, бронь занимает 22:00–02:00)
+        slots = self.calc.generate_time_slots(self.test_date, 60)
+
+        late_slots = [s for s in slots if s['start'] >= '22:00']
+        self.assertEqual(
+            len(late_slots), 0,
+            f"Слоты после 22:00 не должны быть свободны, но найдены: "
+            f"{[s['start'] for s in late_slots]}"
+        )
+
+        # И слот 21:00 (за час до брони) должен быть
+        early_slots = [s for s in slots if s['start'] <= '21:00']
+        self.assertGreater(len(early_slots), 0, "До 22:00 слоты должны быть")
+
+    def test_travel_before_goes_to_yesterday(self):
+        """
+        C: бронь сегодня 00:30, дорога до 60 мин → busy начинается вчера 23:30.
+        Обрезка start_dt до 00:00 сегодня должна оставить занятость 00:00–02:30
+        (услуга 4 часа → 00:30 + 4ч = 04:30... стоп, услуга 240 мин = 4 часа).
+
+        Возьмём услугу 60 мин: 00:30 + 60 = 01:30. Плюс travel_after 0, arrival 0.
+        busy = [вчера 23:30, сегодня 01:30]. После обрезки: [00:00, 01:30].
+        Значит, слоты 00:00–01:30 должны быть заняты.
+        """
+        # Пересоздаём сервис под 60 минут
+        from ..models import Service
+        Service.objects.filter(master=self.master).delete()
+        short_service = create_service(self.master, duration=60)
+
+        Booking.objects.create(
+            master=self.master, service=short_service,
+            client_name='Ранний', encrypted_phone=b'fake',
+            date=self.test_date, time=time(0, 30),
+            status='confirmed', service_mode='away',
+            travel_time_before=60, travel_time_after=0
+        )
+
+        slots = self.calc.generate_time_slots(self.test_date, 60)
+
+        # Слоты, которые попадают внутрь [00:00, 01:30] — не должны быть свободны
+        inside = [s for s in slots if s['start'] < '01:30']
+        self.assertEqual(
+            len(inside), 0,
+            f"Слоты до 01:30 должны быть заняты (бронь 00:30 + дорога до 60 мин), "
+            f"но найдены: {[s['start'] for s in inside]}"
+        )
