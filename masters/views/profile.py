@@ -46,22 +46,22 @@ def api_profile_update(request):
     """
     Сохраняет данные профиля мастера.
     POST /api/profile/update/
-    Body: JSON { first_name, last_name, login, address, bio }
+    Body: JSON { first_name, last_name, login, address, bio, work_mode }
     """
     try:
         try:
             master = request.user.master
         except Master.DoesNotExist:
             return JsonResponse({'success': False, 'error': 'Мастер не найден'}, status=404)
-        
+
         data = json.loads(request.body)
-        
+
         first_name = (data.get('first_name') or '').strip()
         last_name = (data.get('last_name') or '').strip()
         bio = (data.get('bio') or '').strip()
         address = (data.get('address') or '').strip()
         new_login = (data.get('login') or '').strip()
-        
+
         # Валидация логина
         if new_login and new_login != (master.login or ''):
             if len(new_login) < 3:
@@ -69,25 +69,25 @@ def api_profile_update(request):
                     'success': False,
                     'error': 'Логин должен содержать минимум 3 символа'
                 }, status=400)
-            
+
             if not re.match(r'^[a-zA-Z0-9_-]+$', new_login):
                 return JsonResponse({
                     'success': False,
                     'error': 'Логин может содержать только латиницу, цифры, дефис и подчеркивание'
                 }, status=400)
-            
+
             if new_login.lower().startswith('id'):
                 return JsonResponse({
                     'success': False,
                     'error': 'Логин не может начинаться с "id"'
                 }, status=400)
-            
+
             if Master.objects.exclude(pk=master.pk).filter(login=new_login).exists():
                 return JsonResponse({
                     'success': False,
                     'error': 'Этот логин уже занят'
                 }, status=409)
-            
+
             master.login = new_login
         elif not new_login:
             master.login = None
@@ -97,26 +97,18 @@ def api_profile_update(request):
         if work_mode in ('home', 'away'):
             master.work_mode = work_mode
 
-        # Время на дорогу по умолчанию (только для away)
-        away_travel_time_default = data.get('away_travel_time_default')
-        if away_travel_time_default is not None:
-            try:
-                master.away_travel_time_default = max(0, int(away_travel_time_default))
-            except (ValueError, TypeError):
-                pass
-
         master.first_name = first_name
         master.last_name = last_name
         master.bio = bio
         master.address = address
         master.save()
-               
+
         # Обновляем User
         user = request.user
         user.first_name = first_name
         user.last_name = last_name
         user.save()
-        
+
         return JsonResponse({
             'success': True,
             'master': {
@@ -132,7 +124,7 @@ def api_profile_update(request):
                 'arrival_window_minutes': master.arrival_window_minutes,
             }
         })
-        
+
     except json.JSONDecodeError:
         return JsonResponse({'success': False, 'error': 'Неверный формат данных'}, status=400)
     except Exception as e:
