@@ -68,3 +68,15 @@ def decrypt_phone_normalized(encrypted_phone, key):
     """
     raw = decrypt_phone(encrypted_phone, key)
     return re.sub(r'\D', '', raw)
+
+def format_phone(phone_cleaned):
+    """
+    Форматирует 11-значный номер в 'X XXX XXX-XX-XX'.
+    Если номер не 11-значный — возвращает как есть.
+    """
+    if not phone_cleaned or len(phone_cleaned) != 11:
+        return phone_cleaned or ''
+    return (
+        f"{phone_cleaned[0]} {phone_cleaned[1:4]} "
+        f"{phone_cleaned[4:7]}-{phone_cleaned[7:9]}-{phone_cleaned[9:11]}"
+    )

@@ -13,7 +13,7 @@ from cryptography.fernet import Fernet, InvalidToken
 
 from ..models import Booking, Schedule, DayOff, ExtraWorkingDay, AwaySchedule, AwayExtraDay, AwayDayOff, Master, Service, CustomUser
 from ..utils.response_utils import api_success, api_error
-from ..utils.crypto_utils import decrypt_phone
+from ..utils.crypto_utils import decrypt_phone, format_phone
 
 
 # ============================================================
@@ -229,74 +229,107 @@ def get_bookings_api(request):
     })
 
 
+# ============================================================
+# ВСПОМОГАТЕЛЬНОЕ ДЛЯ get_booking_details
+# ============================================================
+
+def _get_client_stats(master, phone_cleaned, key):
+    """
+    Собирает статистику клиента по номеру телефона.
+
+    Возвращает dict:
+        {
+            'total_visits': int,
+            'first_visit': date | None,
+            'last_visit': date | None,
+            'visits': list[{'date', 'time', 'service', 'category'}],
+        }
+    """
+    client_bookings = Booking.objects.filter(
+        master=master,
+        status='confirmed',
+    ).select_related('service', 'service__category')
+
+    visits = []
+    total_visits = 0
+    first_visit = None
+    last_visit = None
+
+    for b in client_bookings:
+        b_phone = decrypt_phone(b.encrypted_phone, key)
+        if not b_phone:
+            continue
+        if re.sub(r'\D', '', b_phone) != phone_cleaned:
+            continue
+
+        total_visits += 1
+        if first_visit is None or b.date < first_visit:
+            first_visit = b.date
+        if last_visit is None or b.date > last_visit:
+            last_visit = b.date
+
+        visits.append({
+            'date': b.date.strftime('%d.%m.%Y'),
+            'time': b.time.strftime('%H:%M'),
+            'service': b.service.name,
+            'category': b.service.category.name if b.service.category else None,
+        })
+
+    visits.sort(key=lambda x: x['date'], reverse=True)
+
+    return {
+        'total_visits': total_visits,
+        'first_visit': first_visit,
+        'last_visit': last_visit,
+        'visits': visits,
+    }
+
+
+def _serialize_current_services(booking):
+    """Возвращает список услуг текущей записи + total_duration."""
+    service = booking.service
+    services = [{
+        'booking_id': booking.id,
+        'name': service.name,
+        'category_name': service.category.name if service.category else None,
+        'time': booking.time.strftime('%H:%M'),
+        'duration': service.duration,
+        'service_id': service.id,
+        'status': booking.status,
+    }]
+    total_duration = sum(s['duration'] for s in services)
+    return services, total_duration
+
+
+# ============================================================
+# ДЕТАЛИ ЗАПИСИ
+# ============================================================
+
 @login_required
 def get_booking_details(request, booking_id):
     """API: возвращает подробную информацию о записи и клиенте."""
+    # 404 — стандартное поведение Django, не оборачиваем в try
+    booking = get_object_or_404(Booking, id=booking_id, master=request.user.master)
+    master = request.user.master
+
     try:
-        booking = get_object_or_404(Booking, id=booking_id, master=request.user.master)
-        master = request.user.master
-
-        # Расшифровываем телефон через утилиту
         key = master.get_encryption_key()
-        phone = decrypt_phone(booking.encrypted_phone, key)
 
+        # Телефон текущего клиента
+        phone = decrypt_phone(booking.encrypted_phone, key)
         phone_cleaned = re.sub(r'\D', '', phone)
 
-        # Функция для форматирования телефона
-        def format_phone_num(phone_num):
-            if not phone_num or len(phone_num) != 11:
-                return phone_num
-            return f"{phone_num[0]} {phone_num[1:4]} {phone_num[4:7]}-{phone_num[7:9]}-{phone_num[9:11]}"
+        # Статистика по клиенту
+        stats = _get_client_stats(master, phone_cleaned, key)
 
-        # Получаем все записи этого клиента для статистики
-        client_bookings = Booking.objects.filter(
-            master=master,
-            status='confirmed'
-        ).select_related('service', 'service__category')
-
-        # Группируем по этому телефону
-        visits = []
-        total_visits = 0
-        first_visit = None
-        last_visit = None
-
-        for b in client_bookings:
-            # Расшифровываем телефон каждой записи через утилиту
-            b_phone = decrypt_phone(b.encrypted_phone, key)
-            if not b_phone:
-                continue
-
-            if re.sub(r'\D', '', b_phone) == phone_cleaned:
-                total_visits += 1
-                if first_visit is None or b.date < first_visit:
-                    first_visit = b.date
-                if last_visit is None or b.date > last_visit:
-                    last_visit = b.date
-                visits.append({
-                    'date': b.date.strftime('%d.%m.%Y'),
-                    'time': b.time.strftime('%H:%M'),
-                    'service': b.service.name,
-                    'category': b.service.category.name if b.service.category else None,
-                })
-
-        # Сортируем визиты по дате (сначала новые)
-        visits.sort(key=lambda x: x['date'], reverse=True)
-
-        current_services = [{
-            'booking_id': booking.id,
-            'name': booking.service.name,
-            'category_name': booking.service.category.name if booking.service.category else None,
-            'time': booking.time.strftime('%H:%M'),
-            'duration': booking.service.duration,
-            'service_id': booking.service.id,
-            'status': booking.status
-        }]
+        # Услуги текущей записи
+        current_services, total_duration = _serialize_current_services(booking)
 
         # Статус по-русски
         status_map = {
             'confirmed': 'Подтверждена',
             'cancelled': 'Отменена',
-            'completed': 'Выполнена'
+            'completed': 'Выполнена',
         }
 
         return JsonResponse({
@@ -304,20 +337,20 @@ def get_booking_details(request, booking_id):
             'booking_id': booking.id,
             'client_name': booking.client_name,
             'client_phone': phone,
-            'client_phone_formatted': format_phone_num(phone_cleaned),
+            'client_phone_formatted': format_phone(phone_cleaned),
             'date': booking.date.strftime('%d.%m.%Y'),
             'time': booking.time.strftime('%H:%M'),
             'services': current_services,
             'total_services': len(current_services),
-            'total_duration': sum(s['duration'] for s in current_services),
+            'total_duration': total_duration,
             'comment': booking.client_comment or '',
             'status': status_map.get(booking.status, booking.status),
             'created_by': 'Мастер' if booking.created_by == 'master' else 'Клиент',
             'client_stats': {
-                'total_visits': total_visits,
-                'first_visit': first_visit.strftime('%d.%m.%Y') if first_visit else '—',
-                'last_visit': last_visit.strftime('%d.%m.%Y') if last_visit else '—',
-                'visits': visits[:10],
+                'total_visits': stats['total_visits'],
+                'first_visit': stats['first_visit'].strftime('%d.%m.%Y') if stats['first_visit'] else '—',
+                'last_visit': stats['last_visit'].strftime('%d.%m.%Y') if stats['last_visit'] else '—',
+                'visits': stats['visits'][:10],
             },
             'all_booking_ids': [booking.id],
             'service_mode': booking.service_mode,
