@@ -152,10 +152,6 @@ def api_client_cancel_booking(request, identifier, token):
         if booking.time < datetime.now().time():
             return api_error('Время записи уже прошло, отменить её нельзя', status=400)
 
-    # Меняем статус
-    booking.status = 'cancelled'
-    booking.save()
-
     import logging
     logger = logging.getLogger(__name__)
 
@@ -175,36 +171,50 @@ def api_client_cancel_booking(request, identifier, token):
         f"у мастера {master.id}"
     )
 
-    # 1. Сохраняем историю в CancelledBooking
-    CancelledBooking.objects.create(
-        master=master,
-        service=service,
-        client_name=client_name,
-        encrypted_phone=bytes(booking.encrypted_phone),
-        client_comment=booking.client_comment,
-        date=booking_date,
-        time=booking_time,
-        cancelled_by='client',
-        original_booking_id=original_booking_id,
-    )
+    # 1–3. Всё в одной транзакции: история + уведомление + удаление.
+    # Если что-то упадёт — откатится целиком, данные не разъедутся.
+    from django.db import transaction
+    try:
+        with transaction.atomic():
+            # 1. Сохраняем историю в CancelledBooking
+            CancelledBooking.objects.create(
+                master=master,
+                service=service,
+                client_name=client_name,
+                encrypted_phone=bytes(booking.encrypted_phone),
+                client_comment=booking.client_comment,
+                date=booking_date,
+                time=booking_time,
+                cancelled_by='client',
+                original_booking_id=original_booking_id,
+            )
 
-    # 2. Уведомление мастеру
-    # Форматируем дату: «18 октября»
-    months_ru = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
-                 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']
-    date_human = f"{booking_date.day} {months_ru[booking_date.month - 1]}"
+            # 2. Уведомление мастеру
+            months_ru = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+                         'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']
+            date_human = f"{booking_date.day} {months_ru[booking_date.month - 1]}"
 
-    Notification.objects.create(
-        master=master,
-        type='cancelled_booking',
-        title=client_name,
-        message=(
-            f"{date_human} в {booking_time.strftime('%H:%M')}\n"
-            f"{service_name}"
-        ),
-    )
+            Notification.objects.create(
+                master=master,
+                type='cancelled_booking',
+                title=client_name,
+                message=(
+                    f"{date_human} в {booking_time.strftime('%H:%M')}\n"
+                    f"{service_name}"
+                ),
+            )
 
-    # 3. Push мастеру
+            # 3. Удаляем оригинальную запись — слот освобождается
+            booking.delete()
+    except Exception as e:
+        logger.exception(
+            f"Ошибка при отмене записи #{original_booking_id} "
+            f"(клиент {client_name}): {e}"
+        )
+        return api_error('Не удалось отменить запись. Попробуйте позже.', status=500)
+
+    # 4. Push мастеру — ВНЕ транзакции (внешний HTTP-запрос).
+    # Если push упадёт — запись уже отменена, это правильный приоритет.
     from ..utils.push_utils import send_push_to_master
     try:
         send_push_to_master(
@@ -216,9 +226,6 @@ def api_client_cancel_booking(request, identifier, token):
         )
     except Exception as e:
         logger.error(f"Ошибка push при отмене записи #{original_booking_id}: {e}")
-
-    # 4. Удаляем оригинальную запись — слот освобождается
-    booking.delete()
 
     return api_success({'message': 'Запись отменена'})
 
