@@ -14,18 +14,16 @@ from cryptography.fernet import Fernet, InvalidToken
 
 from ..models import Booking, BlacklistedClient, CancelledBooking
 from ..utils.response_utils import api_success, api_error
-from ..utils.crypto_utils import decrypt_phone, decrypt_phone_normalized
+from ..utils.crypto_utils import (
+    decrypt_phone,
+    decrypt_phone_normalized,
+    format_phone,
+)
 
 
 # ============================================================
 # ВСПОМОГАТЕЛЬНОЕ
 # ============================================================
-
-def _format_phone(phone_cleaned):
-    """Форматирует 11-значный номер в 'X XXX XXX-XX-XX'."""
-    if len(phone_cleaned) == 11:
-        return f"{phone_cleaned[0]} {phone_cleaned[1:4]} {phone_cleaned[4:7]}-{phone_cleaned[7:9]}-{phone_cleaned[9:11]}"
-    return phone_cleaned
 
 
 def _collect_clients(master, only_confirmed=False):
@@ -69,7 +67,7 @@ def _collect_clients(master, only_confirmed=False):
         client_key = phone_cleaned
 
         clients_data[client_key]['names'].add(booking.client_name)
-        clients_data[client_key]['phone'] = _format_phone(phone_cleaned)
+        clients_data[client_key]['phone'] = format_phone(phone_cleaned)
         clients_data[client_key]['phone_raw'] = phone_cleaned
 
         # «Визит» = confirmed + дата в прошлом (или сегодня)
@@ -96,7 +94,7 @@ def _collect_clients(master, only_confirmed=False):
         if bl.phone not in clients_data:
             clients_data[bl.phone] = {
                 'names': {bl.name or 'Без имени'},
-                'phone': _format_phone(bl.phone),
+                'phone': format_phone(bl.phone),
                 'phone_raw': bl.phone,
                 'total_visits': 0,
                 'services': defaultdict(int),
@@ -305,7 +303,7 @@ def get_decrypted_phone(request, booking_id):
 
         decrypted = decrypt_phone(booking.encrypted_phone, key)
         phone_cleaned = re.sub(r'\D', '', decrypted)
-        return api_success({'phone': _format_phone(phone_cleaned)})
+        return api_success({'phone': format_phone(phone_cleaned)})
 
     except Booking.DoesNotExist:
         return api_error('Запись не найдена', status=404)

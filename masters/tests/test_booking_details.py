@@ -144,3 +144,53 @@ class BookingDetailsAPITest(TestCase):
         response = self.client.get(f'/api/booking/{other_booking.id}/details/')
         # get_object_or_404 → 404
         self.assertEqual(response.status_code, 404)
+
+
+class DecryptedPhoneAPITest(TestCase):
+    """Тест эндпоинта /api/get-decrypted-phone/<id>/."""
+
+    def setUp(self):
+        self.master = create_master()
+        self.master.work_mode = 'home'
+        self.master.save()
+        self.service = create_service(self.master, name='Маникюр', duration=60)
+        self.test_date = get_next_monday()
+
+        self.client.force_login(self.master.user)
+
+        key = self.master.get_encryption_key()
+        f = Fernet(key)
+        self.booking = Booking.objects.create(
+            master=self.master,
+            service=self.service,
+            client_name='Мария',
+            encrypted_phone=f.encrypt(b'79991112233'),
+            date=self.test_date,
+            time=time(10, 0),
+            status='confirmed',
+        )
+
+    def test_returns_formatted_phone(self):
+        """Возвращает телефон в формате 'X XXX XXX-XX-XX'."""
+        response = self.client.get(f'/api/get-decrypted-phone/{self.booking.id}/')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue(data['success'])
+        self.assertEqual(data['data']['phone'], '7 999 111-22-33')
+
+    def test_not_found_for_other_master(self):
+        """Чужая запись → 404."""
+        other_master = create_master(phone='79995556677', first_name='Иван')
+        other_service = create_service(other_master, name='Услуга', duration=30)
+        other_booking = Booking.objects.create(
+            master=other_master,
+            service=other_service,
+            client_name='Чужой',
+            encrypted_phone=b'fake',
+            date=self.test_date,
+            time=time(10, 0),
+            status='confirmed',
+        )
+
+        response = self.client.get(f'/api/get-decrypted-phone/{other_booking.id}/')
+        self.assertEqual(response.status_code, 404)
