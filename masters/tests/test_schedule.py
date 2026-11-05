@@ -127,27 +127,39 @@ class AwayScheduleCalculatorTest(TestCase):
         self.assertTrue(len(slots) > 0)
         self.assertEqual(slots[0]['start'], '11:30')
 
-        def test_min_booking_lead_time(self):
-            """Ограничитель: сегодняшние слоты не раньше чем через N часов"""
-            from django.utils import timezone
-            self.master.min_booking_lead_time = 2 # 2 часа
-            self.master.save()
-            
-            today = date.today()
-            now = timezone.localtime(timezone.now()).time()
-            
-            # Вызываем генерацию на сегодня
+    def test_min_booking_lead_time(self):
+        """Ограничитель: слоты не раньше чем через N часов от 'сейчас'"""
+        from unittest.mock import patch
+        from datetime import datetime as real_datetime
+
+        self.master.min_booking_lead_time = 2  # 2 часа
+        self.master.save()
+
+        today = date.today()
+
+        # "Замораживаем" время внутри schedule_utils на 10:00
+        frozen_now = real_datetime(today.year, today.month, today.day, 10, 0, 0)
+
+        class FrozenDateTime(real_datetime):
+            @classmethod
+            def now(cls, tz=None):
+                return frozen_now
+
+        with patch('masters.utils.schedule_utils.datetime', FrozenDateTime):
             slots = self.calc.generate_time_slots(today, 60)
-            
-            if len(slots) > 0:
-                # Переводим строку "HH:MM" в минуты для сравнения
-                def to_mins(t_str):
-                    h, m = map(int, t_str.split(':'))
-                    return h * 60 + m
-                    
-                slot_min = to_mins(slots[0]['start'])
-                now_min = now.hour * 60 + now.minute
-                expected_min = now_min + 120 # +2 часа
-                
-                # Слот должен быть больше или равен ожидаемому
-                self.assertTrue(slot_min >= expected_min, f"Слот {slots[0]['start']} меньше ожидаемого (сейчас {now}, нужно >= {expected_min})")
+
+        # Тест не должен проходить холостым
+        self.assertGreater(
+            len(slots), 0,
+            "Слоты не сгенерированы — тест холостой, проверь рабочий день"
+        )
+
+        def to_mins(t_str):
+            h, m = map(int, t_str.split(':'))
+            return h * 60 + m
+
+        # "Сейчас" 10:00, лид-тайм 2ч => минимум 12:00
+        self.assertGreaterEqual(
+            to_mins(slots[0]['start']), to_mins('12:00'),
+            f"Первый слот {slots[0]['start']} раньше 12:00 — лид-тайм не соблюдён"
+        )
