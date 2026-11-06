@@ -1,11 +1,15 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { loadMasterCategories, loadAvailableDates, createMultipleBookings } from '../../../api/booking';
-import { loadDayStatus } from '../../../api/day';
-import { phoneMask } from '../../../utils/phoneMask';
+// frontend/src/components/Dashboard/Calendar/AddBookingModal.jsx
+import React, { useState, useRef } from 'react';
 import shared from './BookingModalShared.module.css';
 import useModal from '../../../hooks/useModal';
 import useBodyLock from '../../../hooks/useBodyLock';
 import { formatDate } from '../../../utils/date';
+import useBookingForm from './useBookingForm';
+import ServiceCards from './ServiceCards';
+import DateGrid from './DateGrid';
+import SlotGrid from './SlotGrid';
+import BookingSummary from './BookingSummary';
+import ClientForm from './ClientForm';
 
 export default function AddBookingModal({
     masterSlug,
@@ -17,137 +21,83 @@ export default function AddBookingModal({
     allowCreateAnother = true,
 }) {
     useBodyLock();
-    const isAway = masterMode === 'away';
-
-    const [categories, setCategories] = useState([]);
-    const [uncategorized, setUncategorized] = useState([]);
-    const [selectedServices, setSelectedServices] = useState([]);
-    const [availableDates, setAvailableDates] = useState([]);
-    const [availableSlots, setAvailableSlots] = useState([]);
-    const [selectedDate, setSelectedDate] = useState(defaultDate || '');
-    const [selectedTime, setSelectedTime] = useState(defaultTime || '');   // строка "HH:MM"
-    const [selectedSlotEnd, setSelectedSlotEnd] = useState('');           // "HH:MM" или ''
-    const [clientName, setClientName] = useState('');
-    const [clientPhone, setClientPhone] = useState('');
-    const [clientAddress, setClientAddress] = useState('');
-    const [travelBefore, setTravelBefore] = useState(0);
-    const [travelAfter, setTravelAfter] = useState(0);
-    const [durationExtra, setDurationExtra] = useState(0);
-    const [comment, setComment] = useState('');
-    const [loading, setLoading] = useState(true);
-    const [loadingDates, setLoadingDates] = useState(false);
-    const [loadingSlots, setLoadingSlots] = useState(false);
-    const [saving, setSaving] = useState(false);
-    const [createdBooking, setCreatedBooking] = useState(null);
-    const [defaultsLoaded, setDefaultsLoaded] = useState(false);
-
     const { showAlert } = useModal();
+
+    // ---- Успех-экран ----
+    const [createdBooking, setCreatedBooking] = useState(null);
+
+    // ---- Флаг: была ли создана хотя бы одна запись ----
+    // Нужен, чтобы при закрытии через «Отмену»/крестик/backdrop
+    // обновить дашборд, если записи уже создавались.
+    const [createdAny, setCreatedAny] = useState(false);
+
+    // ---- Рефы для скролла ----
     const slotsRef = useRef(null);
     const summaryRef = useRef(null);
 
-    // ---- Загрузка категорий ----
-    useEffect(() => {
-        loadMasterCategories(masterSlug)
-            .then(data => {
-                setCategories(data.categories || []);
-                setUncategorized(data.uncategorized || []);
-                setLoading(false);
-            })
-            .catch(error => {
-                console.error('Ошибка загрузки услуг:', error);
-                setLoading(false);
-            });
-    }, [masterSlug]);
+    // ---- Вся логика формы — в хуке ----
+    const form = useBookingForm({
+        mode: 'add',
+        masterSlug,
+        masterMode,
+        defaultDate,
+        defaultTime,
+        onSaved: null,   // обработаем сами, чтобы показать успех-экран
+    });
 
-    // ---- Загрузка дефолтов мастера (travel_before/after) ----
-    useEffect(() => {
-        if (!isAway) {
-            setDefaultsLoaded(true);
-            return;
+    const {
+        categories,
+        uncategorized,
+        loading,
+        loadingDates,
+        loadingSlots,
+        saving,
+        selectedServices,
+        toggleService,
+        totalDuration,
+        totalPrice,
+        availableDates,
+        availableSlots,
+        selectedDate,
+        selectedTime,
+        selectedSlotEnd,
+        selectDate,
+        selectTime,
+        clientName,
+        clientPhone,
+        clientAddress,
+        comment,
+        setClientName,
+        setClientPhone,
+        setClientAddress,
+        setComment,
+        travelBefore,
+        travelAfter,
+        durationExtra,
+        setTravelBefore,
+        setTravelAfter,
+        setDurationExtra,
+        reset,
+        save,
+        isAway,
+    } = form;
+
+    // ---- Закрытие (крестик, «Отмена», backdrop) ----
+    function handleClose() {
+        if (createdAny && onCreated) {
+            onCreated();
         }
-        const d = defaultDate || new Date().toISOString().split('T')[0];
-        loadDayStatus(d)
-            .then(data => {
-                setTravelBefore(data.away_travel_time_before_default || 0);
-                setTravelAfter(data.away_travel_time_after_default || 0);
-                setDefaultsLoaded(true);
-            })
-            .catch(error => {
-                console.error('Ошибка загрузки дефолтов мастера:', error);
-                setDefaultsLoaded(true);
-            });
-    }, [isAway, defaultDate]);
+        onClose();
+    }
 
-    // ---- Загрузка доступных дат ----
-    useEffect(() => {
-        if (selectedServices.length === 0) {
-            setAvailableDates([]);
-            setAvailableSlots([]);
-            return;
-        }
-        const totalDuration = selectedServices.reduce((sum, s) => sum + s.duration, 0);
-        setLoadingDates(true);
-        loadAvailableDates(masterSlug, totalDuration)
-            .then(data => {
-                setAvailableDates(data.dates || []);
-                setLoadingDates(false);
-            })
-            .catch(error => {
-                console.error('Ошибка загрузки дат:', error);
-                setLoadingDates(false);
-            });
-    }, [selectedServices, masterSlug]);
-
-    // ---- Загрузка слотов ----
-    useEffect(() => {
-        if (selectedServices.length === 0 || !selectedDate) {
-            setAvailableSlots([]);
-            return;
-        }
-        const totalDuration = selectedServices.reduce((sum, s) => sum + s.duration, 0);
-        setLoadingSlots(true);
-
-        fetch(`/api/${masterSlug}/slots/?total_duration=${totalDuration}&date=${selectedDate}`)
-            .then(r => r.json())
-            .then(data => {
-                setAvailableSlots(data.slots || []);
-                setLoadingSlots(false);
-            })
-            .catch(error => {
-                console.error('Ошибка загрузки слотов:', error);
-                setLoadingSlots(false);
-            });
-    }, [selectedDate, selectedServices, masterSlug]);
-
+    // ---- Backdrop ----
     function handleBackdropClick(e) {
-        if (e.target === e.currentTarget) onClose();
+        if (e.target === e.currentTarget) handleClose();
     }
 
-    function toggleService(service) {
-        const exists = selectedServices.find(s => s.id === service.id);
-        if (exists) {
-            const newList = selectedServices.filter(s => s.id !== service.id);
-            setSelectedServices(newList);
-            setSelectedDate(defaultDate || '');
-            setSelectedTime(defaultTime || '');
-            setSelectedSlotEnd('');
-        } else {
-            if (selectedServices.length >= 3) {
-                showAlert('Можно выбрать не более 3 услуг', 'warning');
-                return;
-            }
-            const newList = [...selectedServices, service];
-            setSelectedServices(newList);
-            setSelectedDate(defaultDate || '');
-            setSelectedTime(defaultTime || '');
-            setSelectedSlotEnd('');
-        }
-    }
-
+    // ---- Выбор даты (со скроллом к слотам) ----
     function handleDateClick(date) {
-        setSelectedDate(date);
-        setSelectedTime('');
-        setSelectedSlotEnd('');
+        selectDate(date);
         setTimeout(() => {
             if (slotsRef.current) {
                 slotsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -155,9 +105,9 @@ export default function AddBookingModal({
         }, 300);
     }
 
+    // ---- Выбор времени (со скроллом к summary) ----
     function handleTimeClick(slot) {
-        setSelectedTime(slot.start);
-        setSelectedSlotEnd(slot.end || '');
+        selectTime(slot);
         setTimeout(() => {
             if (summaryRef.current) {
                 summaryRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -165,122 +115,55 @@ export default function AddBookingModal({
         }, 300);
     }
 
-    function isSelected(serviceId) {
-        return selectedServices.some(s => s.id === serviceId);
-    }
-
-    const totalDuration = selectedServices.reduce((sum, s) => sum + s.duration, 0);
-    const totalPrice = selectedServices.reduce((sum, s) => sum + s.price, 0);
-
+    // ---- Сохранение ----
     async function handleSave() {
-        if (selectedServices.length === 0) { showAlert('Выберите хотя бы одну услугу', 'warning'); return; }
-        if (!selectedDate) { showAlert('Выберите дату', 'warning'); return; }
-        if (!selectedTime) { showAlert('Выберите время', 'warning'); return; }
-        if (!clientName.trim()) { showAlert('Введите имя клиента', 'warning'); return; }
-        const phoneCleaned = clientPhone.replace(/\D/g, '');
-        if (phoneCleaned.length !== 11) { showAlert('Телефон должен содержать 11 цифр', 'warning'); return; }
-        if (isAway && !clientAddress.trim()) { showAlert('Укажите адрес клиента', 'warning'); return; }
-
-        setSaving(true);
-        try {
-            const data = await createMultipleBookings(masterSlug, {
-                services: selectedServices.map(s => s.id),
-                client_name: clientName.trim(),
-                client_phone: phoneCleaned,
+        const data = await save();
+        if (data && data.success) {
+            setCreatedAny(true);
+            setCreatedBooking({
+                clientName: clientName.trim(),
                 date: selectedDate,
-                start_time: selectedTime,
-                client_address: isAway ? clientAddress.trim() : '',
-                comment: comment.trim(),
-                created_by: 'master',
-                travel_time_before: isAway ? (parseInt(travelBefore) || 0) : 0,
-                travel_time_after: isAway ? (parseInt(travelAfter) || 0) : 0,
-                duration_extra_minutes: parseInt(durationExtra) || 0,
+                time: selectedTime,
+                slotEnd: selectedSlotEnd,
+                clientAddress: isAway ? clientAddress.trim() : '',
+                services: selectedServices.map(s => ({
+                    name: s.name,
+                    category: s.category_name || null,
+                })),
+                totalDuration,
+                totalPrice,
+                isAway,
             });
-            if (data.success) {
-                setCreatedBooking({
-                    clientName: clientName.trim(),
-                    date: selectedDate,
-                    time: selectedTime,
-                    slotEnd: selectedSlotEnd,
-                    clientAddress: isAway ? clientAddress.trim() : '',
-                    services: selectedServices.map(s => ({ name: s.name, category: s.category_name || null })),
-                    totalDuration,
-                    totalPrice,
-                    isAway,
-                });
-            } else {
-                showAlert(data.error || 'Ошибка создания записи', 'error');
-            }
-        } catch (error) {
-            console.error('Ошибка:', error);
-            showAlert('Ошибка соединения', 'error');
-        } finally {
-            setSaving(false);
         }
     }
 
+    // ---- «Записать ещё» ----
     function handleCreateAnother() {
         setCreatedBooking(null);
-        setSelectedServices([]);
-        setSelectedDate(defaultDate || '');
-        setSelectedTime(defaultTime || '');
-        setSelectedSlotEnd('');
-        setClientName('');
-        setClientPhone('');
-        setClientAddress('');
-        setTravelBefore(isAway ? (parseInt(travelBefore) || 0) : 0);
-        setTravelAfter(isAway ? (parseInt(travelAfter) || 0) : 0);
-        setDurationExtra(0);
-        setComment('');
-
+        reset();
+        // createdAny остаётся true — запись уже создана
         setTimeout(() => {
             const body = document.querySelector(`.${shared.body}`);
             if (body) body.scrollTop = 0;
         }, 100);
     }
 
+    // ---- «Готово» ----
+    // onCreated вызываем напрямую, а не через handleClose,
+    // чтобы не было двойного вызова.
     function handleFinish() {
         if (onCreated) onCreated();
         onClose();
     }
 
+    // ---- Отображение слота ----
     function renderSlotLabel(slot) {
         if (slot.end && slot.end !== slot.start) {
             return `${slot.start}—${slot.end}`;
         }
         return slot.start;
     }
-
-    function renderServiceCard(s, categoryName) {
-        const selected = isSelected(s.id);
-        return (
-            <div
-                key={s.id}
-                className={`${shared.serviceCard} ${selected ? shared.serviceCardSelected : ''}`}
-                onClick={() => toggleService({ ...s, category_name: categoryName })}
-            >
-                {selected && (
-                    <button
-                        type="button"
-                        className={shared.serviceCloseBtn}
-                        onClick={e => { e.stopPropagation(); toggleService({ ...s, category_name: categoryName }); }}
-                        aria-label="Убрать услугу"
-                    >
-                        ✕
-                    </button>
-                )}
-                <div className={shared.serviceCardHeader}>
-                    <div className={shared.serviceCardName}>{s.name}</div>
-                    <span className={shared.serviceCardPrice}>{s.price} ₽</span>
-                </div>
-                <div className={shared.serviceCardMeta}>
-                    <i className="far fa-clock me-1" />
-                    {s.duration} мин
-                </div>
-            </div>
-        );
-    }
-
+    
     return (
         <div className={shared.backdrop} onClick={handleBackdropClick}>
             <div className={shared.modal} onClick={e => e.stopPropagation()}>
@@ -289,7 +172,14 @@ export default function AddBookingModal({
                         <i className="fas fa-plus" style={{ color: 'var(--primary)' }} />
                         Добавить запись
                     </h5>
-                    <button type="button" className={shared.closeBtn} onClick={onClose} aria-label="Закрыть">✕</button>
+                    <button
+                        type="button"
+                        className={shared.closeBtn}
+                        onClick={handleClose}
+                        aria-label="Закрыть"
+                    >
+                        ✕
+                    </button>
                 </div>
 
                 <div className={shared.body}>
@@ -337,23 +227,13 @@ export default function AddBookingModal({
                                 <>
                                     <label className={shared.sectionLabel}>Шаг 1: Выберите услуги (до 3)</label>
 
-                                    {categories.map(cat => (
-                                        <div key={cat.id} style={{ marginBottom: '12px' }}>
-                                            <div className={shared.categoryLabel}>{cat.name}</div>
-                                            <div className={shared.grid}>
-                                                {cat.services.map(s => renderServiceCard(s, cat.name))}
-                                            </div>
-                                        </div>
-                                    ))}
-
-                                    {uncategorized.length > 0 && (
-                                        <div style={{ marginBottom: '12px' }}>
-                                            <div className={shared.categoryLabel}>Без категории</div>
-                                            <div className={shared.grid}>
-                                                {uncategorized.map(s => renderServiceCard(s, null))}
-                                            </div>
-                                        </div>
-                                    )}
+                                    <ServiceCards
+                                        categories={categories}
+                                        uncategorized={uncategorized}
+                                        selectedIds={selectedServices.map(s => s.id)}
+                                        onToggle={toggleService}
+                                        showCloseButton={true}
+                                    />
 
                                     {selectedServices.length > 0 && (
                                         <>
@@ -361,46 +241,22 @@ export default function AddBookingModal({
                                                 Шаг 2: Дата и время
                                             </label>
 
-                                            {loadingDates ? (
-                                                <div className={shared.loading}>
-                                                    <div className="spinner-border spinner-border-sm" style={{ color: '#4053d3' }} />
-                                                </div>
-                                            ) : (
-                                                <div className={shared.dateGrid}>
-                                                    {availableDates.map(d => (
-                                                        <div
-                                                            key={d.date}
-                                                            className={`${shared.dateCard} ${selectedDate === d.date ? shared.dateCardSelected : ''}`}
-                                                            onClick={() => handleDateClick(d.date)}
-                                                        >
-                                                            <div className={shared.dateCardWeekday}>{d.day_of_week}</div>
-                                                            <div className={shared.dateCardDay}>{d.display}</div>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            )}
+                                            <DateGrid
+                                                dates={availableDates}
+                                                selectedDate={selectedDate}
+                                                onSelect={handleDateClick}
+                                                loading={loadingDates}
+                                            />
 
                                             {selectedDate && (
                                                 <div ref={slotsRef}>
-                                                    {loadingSlots ? (
-                                                        <div className={shared.loading}>
-                                                            <div className="spinner-border spinner-border-sm" style={{ color: '#4053d3' }} />
-                                                        </div>
-                                                    ) : availableSlots.length === 0 ? (
-                                                        <p className={shared.emptyText}>Нет свободных слотов</p>
-                                                    ) : (
-                                                        <div className={shared.slotGrid}>
-                                                            {availableSlots.map(slot => (
-                                                                <div
-                                                                    key={slot.start}
-                                                                    className={`${shared.slotCard} ${selectedTime === slot.start ? shared.slotCardSelected : ''}`}
-                                                                    onClick={() => handleTimeClick(slot)}
-                                                                >
-                                                                    {renderSlotLabel(slot)}
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                    )}
+                                                    <SlotGrid
+                                                        slots={availableSlots}
+                                                        selectedTime={selectedTime}
+                                                        onSelect={handleTimeClick}
+                                                        loading={loadingSlots}
+                                                        renderLabel={renderSlotLabel}
+                                                    />
                                                 </div>
                                             )}
                                         </>
@@ -408,116 +264,33 @@ export default function AddBookingModal({
 
                                     {selectedTime && (
                                         <>
-                                            <div className={shared.summaryBox} ref={summaryRef}>
-                                                <div className={shared.summaryTitle}>
-                                                    <i className="fas fa-list" />
-                                                    Выбранные услуги
-                                                </div>
-
-                                                {selectedServices.map(s => (
-                                                    <div key={s.id} className={shared.summaryRow}>
-                                                        <span>{s.name}</span>
-                                                        <span className={shared.summaryRowMeta}>
-                                                            {s.duration} мин · {s.price} ₽
-                                                        </span>
-                                                    </div>
-                                                ))}
-
-                                                <div className={shared.summaryTotal}>
-                                                    <span>Итого</span>
-                                                    <span className={shared.summaryTotalValue}>
-                                                        {totalDuration} мин · {totalPrice} ₽
-                                                    </span>
-                                                </div>
-
-                                                <div className={shared.summaryMeta}>
-                                                    <span className={shared.summaryMetaItem}>
-                                                        <i className="far fa-calendar-alt" />
-                                                        {formatDate(selectedDate)}
-                                                    </span>
-                                                    <span className={shared.summaryMetaItem}>
-                                                        <i className="far fa-clock" />
-                                                        {selectedTime}
-                                                        {selectedSlotEnd && selectedSlotEnd !== selectedTime
-                                                            ? `—${selectedSlotEnd}` : ''}
-                                                    </span>
-                                                </div>
-                                            </div>
+                                            <BookingSummary
+                                                services={selectedServices}
+                                                date={selectedDate}
+                                                time={selectedTime}
+                                                slotEnd={selectedSlotEnd}
+                                                totalDuration={totalDuration}
+                                                totalPrice={totalPrice}
+                                                innerRef={summaryRef}
+                                            />
 
                                             <label className={shared.sectionLabel}>Шаг 3: Данные клиента</label>
-                                            <input
-                                                type="text"
-                                                className={shared.formInput}
-                                                placeholder="Имя клиента"
-                                                value={clientName}
-                                                onChange={e => setClientName(e.target.value)}
-                                            />
-                                            <input
-                                                type="tel"
-                                                className={shared.formInput}
-                                                placeholder="7 999 123-45-67"
-                                                value={clientPhone}
-                                                onChange={e => setClientPhone(phoneMask(e.target.value))}
-                                            />
-
-                                            {isAway && (
-                                                <>
-                                                    <input
-                                                        type="text"
-                                                        className={shared.formInput}
-                                                        placeholder="Адрес клиента (куда ехать)"
-                                                        value={clientAddress}
-                                                        onChange={e => setClientAddress(e.target.value)}
-                                                    />
-
-                                                    <div className={shared.twoCols}>
-                                                        <div className={shared.col}>
-                                                            <label className={shared.miniLabel}>Время до (мин)</label>
-                                                            <input
-                                                                type="number"
-                                                                className={shared.formInput}
-                                                                min="0"
-                                                                step="5"
-                                                                value={travelBefore}
-                                                                onChange={e => setTravelBefore(e.target.value)}
-                                                                placeholder="0"
-                                                            />
-                                                        </div>
-                                                        <div className={shared.col}>
-                                                            <label className={shared.miniLabel}>Время после (мин)</label>
-                                                            <input
-                                                                type="number"
-                                                                className={shared.formInput}
-                                                                min="0"
-                                                                step="5"
-                                                                value={travelAfter}
-                                                                onChange={e => setTravelAfter(e.target.value)}
-                                                                placeholder="0"
-                                                            />
-                                                        </div>
-                                                    </div>
-
-                                                    <div>
-                                                        <label className={shared.miniLabel}>Доп. минуты к услуге</label>
-                                                        <input
-                                                            type="number"
-                                                            className={shared.formInput}
-                                                            min="0"
-                                                            step="5"
-                                                            value={durationExtra}
-                                                            onChange={e => setDurationExtra(e.target.value)}
-                                                            placeholder="0"
-                                                        />
-                                                    </div>
-                                                </>
-                                            )}
-
-                                            <textarea
-                                                className={shared.formTextarea}
-                                                rows="2"
-                                                placeholder="Комментарий (необязательно)"
-                                                value={comment}
-                                                onChange={e => setComment(e.target.value)}
+                                            <ClientForm
+                                                name={clientName}
+                                                phone={clientPhone}
+                                                comment={comment}
+                                                onNameChange={setClientName}
+                                                onPhoneChange={setClientPhone}
+                                                onCommentChange={setComment}
+                                                isAway={isAway}
+                                                address={clientAddress}
+                                                onAddressChange={setClientAddress}
+                                                travelBefore={travelBefore}
+                                                onTravelBeforeChange={setTravelBefore}
+                                                travelAfter={travelAfter}
+                                                onTravelAfterChange={setTravelAfter}
+                                                durationExtra={durationExtra}
+                                                onDurationExtraChange={setDurationExtra}
                                             />
                                         </>
                                     )}
@@ -541,7 +314,7 @@ export default function AddBookingModal({
                         </>
                     ) : (
                         <>
-                            <button type="button" className={shared.btnSecondary} onClick={onClose} disabled={saving}>
+                            <button type="button" className={shared.btnSecondary} onClick={handleClose} disabled={saving}>
                                 Отмена
                             </button>
                             <button

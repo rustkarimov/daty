@@ -1,17 +1,13 @@
-import React, { useState } from 'react';
-import { createBookings } from '../../api/publicBooking';
-import { phoneMask } from '../../utils/phoneMask';
-import useModal from '../../hooks/useModal';
+// frontend/src/components/Public/ClientFormStep.jsx
+//
+// Шаг 4 публичной страницы: ввод данных клиента + сохранение.
+// Использует useBookingForm (mode='client') и ClientForm.
+
+import React from 'react';
+import useBookingForm from '../Dashboard/Calendar/useBookingForm';
+import ClientForm from '../Dashboard/Calendar/ClientForm';
 import styles from './ClientFormStep.module.css';
-
-const MONTH_NAMES = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
-
-function formatDate(dateStr) {
-    if (!dateStr) return '';
-    const [y, m, d] = dateStr.split('-').map(Number);
-    const dObj = new Date(y, m - 1, d);
-    return `${dObj.getDate()} ${MONTH_NAMES[dObj.getMonth()]}`;
-}
+import { formatDate } from '../../utils/date';
 
 export default function ClientFormStep({
     identifier,
@@ -21,60 +17,52 @@ export default function ClientFormStep({
     isAway,
     onSuccess,
 }) {
-    const [name, setName] = useState('');
-    const [phone, setPhone] = useState('');
-    const [address, setAddress] = useState('');
-    const [comment, setComment] = useState('');
-    const [saving, setSaving] = useState(false);
-    const { showAlert } = useModal();
+    const startTime = selectedTime?.start || '';
+
+    const form = useBookingForm({
+        mode: 'client',
+        masterSlug: identifier,
+        masterMode: isAway ? 'away' : 'home',
+        initialServices: selectedServices,
+        initialDate: selectedDate,
+        initialTime: startTime,
+        onSaved: null,
+    });
+
+    const {
+        clientName,
+        clientPhone,
+        clientAddress,
+        comment,
+        setClientName,
+        setClientPhone,
+        setClientAddress,
+        setComment,
+        saving,
+        save,
+    } = form;
+
+    async function handleSubmit(e) {
+        e.preventDefault();
+        const data = await save();
+        if (data && data.success) {
+            onSuccess({
+                message: data.data?.message,
+                status: data.data?.status,
+                is_away: data.data?.is_away,
+                bookings: data.data?.bookings || [],
+                clientAddress: isAway ? clientAddress.trim() : '',
+            });
+        }
+    }
 
     const totalDuration = selectedServices.reduce((sum, s) => sum + s.duration, 0);
     const totalPrice = selectedServices.reduce((sum, s) => sum + s.price, 0);
 
-    const startTime = selectedTime?.start || '';
     const endTime = selectedTime?.end || '';
     const timeLabel = endTime && endTime !== startTime
         ? `${startTime}—${endTime}`
         : startTime;
-
-    async function handleSubmit(e) {
-        e.preventDefault();
-        const phoneCleaned = phone.replace(/\D/g, '');
-        if (!name.trim()) { showAlert('Введите имя', 'warning'); return; }
-        if (phoneCleaned.length !== 11) { showAlert('Телефон должен содержать 11 цифр', 'warning'); return; }
-        if (isAway && !address.trim()) { showAlert('Укажите адрес для выезда', 'warning'); return; }
-
-        setSaving(true);
-        try {
-            const data = await createBookings(identifier, {
-                services: selectedServices.map(s => s.id),
-                client_name: name.trim(),
-                client_phone: phoneCleaned,
-                date: selectedDate,
-                start_time: startTime,
-                client_address: isAway ? address.trim() : '',
-                comment: comment.trim(),
-                created_by: 'client',
-            });
-
-            if (data.success && data.data) {
-                onSuccess({
-                    message: data.data.message,
-                    status: data.data.status,
-                    is_away: data.data.is_away,
-                    bookings: data.data.bookings || [],
-                    clientAddress: isAway ? address.trim() : '',
-                });
-            } else {
-                showAlert(data.error || 'Ошибка создания записи', 'error');
-            }
-        } catch (error) {
-            console.error('Ошибка:', error);
-            showAlert('Ошибка соединения', 'error');
-        } finally {
-            setSaving(false);
-        }
-    }
 
     return (
         <div className="card mb-4">
@@ -127,57 +115,23 @@ export default function ClientFormStep({
                 <hr />
 
                 <form onSubmit={handleSubmit}>
-                    <div className="mb-3">
-                        <label className="form-label">Ваше имя</label>
-                        <input
-                            type="text"
-                            className="form-control"
-                            value={name}
-                            onChange={e => setName(e.target.value)}
-                            required
-                        />
-                    </div>
-
-                    <div className="mb-3">
-                        <label className="form-label">Телефон</label>
-                        <input
-                            type="tel"
-                            className="form-control"
-                            placeholder="7 999 123-45-67"
-                            value={phone}
-                            onChange={e => setPhone(phoneMask(e.target.value))}
-                            required
-                        />
-                        <small className="text-muted">Номер будет виден только мастеру</small>
-                    </div>
-
-                    {isAway && (
-                        <div className="mb-3">
-                            <label className="form-label">Адрес для выезда</label>
-                            <input
-                                type="text"
-                                className="form-control"
-                                placeholder="г. Москва, ул. Ленина, 5, кв. 10"
-                                value={address}
-                                onChange={e => setAddress(e.target.value)}
-                                required
-                            />
-                            <small className="text-muted">Мастер приедет по этому адресу</small>
-                        </div>
-                    )}
-
-                    <div className="mb-3">
-                        <label className="form-label">Комментарий (необязательно)</label>
-                        <textarea
-                            className="form-control"
-                            rows="2"
-                            value={comment}
-                            onChange={e => setComment(e.target.value)}
-                        />
-                    </div>
+                    <ClientForm
+                        name={clientName}
+                        phone={clientPhone}
+                        comment={comment}
+                        onNameChange={setClientName}
+                        onPhoneChange={setClientPhone}
+                        onCommentChange={setComment}
+                        isAway={isAway}
+                        address={clientAddress}
+                        onAddressChange={setClientAddress}
+                        showAwayFields={false}
+                    />
 
                     <button type="submit" className="btn btn-pink w-100" disabled={saving}>
-                        {saving ? 'Отправка...' : (isAway ? 'Оформить предварительную запись' : 'Записаться')}
+                        {saving
+                            ? 'Отправка...'
+                            : (isAway ? 'Оформить предварительную запись' : 'Записаться')}
                     </button>
                 </form>
             </div>

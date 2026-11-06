@@ -1,106 +1,162 @@
-import React, { useState, useEffect, useRef } from 'react';
+// frontend/src/components/Dashboard/Calendar/EditBookingModal.jsx
+import React, { useRef } from 'react';
 import shared from './BookingModalShared.module.css';
-import { loadMasterCategories, loadAvailableDates } from '../../../api/booking';
-import { loadBookingForEdit, updateBooking } from '../../../api/day';
-import { phoneMask } from '../../../utils/phoneMask';
 import useModal from '../../../hooks/useModal';
 import useBodyLock from '../../../hooks/useBodyLock';
-import { formatDate } from '../../../utils/date';
-
+import useBookingForm from './useBookingForm';
+import { loadBookingForEdit } from '../../../api/day';
+import ServiceCards from './ServiceCards';
+import DateGrid from './DateGrid';
+import SlotGrid from './SlotGrid';
+import BookingSummary from './BookingSummary';
+import ClientForm from './ClientForm';
 
 export default function EditBookingModal({ bookingId, masterSlug, onClose, onSaved }) {
     useBodyLock();
-    const [form, setForm] = useState(null);
-    const [categories, setCategories] = useState([]);
-    const [uncategorized, setUncategorized] = useState([]);
-    const [selectedService, setSelectedService] = useState(null);
-    const [availableDates, setAvailableDates] = useState([]);
-    const [availableSlots, setAvailableSlots] = useState([]);
-    const [selectedDate, setSelectedDate] = useState('');
-    const [selectedTime, setSelectedTime] = useState('');
-    const [clientName, setClientName] = useState('');
-    const [clientPhone, setClientPhone] = useState('');
-    const [comment, setComment] = useState('');
-
-    // away-поля
-    const [clientAddress, setClientAddress] = useState('');
-    const [travelTimeBefore, setTravelTimeBefore] = useState(0);
-    const [travelTimeAfter, setTravelTimeAfter] = useState(0);
-    const [durationExtraMinutes, setDurationExtraMinutes] = useState(0);
-
-    const [loading, setLoading] = useState(true);
-    const [loadingDates, setLoadingDates] = useState(false);
-    const [loadingSlots, setLoadingSlots] = useState(false);
-    const [saving, setSaving] = useState(false);
     const { showAlert } = useModal();
+
     const slotsRef = useRef(null);
     const summaryRef = useRef(null);
-    const datesRef = useRef(null);
-    const bodyRef = useRef(null);
-    const shouldScrollToDates = useRef(false);
 
-    useEffect(() => {
-        setLoading(true);
+    // Состояние для нахождения услуги и статуса — загружаем отдельно,
+    // чтобы передать в хук.
+    const [form, setForm] = React.useState(null);
+
+    React.useEffect(() => {
+        // Загружаем данные для инициализации хука (service_id, status, service_mode)
         loadBookingForEdit(bookingId)
-            .then(data => {
-                setForm(data);
-                setSelectedDate(data.date);
-                setSelectedTime(data.time);
-                setClientName(data.client_name || '');
-                setClientPhone(data.client_phone ? phoneMask(data.client_phone) : '');
-                setComment(data.comment || '');
-                setClientAddress(data.client_address || '');
-                setTravelTimeBefore(data.travel_time_before || 0);
-                setTravelTimeAfter(data.travel_time_after || 0);
-                setDurationExtraMinutes(data.duration_extra_minutes || 0);
-                setLoading(false);
-            })
+            .then(data => setForm(data))
             .catch(error => {
                 console.error('Ошибка загрузки записи:', error);
-                setLoading(false);
+                showAlert('Не удалось загрузить запись', 'error');
             });
-    }, [bookingId]);
+    }, [bookingId, showAlert]);
 
-    useEffect(() => {
-        loadMasterCategories(masterSlug)
-            .then(data => {
-                setCategories(data.categories || []);
-                setUncategorized(data.uncategorized || []);
-            })
-            .catch(error => {
-                console.error('Ошибка загрузки услуг:', error);
-            });
-    }, [masterSlug]);
+    return (
+        <EditBookingModalInner
+            bookingId={bookingId}
+            masterSlug={masterSlug}
+            onClose={onClose}
+            onSaved={onSaved}
+            form={form}
+            showAlert={showAlert}
+            slotsRef={slotsRef}
+            summaryRef={summaryRef}
+        />
+    );
+}
 
-    useEffect(() => {
-        if (!form || categories.length === 0) return;
-        if (selectedService) return;
+function EditBookingModalInner({
+    bookingId,
+    masterSlug,
+    onClose,
+    onSaved,
+    form,
+    showAlert,
+    slotsRef,
+    summaryRef,
+}) {
+    // Пока form не загружен — показываем спиннер (внутри модала)
+    if (!form) {
+        return (
+            <div className={shared.backdrop} onClick={handleBackdropClick}>
+                <div className={shared.modal} onClick={e => e.stopPropagation()}>
+                    <div className={shared.header}>
+                        <h5 className={shared.title}>
+                            <i className="fas fa-edit" style={{ color: 'var(--primary)' }} />
+                            Редактирование записи
+                        </h5>
+                        <button type="button" className={shared.closeBtn} onClick={onClose} aria-label="Закрыть">✕</button>
+                    </div>
+                    <div className={shared.body}>
+                        <div className={shared.loading}>
+                            <div className="spinner-border" style={{ color: '#4053d3' }} />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
-        const allServices = [
-            ...categories.flatMap(c => c.services.map(s => ({ ...s, category_name: c.name }))),
-            ...uncategorized.map(s => ({ ...s, category_name: null })),
-        ];
-        const found = allServices.find(s => s.id === form.service_id);
-        if (found) setSelectedService(found);
-    }, [form, categories, uncategorized, selectedService]);
+    return (
+        <EditBookingModalForm
+            bookingId={bookingId}
+            masterSlug={masterSlug}
+            onClose={onClose}
+            onSaved={onSaved}
+            form={form}
+            showAlert={showAlert}
+            slotsRef={slotsRef}
+            summaryRef={summaryRef}
+        />
+    );
 
-    useEffect(() => {
-        if (!selectedService) return;
+    function handleBackdropClick(e) {
+        if (e.target === e.currentTarget) onClose();
+    }
+}
 
-        setLoadingDates(true);
-        loadAvailableDates(masterSlug, selectedService.duration)
-            .then(data => {
-                setAvailableDates(data.dates || []);
-                setLoadingDates(false);
-            })
-            .catch(error => {
-                console.error('Ошибка загрузки дат:', error);
-                setLoadingDates(false);
-            });
-    }, [selectedService, masterSlug]);
+function EditBookingModalForm({
+    bookingId,
+    masterSlug,
+    onClose,
+    onSaved,
+    form,
+    showAlert,
+    slotsRef,
+    summaryRef,
+}) {
+    const bookingForm = useBookingForm({
+        mode: 'edit',
+        masterSlug,
+        bookingId,
+        initialStatus: form.status || 'confirmed',
+        initialServiceId: form.service_id,
+        initialServiceMode: form.service_mode,
+        onSaved,
+    });
 
-    // Скролл к датам после их отрисовки
-    useEffect(() => {
+    const {
+        categories,
+        uncategorized,
+        loading,
+        loadingDates,
+        loadingSlots,
+        saving,
+        selectedService,
+        selectService,
+        totalDuration,
+        totalPrice,
+        availableDates,
+        availableSlots,
+        selectedDate,
+        selectedTime,
+        selectDate,
+        selectTime,
+        clientName,
+        clientPhone,
+        clientAddress,
+        comment,
+        setClientName,
+        setClientPhone,
+        setClientAddress,
+        setComment,
+        travelBefore,
+        travelAfter,
+        durationExtra,
+        setTravelBefore,
+        setTravelAfter,
+        setDurationExtra,
+        save,
+        isAway,
+    } = bookingForm;
+
+    // Скролл к датам после выбора услуги
+    const shouldScrollToDates = useRef(false);
+    const datesRef = useRef(null);
+    const bodyRef = useRef(null);
+
+    React.useEffect(() => {
         if (!shouldScrollToDates.current) return;
         if (loadingDates) return;
         if (availableDates.length === 0) return;
@@ -115,38 +171,17 @@ export default function EditBookingModal({ bookingId, masterSlug, onClose, onSav
         bodyEl.scrollTo({ top: targetTop, behavior: 'smooth' });
     }, [availableDates, loadingDates]);
 
-    useEffect(() => {
-        if (!selectedService || !selectedDate) return;
-
-        setLoadingSlots(true);
-        fetch(`/api/${masterSlug}/slots/?total_duration=${selectedService.duration}&date=${selectedDate}&exclude_booking_id=${bookingId}&original_booking_id=${bookingId}`)
-            .then(r => r.json())
-            .then(data => {
-                setAvailableSlots(data.slots || []);
-                setLoadingSlots(false);
-            })
-            .catch(error => {
-                console.error('Ошибка загрузки слотов:', error);
-                setLoadingSlots(false);
-            });
-    }, [selectedDate, selectedService, masterSlug, bookingId]);
-
     function handleBackdropClick(e) {
-        if (e.target === e.currentTarget) {
-            onClose();
-        }
+        if (e.target === e.currentTarget) onClose();
     }
 
-    function selectService(service) {
-        setSelectedService(service);
-        setSelectedDate('');
-        setSelectedTime('');
+    function handleServiceClick(service) {
+        selectService(service);
         shouldScrollToDates.current = true;
     }
 
     function handleDateClick(date) {
-        setSelectedDate(date);
-        setSelectedTime('');
+        selectDate(date);
         setTimeout(() => {
             if (slotsRef.current) {
                 slotsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -154,8 +189,9 @@ export default function EditBookingModal({ bookingId, masterSlug, onClose, onSav
         }, 300);
     }
 
-    function handleTimeClick(time) {
-        setSelectedTime(time);
+    function handleTimeClick(slot) {
+        // В edit слот приходит как объект { start, end }
+        selectTime(slot);
         setTimeout(() => {
             if (summaryRef.current) {
                 summaryRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -163,90 +199,12 @@ export default function EditBookingModal({ bookingId, masterSlug, onClose, onSav
         }, 300);
     }
 
-    function isServiceSelected(serviceId) {
-        return selectedService?.id === serviceId;
-    }
-
     async function handleSave() {
-        if (!selectedService) {
-            showAlert('Выберите услугу', 'warning');
-            return;
-        }
-        if (!selectedDate) {
-            showAlert('Выберите дату', 'warning');
-            return;
-        }
-        if (!selectedTime) {
-            showAlert('Выберите время', 'warning');
-            return;
-        }
-        if (!clientName.trim()) {
-            showAlert('Введите имя клиента', 'warning');
-            return;
-        }
-        const phoneCleaned = clientPhone.replace(/\D/g, '');
-        if (phoneCleaned.length !== 11) {
-            showAlert('Телефон должен содержать 11 цифр', 'warning');
-            return;
-        }
-        if (form.service_mode === 'away' && !clientAddress.trim()) {
-            showAlert('Укажите адрес клиента', 'warning');
-            return;
-        }
-
-        setSaving(true);
-        try {
-            const data = await updateBooking(bookingId, {
-                service_id: selectedService.id,
-                client_name: clientName.trim(),
-                client_phone: phoneCleaned,
-                date: selectedDate,
-                time: selectedTime,
-                comment: comment.trim(),
-                status: form.status || 'confirmed',
-                client_address: clientAddress.trim(),
-                travel_time_before: parseInt(travelTimeBefore) || 0,
-                travel_time_after: parseInt(travelTimeAfter) || 0,
-                duration_extra_minutes: parseInt(durationExtraMinutes) || 0,
-            });
-            if (data.success) {
-                if (data.data && data.data.warning) {
-                    showAlert(data.data.warning, 'warning');
-                }
-                if (onSaved) onSaved();
-                onClose();
-            } else {
-                showAlert(data.error || 'Ошибка сохранения', 'error');
-            }
-        } catch (error) {
-            console.error('Ошибка:', error);
-            showAlert('Ошибка соединения', 'error');
-        } finally {
-            setSaving(false);
+        const data = await save();
+        if (data && data.success) {
+            onClose();
         }
     }
-
-    function renderServiceCard(s, categoryName) {
-        const selected = isServiceSelected(s.id);
-        return (
-            <div
-                key={s.id}
-                className={`${shared.serviceCard} ${selected ? shared.serviceCardSelected : ''}`}
-                onClick={() => selectService({ ...s, category_name: categoryName })}
-            >
-                <div className={shared.serviceCardHeader}>
-                    <div className={shared.serviceCardName}>{s.name}</div>
-                    <span className={shared.serviceCardPrice}>{s.price} ₽</span>
-                </div>
-                <div className={shared.serviceCardMeta}>
-                    <i className="far fa-clock me-1" />
-                    {s.duration} мин
-                </div>
-            </div>
-        );
-    }
-
-    const isAway = form?.service_mode === 'away';
 
     return (
         <div className={shared.backdrop} onClick={handleBackdropClick}>
@@ -256,14 +214,7 @@ export default function EditBookingModal({ bookingId, masterSlug, onClose, onSav
                         <i className="fas fa-edit" style={{ color: 'var(--primary)' }} />
                         Редактирование записи
                     </h5>
-                    <button
-                        type="button"
-                        className={shared.closeBtn}
-                        onClick={onClose}
-                        aria-label="Закрыть"
-                    >
-                        ✕
-                    </button>
+                    <button type="button" className={shared.closeBtn} onClick={onClose} aria-label="Закрыть">✕</button>
                 </div>
 
                 <div className={shared.body} ref={bodyRef}>
@@ -271,29 +222,17 @@ export default function EditBookingModal({ bookingId, masterSlug, onClose, onSav
                         <div className={shared.loading}>
                             <div className="spinner-border" style={{ color: '#4053d3' }} />
                         </div>
-                    ) : !form ? (
-                        <p className="text-danger">Не удалось загрузить данные</p>
                     ) : (
                         <>
                             <label className={shared.sectionLabel}>Услуга</label>
 
-                            {categories.map(cat => (
-                                <div key={cat.id} style={{ marginBottom: '12px' }}>
-                                    <div className={shared.categoryLabel}>{cat.name}</div>
-                                    <div className={shared.grid}>
-                                        {cat.services.map(s => renderServiceCard(s, cat.name))}
-                                    </div>
-                                </div>
-                            ))}
-
-                            {uncategorized.length > 0 && (
-                                <div style={{ marginBottom: '12px' }}>
-                                    <div className={shared.categoryLabel}>Без категории</div>
-                                    <div className={shared.grid}>
-                                        {uncategorized.map(s => renderServiceCard(s, null))}
-                                    </div>
-                                </div>
-                            )}
+                            <ServiceCards
+                                categories={categories}
+                                uncategorized={uncategorized}
+                                selectedIds={selectedService ? [selectedService.id] : []}
+                                onToggle={handleServiceClick}
+                                showCloseButton={false}
+                            />
 
                             {selectedService && (
                                 <>
@@ -301,46 +240,23 @@ export default function EditBookingModal({ bookingId, masterSlug, onClose, onSav
                                         Дата и время
                                     </label>
 
-                                    {loadingDates ? (
-                                        <div className={shared.loading}>
-                                            <div className="spinner-border spinner-border-sm" style={{ color: '#4053d3' }} />
-                                        </div>
-                                    ) : (
-                                        <div className={shared.dateGrid} ref={datesRef}>
-                                            {availableDates.map(d => (
-                                                <div
-                                                    key={d.date}
-                                                    className={`${shared.dateCard} ${selectedDate === d.date ? shared.dateCardSelected : ''}`}
-                                                    onClick={() => handleDateClick(d.date)}
-                                                >
-                                                    <div className={shared.dateCardWeekday}>{d.day_of_week}</div>
-                                                    <div className={shared.dateCardDay}>{d.display}</div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
+                                    <div ref={datesRef}>
+                                        <DateGrid
+                                            dates={availableDates}
+                                            selectedDate={selectedDate}
+                                            onSelect={handleDateClick}
+                                            loading={loadingDates}
+                                        />
+                                    </div>
 
                                     {selectedDate && (
                                         <div ref={slotsRef}>
-                                            {loadingSlots ? (
-                                                <div className={shared.loading}>
-                                                    <div className="spinner-border spinner-border-sm" style={{ color: '#4053d3' }} />
-                                                </div>
-                                            ) : availableSlots.length === 0 ? (
-                                                <p className={shared.emptyText}>Нет свободных слотов</p>
-                                            ) : (
-                                                <div className={shared.slotGrid}>
-                                                    {availableSlots.map(slot => (
-                                                        <div
-                                                            key={slot.start}
-                                                            className={`${shared.slotCard} ${selectedTime === slot.start ? shared.slotCardSelected : ''}`}
-                                                            onClick={() => handleTimeClick(slot.start)}
-                                                        >
-                                                            {slot.start}
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            )}
+                                            <SlotGrid
+                                                slots={availableSlots}
+                                                selectedTime={selectedTime}
+                                                onSelect={handleTimeClick}
+                                                loading={loadingSlots}
+                                            />
                                         </div>
                                     )}
                                 </>
@@ -348,112 +264,34 @@ export default function EditBookingModal({ bookingId, masterSlug, onClose, onSav
 
                             {selectedTime && (
                                 <>
-                                    <div className={shared.summaryBox} ref={summaryRef}>
-                                        <div className={shared.summaryTitle}>
-                                            <i className="fas fa-list" />
-                                            Услуга
-                                        </div>
-                                        {selectedService && (
-                                            <div className={shared.summaryRow}>
-                                                <span>{selectedService.name}</span>
-                                                <span className={shared.summaryRowMeta}>
-                                                    {selectedService.duration} мин · {selectedService.price} ₽
-                                                </span>
-                                            </div>
-                                        )}
-                                        <div className={shared.summaryMeta}>
-                                            <span className={shared.summaryMetaItem}>
-                                                <i className="far fa-calendar-alt" />
-                                                {formatDate(selectedDate)}
-                                            </span>
-                                            <span className={shared.summaryMetaItem}>
-                                                <i className="far fa-clock" />
-                                                {selectedTime}
-                                            </span>
-                                        </div>
-                                    </div>
+                                    <BookingSummary
+                                        services={selectedService ? [selectedService] : []}
+                                        date={selectedDate}
+                                        time={selectedTime}
+                                        totalDuration={selectedService?.duration || 0}
+                                        totalPrice={selectedService?.price || 0}
+                                        innerRef={summaryRef}
+                                        single={true}
+                                    />
 
                                     <label className={shared.sectionLabel}>Данные клиента</label>
-                                    <input
-                                        type="text"
-                                        className={shared.formInput}
-                                        placeholder="Имя клиента"
-                                        value={clientName}
-                                        onChange={e => setClientName(e.target.value)}
+                                    <ClientForm
+                                        name={clientName}
+                                        phone={clientPhone}
+                                        comment={comment}
+                                        onNameChange={setClientName}
+                                        onPhoneChange={setClientPhone}
+                                        onCommentChange={setComment}
+                                        isAway={isAway}
+                                        address={clientAddress}
+                                        onAddressChange={setClientAddress}
+                                        travelBefore={travelBefore}
+                                        onTravelBeforeChange={setTravelBefore}
+                                        travelAfter={travelAfter}
+                                        onTravelAfterChange={setTravelAfter}
+                                        durationExtra={durationExtra}
+                                        onDurationExtraChange={setDurationExtra}
                                     />
-                                    <input
-                                        type="tel"
-                                        className={shared.formInput}
-                                        placeholder="7 999 123-45-67"
-                                        value={clientPhone}
-                                        onChange={e => setClientPhone(phoneMask(e.target.value))}
-                                    />
-                                    <textarea
-                                        className={shared.formTextarea}
-                                        rows="2"
-                                        placeholder="Комментарий (необязательно)"
-                                        value={comment}
-                                        onChange={e => setComment(e.target.value)}
-                                    />
-
-                                    {/* away-поля */}
-                                    {isAway && (
-                                        <>
-                                            <label className={`${shared.sectionLabel} ${shared.sectionLabelTop}`}>
-                                                <i className="fas fa-car me-1" />
-                                                Выезд
-                                            </label>
-                                            <input
-                                                type="text"
-                                                className={shared.formInput}
-                                                placeholder="Адрес клиента"
-                                                value={clientAddress}
-                                                onChange={e => setClientAddress(e.target.value)}
-                                            />
-                                            <div className={shared.twoCols}>
-                                                <div className={shared.col}>
-                                                    <label className={shared.miniLabel}>
-                                                        Дорога до (мин)
-                                                    </label>
-                                                    <input
-                                                        type="number"
-                                                        className={shared.formInput}
-                                                        min="0"
-                                                        step="5"
-                                                        value={travelTimeBefore}
-                                                        onChange={e => setTravelTimeBefore(e.target.value)}
-                                                    />
-                                                </div>
-                                                <div className={shared.col}>
-                                                    <label className={shared.miniLabel}>
-                                                        Дорога после (мин)
-                                                    </label>
-                                                    <input
-                                                        type="number"
-                                                        className={shared.formInput}
-                                                        min="0"
-                                                        step="5"
-                                                        value={travelTimeAfter}
-                                                        onChange={e => setTravelTimeAfter(e.target.value)}
-                                                    />
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <label className={shared.miniLabel}>
-                                                    Доп. минуты к услуге
-                                                </label>
-                                                <input
-                                                    type="number"
-                                                    className={shared.formInput}
-                                                    min="0"
-                                                    step="5"
-                                                    value={durationExtraMinutes}
-                                                    onChange={e => setDurationExtraMinutes(e.target.value)}
-                                                    placeholder="0"
-                                                />
-                                            </div>
-                                        </>
-                                    )}
                                 </>
                             )}
                         </>
