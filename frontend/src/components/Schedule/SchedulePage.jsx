@@ -1,12 +1,14 @@
+// frontend/src/components/Schedule/SchedulePage.jsx
 import React, { useState, useEffect, useCallback } from 'react';
-import SchedulesList from './SchedulesList';
-import ExtraDaysList from './ExtraDaysList';
-import DaysOffList from './DaysOffList';
 import ScheduleModal from './ScheduleModal';
 import ExtraDayModal from './ExtraDayModal';
 import DayOffModal from './DayOffModal';
+import GeneralSettingsSection from './GeneralSettingsSection';
+import AwaySettingsSection from './AwaySettingsSection';
+import SchedulesSection from './SchedulesSection';
+import ExtraDaysSection from './ExtraDaysSection';
+import DaysOffSection from './DaysOffSection';
 import useModal from '../../hooks/useModal';
-import { updateAwayTravel } from '../../api/schedule';
 import {
     loadSchedules,
     loadUpcomingExtraDays,
@@ -14,7 +16,6 @@ import {
     loadDaysOff,
 } from '../../api/schedule';
 import styles from './SchedulePage.module.css';
-import { updateGeneralSettings } from '../../api/schedule';
 
 export default function SchedulePage({
     masterMode = 'home',
@@ -42,18 +43,8 @@ export default function SchedulePage({
     const [extraDayModal, setExtraDayModal] = useState(false);
     const [dayOffModal, setDayOffModal] = useState(false);
 
-    // Время на дорогу (away)
-    const [awayTravelBefore, setAwayTravelBefore] = useState(initialAwayTravelBefore);
-    const [awayTravelAfter, setAwayTravelAfter] = useState(initialAwayTravelAfter || 0);
-    const [arrivalWindow, setArrivalWindow] = useState(initialArrivalWindow || 30);
-    const [savingTravelTime, setSavingTravelTime] = useState(false);
-
     const { showAlert } = useModal();
     const isAway = masterMode === 'away';
-
-    const [minLeadTime, setMinLeadTime] = useState(initialMinLeadTime);
-    const [homeBuffer, setHomeBuffer] = useState(initialHomeBuffer);
-    const [savingSettings, setSavingSettings] = useState(false);
 
     // ---------- Загрузка данных ----------
 
@@ -119,277 +110,56 @@ export default function SchedulePage({
             });
     }
 
-
-    async function handleSaveGeneralSettings() {
-        setSavingSettings(true);
-        try {
-            const data = await updateGeneralSettings({
-                min_booking_lead_time: parseInt(minLeadTime) || 0,
-                home_buffer_between_bookings: parseInt(homeBuffer) || 0,
-            });
-            if (data.success) {
-                showAlert('Настройки сохранены', 'success');
-            } else {
-                showAlert(data.error || 'Ошибка сохранения', 'error');
-            }
-        } catch (error) {
-            console.error('Ошибка:', error);
-            showAlert('Ошибка соединения', 'error');
-        } finally {
-            setSavingSettings(false);
-        }
-    }
-
-    // ---------- Сохранение времени на дорогу ----------
-
-    async function handleSaveTravelTime() {
-        setSavingTravelTime(true);
-        try {
-            const data = await updateAwayTravel({
-                away_travel_time_before_default: parseInt(awayTravelBefore) || 0,
-                away_travel_time_after_default: parseInt(awayTravelAfter) || 0,
-                arrival_window_minutes: parseInt(arrivalWindow) || 0,
-            });
-            if (data.success) {
-                showAlert('Настройки выезда сохранены', 'success');
-            } else {
-                showAlert(data.error || 'Ошибка сохранения', 'error');
-            }
-        } catch (error) {
-            console.error('Ошибка:', error);
-            showAlert('Ошибка соединения', 'error');
-        } finally {
-            setSavingTravelTime(false);
-        }
-    }
-
     return (
         <div className={styles.page}>
             <div className={styles.pageHeader}>
                 <h2>Расписание</h2>
             </div>
 
-            {/* Секция: Общие настройки (лид-тайм для всех) */}
-            <div className={styles.card}>
-                <div className={styles.sectionTitle}>Общие настройки</div>
+            {/* Секция 1: Общие настройки (лид-тайм + буфер для дома) */}
+            <GeneralSettingsSection
+                isAway={isAway}
+                initialMinLeadTime={initialMinLeadTime}
+                initialHomeBuffer={initialHomeBuffer}
+            />
 
-                <div className={styles.travelTimeBlock}>
-                    <div className={styles.travelTimeRow}>
-                        <div className={styles.travelTimeField}>
-                            <label className={styles.travelTimeLabel}>
-                                <i className="fas fa-clock me-1" />
-                                Не принимать записи за (часов)
-                            </label>
-                            <input
-                                type="number"
-                                className={styles.travelTimeInput}
-                                min="0"
-                                value={minLeadTime}
-                                onChange={e => setMinLeadTime(e.target.value)}
-                                placeholder="0"
-                            />
-                        </div>
-                    </div>
-
-                    {/* Буфер показываем только для дома */}
-                    {!isAway && (
-                        <div className={styles.travelTimeRow}>
-                            <div className={styles.travelTimeField}>
-                                <label className={styles.travelTimeLabel}>
-                                    <i className="fas fa-coffee me-1" />
-                                    Буфер между записями (мин)
-                                </label>
-                                <input
-                                    type="number"
-                                    className={styles.travelTimeInput}
-                                    min="0"
-                                    step="5"
-                                    value={homeBuffer}
-                                    onChange={e => setHomeBuffer(e.target.value)}
-                                    placeholder="0"
-                                />
-                            </div>
-                        </div>
-                    )}
-
-                    <button
-                        type="button"
-                        className={styles.btnPrimary}
-                        onClick={handleSaveGeneralSettings}
-                        disabled={savingSettings}
-                        style={{ marginTop: '12px' }}
-                    >
-                        {savingSettings ? (
-                            <><i className="fas fa-spinner fa-spin" /> Сохранение...</>
-                        ) : (
-                            <><i className="fas fa-save" /> Сохранить настройки</>
-                        )}
-                    </button>
-                </div>
-            </div>
-
-            {/* Блок «Выездной режим» — только для away */}
+            {/* Секция 2: Выездной режим (только away) */}
             {isAway && (
-                <div className={styles.card}>
-                    <div className={styles.sectionTitle}>Выездной режим</div>
-
-                    <div className={styles.travelTimeBlock}>
-                        <div className={styles.travelTimeRow}>
-                            <div className={styles.travelTimeField}>
-                                <label className={styles.travelTimeLabel}>
-                                    <i className="fas fa-car me-1" />
-                                    Время на дорогу до клиента (мин)
-                                </label>
-                                <input
-                                    type="number"
-                                    className={styles.travelTimeInput}
-                                    min="0"
-                                    step="5"
-                                    value={awayTravelBefore}
-                                    onChange={e => setAwayTravelBefore(e.target.value)}
-                                    placeholder="0"
-                                />
-                            </div>
-                        </div>
-
-                        <div className={styles.travelTimeRow}>
-                            <div className={styles.travelTimeField}>
-                                <label className={styles.travelTimeLabel}>
-                                    <i className="fas fa-undo me-1" />
-                                    Время на дорогу после клиента (мин)
-                                </label>
-                                <input
-                                    type="number"
-                                    className={styles.travelTimeInput}
-                                    min="0"
-                                    step="5"
-                                    value={awayTravelAfter}
-                                    onChange={e => setAwayTravelAfter(e.target.value)}
-                                    placeholder="0"
-                                />
-                            </div>
-                        </div>
-
-                        <div className={styles.travelTimeRow}>
-                            <div className={styles.travelTimeField}>
-                                <label className={styles.travelTimeLabel}>
-                                    <i className="fas fa-clock me-1" />
-                                    Интервал прибытия (мин)
-                                </label>
-                                <select
-                                    className={styles.travelTimeSelect}
-                                    value={arrivalWindow}
-                                    onChange={e => setArrivalWindow(e.target.value)}
-                                >
-                                    <option value="0">0 (точное время)</option>
-                                    <option value="15">15 минут</option>
-                                    <option value="30">30 минут</option>
-                                    <option value="45">45 минут</option>
-                                    <option value="60">60 минут</option>
-                                    <option value="100">100 минут</option>
-                                    <option value="120">120 минут</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <button
-                            type="button"
-                            className={styles.btnPrimary}
-                            onClick={handleSaveTravelTime}
-                            disabled={savingTravelTime}
-                            style={{ marginTop: '12px' }}
-                        >
-                            {savingTravelTime ? (
-                                <>
-                                    <i className="fas fa-spinner fa-spin" />
-                                    Сохранение...
-                                </>
-                            ) : (
-                                <>
-                                    <i className="fas fa-save" />
-                                    Сохранить
-                                </>
-                            )}
-                        </button>
-
-                        <small className={styles.travelTimeHint}>
-                            Дорога и интервал будут автоматически добавляться к каждой записи.
-                            Мастер может изменить их в карточке заказа.
-                        </small>
-                    </div>
-                </div>
+                <AwaySettingsSection
+                    initialAwayTravelBefore={initialAwayTravelBefore}
+                    initialAwayTravelAfter={initialAwayTravelAfter}
+                    initialArrivalWindow={initialArrivalWindow}
+                />
             )}
 
-            {/* Секция 1: Регулярная работа */}
-            <div className={styles.card}>
-                <div className={styles.sectionTitle}>Регулярная работа</div>
+            {/* Секция 3: Регулярная работа */}
+            <SchedulesSection
+                schedules={schedules}
+                loading={loadingSchedules}
+                onEdit={(schedule) => setScheduleModal({ mode: 'edit', schedule })}
+                onDelete={() => reloadSchedules()}
+                onDataChanged={reloadSchedules}
+                onAdd={() => setScheduleModal({ mode: 'add' })}
+            />
 
-                <SchedulesList
-                    schedules={schedules}
-                    loading={loadingSchedules}
-                    onEdit={(schedule) => setScheduleModal({ mode: 'edit', schedule })}
-                    onDelete={() => reloadSchedules()}
-                    onDataChanged={reloadSchedules}
-                />
+            {/* Секция 4: Дополнительно работаю */}
+            <ExtraDaysSection
+                futureDays={futureExtraDays}
+                pastDays={pastExtraDays}
+                pastDaysHasMore={pastDaysHasMore}
+                loading={loadingExtra}
+                onLoadMorePast={loadMorePastDays}
+                onDataChanged={reloadExtraDays}
+                onAdd={() => setExtraDayModal(true)}
+            />
 
-                <div className={styles.sectionActions}>
-                    <button
-                        type="button"
-                        className={styles.btnPrimary}
-                        onClick={() => setScheduleModal({ mode: 'add' })}
-                    >
-                        <i className="fas fa-plus" />
-                        Добавить рабочий день
-                    </button>
-                </div>
-            </div>
-
-            {/* Секция 2: Дополнительно работаю */}
-            <div className={styles.card}>
-                <div className={styles.sectionTitle}>Дополнительно работаю</div>
-
-                <ExtraDaysList
-                    futureDays={futureExtraDays}
-                    pastDays={pastExtraDays}
-                    pastDaysHasMore={pastDaysHasMore}
-                    loading={loadingExtra}
-                    onLoadMorePast={loadMorePastDays}
-                    onDataChanged={reloadExtraDays}
-                />
-
-                <div className={styles.sectionActions}>
-                    <button
-                        type="button"
-                        className={styles.btnPrimary}
-                        onClick={() => setExtraDayModal(true)}
-                    >
-                        <i className="fas fa-plus" />
-                        Добавить допдень
-                    </button>
-                </div>
-            </div>
-
-            {/* Секция 3: Выходные дни */}
-            <div className={styles.card}>
-                <div className={styles.sectionTitle}>Выходные дни</div>
-
-                <DaysOffList
-                    daysOff={daysOff}
-                    loading={loadingDaysOff}
-                    onDataChanged={reloadDaysOff}
-                />
-
-                <div className={styles.sectionActions}>
-                    <button
-                        type="button"
-                        className={styles.btnPrimary}
-                        onClick={() => setDayOffModal(true)}
-                    >
-                        <i className="fas fa-plus" />
-                        Добавить выходной
-                    </button>
-                </div>
-            </div>
+            {/* Секция 5: Выходные дни */}
+            <DaysOffSection
+                daysOff={daysOff}
+                loading={loadingDaysOff}
+                onDataChanged={reloadDaysOff}
+                onAdd={() => setDayOffModal(true)}
+            />
 
             {/* Модалки */}
             {scheduleModal && (
