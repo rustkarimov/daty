@@ -1,3 +1,4 @@
+// frontend/src/components/Push/PushProvider.jsx
 import React, {
     createContext,
     useContext,
@@ -23,6 +24,20 @@ export function usePush() {
     return ctx;
 }
 
+// ---- Инициализация pushStatus ----
+// Читаем из #react-app (data-push-status), fallback — localStorage.
+function readInitialPushStatus() {
+    if (typeof document === 'undefined') return 'unknown';
+    const el = document.getElementById('react-app');
+    const fromData = el?.dataset.pushStatus || 'unknown';
+
+    if (fromData === 'unknown') {
+        return localStorage.getItem('daty_push_status') || 'unknown';
+    }
+    localStorage.setItem('daty_push_status', fromData);
+    return fromData;
+}
+
 export default function PushProvider({ children }) {
     const supported = isPushSupported();
     const iosHint = isIOSWithoutPWA();
@@ -30,6 +45,19 @@ export default function PushProvider({ children }) {
     const [subscribed, setSubscribed] = useState(false);
     const [loading, setLoading] = useState(true);
     const [busy, setBusy] = useState(false);
+
+    // ---- Единый источник pushStatus ----
+    const [pushStatus, setPushStatusState] = useState(readInitialPushStatus);
+
+    // Обёртка: при изменении — сохраняем в localStorage
+    const setPushStatus = useCallback((value) => {
+        setPushStatusState(value);
+        try {
+            localStorage.setItem('daty_push_status', value);
+        } catch (e) {
+            console.warn('Не удалось сохранить push_status в localStorage:', e);
+        }
+    }, []);
 
     // ---------- Проверка подписки ----------
 
@@ -53,7 +81,6 @@ export default function PushProvider({ children }) {
         }
     }, [supported, iosHint]);
 
-    // Автопроверка при монтировании
     useEffect(() => {
         refresh();
     }, [refresh]);
@@ -95,8 +122,6 @@ export default function PushProvider({ children }) {
         }
     }, [supported]);
 
-    // ---------- Провайдер ----------
-
     return (
         <PushContext.Provider
             value={{
@@ -108,6 +133,8 @@ export default function PushProvider({ children }) {
                 refresh,
                 subscribe,
                 unsubscribe,
+                pushStatus,
+                setPushStatus,
             }}
         >
             {children}

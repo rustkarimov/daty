@@ -1,18 +1,29 @@
+// frontend/src/components/Push/PushSettings.jsx
 import React from 'react';
 import { usePush } from './PushProvider';
 import useModal from '../../hooks/useModal';
 import styles from './PushSettings.module.css';
 import { savePushStatus } from '../../api/push';
 
-export default function PushSettings({ pushStatus, onStatusChange }) { 
-    const { supported, iosHint, subscribed, loading, busy, subscribe, unsubscribe } = usePush();
+export default function PushSettings() {
+    const {
+        supported,
+        iosHint,
+        subscribed,
+        loading,
+        busy,
+        subscribe,
+        unsubscribe,
+        pushStatus,
+        setPushStatus,
+    } = usePush();
     const { showAlert } = useModal();
 
     async function handleEnable() {
         try {
             await subscribe();
             await savePushStatus('allowed');
-            if (onStatusChange) onStatusChange('allowed');
+            setPushStatus('allowed');
             showAlert('Push-уведомления включены', 'success');
         } catch (error) {
             showAlert(error.message || 'Не удалось подписаться', 'error');
@@ -23,7 +34,7 @@ export default function PushSettings({ pushStatus, onStatusChange }) {
         try {
             await unsubscribe();
             await savePushStatus('denied');
-            if (onStatusChange) onStatusChange('denied');
+            setPushStatus('denied');
             showAlert('Push-уведомления отключены', 'success');
         } catch (error) {
             showAlert(error.message || 'Не удалось отписаться', 'error');
@@ -70,7 +81,6 @@ export default function PushSettings({ pushStatus, onStatusChange }) {
                     </div>
                 </div>
 
-                {/* Пояснения */}
                 <div className={styles.hints}>
                     <div className={styles.hint}>
                         <i className="fas fa-info-circle" />
