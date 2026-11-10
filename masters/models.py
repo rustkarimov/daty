@@ -491,6 +491,14 @@ class Booking(models.Model):
     # Данные клиента
     client_name = models.CharField(max_length=100, verbose_name="Имя клиента")
     encrypted_phone = models.BinaryField(verbose_name="Телефон (зашифрованный)")
+    phone_hash = models.CharField(
+        max_length=64,
+        null=True,
+        blank=True,
+        db_index=True,
+        verbose_name="Хеш телефона (для поиска)",
+        help_text="HMAC-SHA256 от нормализованного телефона. Для быстрого поиска записей клиента.",
+    )
     client_comment = models.TextField(verbose_name="Комментарий", blank=True)
 
     # Дата и время записи
@@ -574,12 +582,29 @@ class Booking(models.Model):
         return base + extra
 
     def save(self, *args, **kwargs):
+        # Токен для клиента
         if not self.token:
             while True:
                 token = generate_booking_token()
                 if not Booking.objects.filter(token=token).exists():
                     self.token = token
                     break
+
+        # phone_hash для быстрого поиска записей клиента.
+        # Вычисляем при каждом save() — на случай, если телефон изменился.
+        # Если master уже загружен в память (типичный случай) — лишнего
+        # запроса к БД не будет.
+        if self.encrypted_phone and self.master_id:
+            try:
+                key = self.master.encryption_key
+                from .utils.crypto_utils import compute_phone_hash, decrypt_phone
+                phone = decrypt_phone(self.encrypted_phone, key)
+                self.phone_hash = compute_phone_hash(phone, key)
+            except Exception:
+                # Не роняем save() из-за хеша: хеш — вспомогательное поле.
+                # Если не удалось — оставляем как есть (NULL или старый).
+                pass
+
         super().save(*args, **kwargs)
 
 
@@ -610,6 +635,14 @@ class CancelledBooking(models.Model):
 
     client_name = models.CharField(max_length=100, verbose_name="Имя клиента")
     encrypted_phone = models.BinaryField(verbose_name="Телефон (зашифрованный)")
+    phone_hash = models.CharField(
+        max_length=64,
+        null=True,
+        blank=True,
+        db_index=True,
+        verbose_name="Хеш телефона (для поиска)",
+        help_text="HMAC-SHA256 от нормализованного телефона. Для быстрого поиска записей клиента.",
+    )
     client_comment = models.TextField(verbose_name="Комментарий", blank=True)
 
     date = models.DateField(verbose_name="Дата записи")
@@ -649,6 +682,19 @@ class CancelledBooking(models.Model):
         """
         from .utils.crypto_utils import decrypt_phone
         return decrypt_phone(self.encrypted_phone, key)
+
+    def save(self, *args, **kwargs):
+        # phone_hash для быстрого поиска записей клиента.
+        if self.encrypted_phone and self.master_id:
+            try:
+                key = self.master.encryption_key
+                from .utils.crypto_utils import compute_phone_hash, decrypt_phone
+                phone = decrypt_phone(self.encrypted_phone, key)
+                self.phone_hash = compute_phone_hash(phone, key)
+            except Exception:
+                pass
+
+        super().save(*args, **kwargs)
 
 
 # ============================================================

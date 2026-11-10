@@ -226,3 +226,103 @@ class ClientBookingTest(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.json()['success'])
+
+
+
+class BookingPhoneHashTest(TestCase):
+    """Тесты phone_hash: заполняется при создании и пересчитывается при изменении."""
+
+    def setUp(self):
+        self.master = create_master()
+        self.master.work_mode = 'home'
+        self.master.save()
+        self.service = create_service(self.master)
+        create_schedule(self.master)
+        self.test_date = get_next_monday()
+        self.booking_url = f'/api/{self.master.public_slug}/book/'
+
+    def test_phone_hash_set_on_create(self):
+        """При создании Booking phone_hash заполняется (64 hex-символа)."""
+        response = self.client.post(
+            self.booking_url,
+            data=json.dumps({
+                'service_id': self.service.id,
+                'client_name': 'Мария',
+                'client_phone': '79991112233',
+                'date': self.test_date.strftime('%Y-%m-%d'),
+                'time': '10:00',
+                'created_by': 'client'
+            }),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+
+        booking = Booking.objects.first()
+        self.assertIsNotNone(booking.phone_hash)
+        self.assertEqual(len(booking.phone_hash), 64)  # SHA-256 hex
+
+    def test_phone_hash_matches_manual_compute(self):
+        """Хеш в БД совпадает с compute_phone_hash(phone, key)."""
+        from masters.utils.crypto_utils import (
+            compute_phone_hash,
+            decrypt_phone,
+        )
+
+        self.client.post(
+            self.booking_url,
+            data=json.dumps({
+                'service_id': self.service.id,
+                'client_name': 'Мария',
+                'client_phone': '79991112233',
+                'date': self.test_date.strftime('%Y-%m-%d'),
+                'time': '10:00',
+                'created_by': 'client'
+            }),
+            content_type='application/json'
+        )
+        booking = Booking.objects.first()
+
+        key = self.master.encryption_key
+        phone = decrypt_phone(booking.encrypted_phone, key)
+        expected = compute_phone_hash(phone, key)
+
+        self.assertEqual(booking.phone_hash, expected)
+
+    def test_phone_hash_changes_on_phone_update(self):
+        """При изменении телефона хеш пересчитывается."""
+        from masters.utils.crypto_utils import (
+            compute_phone_hash,
+            decrypt_phone,
+        )
+
+        # Создаём запись
+        self.client.post(
+            self.booking_url,
+            data=json.dumps({
+                'service_id': self.service.id,
+                'client_name': 'Мария',
+                'client_phone': '79991112233',
+                'date': self.test_date.strftime('%Y-%m-%d'),
+                'time': '10:00',
+                'created_by': 'client'
+            }),
+            content_type='application/json'
+        )
+        booking = Booking.objects.first()
+        old_hash = booking.phone_hash
+
+        # Меняем телефон через ORM (эмуляция api_update_booking)
+        from masters.utils.crypto_utils import encrypt_phone
+        key = self.master.encryption_key
+        booking.encrypted_phone = encrypt_phone('79995556677', key)
+        booking.save()
+        booking.refresh_from_db()
+
+        new_hash = booking.phone_hash
+        self.assertNotEqual(old_hash, new_hash)
+        self.assertEqual(len(new_hash), 64)
+
+        # Проверяем, что новый хеш соответствует новому телефону
+        phone = decrypt_phone(booking.encrypted_phone, key)
+        expected = compute_phone_hash(phone, key)
+        self.assertEqual(new_hash, expected)

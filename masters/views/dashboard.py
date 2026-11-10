@@ -236,18 +236,23 @@ def get_bookings_api(request):
 def _get_client_stats(master, phone_cleaned, key):
     """
     Собирает статистику клиента по номеру телефона.
-
-    Возвращает dict:
-        {
-            'total_visits': int,
-            'first_visit': date | None,
-            'last_visit': date | None,
-            'visits': list[{'date', 'time', 'service', 'category'}],
-        }
+    Использует phone_hash для быстрого поиска (O(1) по индексу).
     """
+    from ..utils.crypto_utils import compute_phone_hash
+
+    phone_hash = compute_phone_hash(phone_cleaned, key)
+    if not phone_hash:
+        return {
+            'total_visits': 0,
+            'first_visit': None,
+            'last_visit': None,
+            'visits': [],
+        }
+
     client_bookings = Booking.objects.filter(
         master=master,
         status='confirmed',
+        phone_hash=phone_hash,
     ).select_related('service', 'service__category')
 
     visits = []
@@ -256,12 +261,6 @@ def _get_client_stats(master, phone_cleaned, key):
     last_visit = None
 
     for b in client_bookings:
-        b_phone = decrypt_phone(b.encrypted_phone, key)
-        if not b_phone:
-            continue
-        if re.sub(r'\D', '', b_phone) != phone_cleaned:
-            continue
-
         total_visits += 1
         if first_visit is None or b.date < first_visit:
             first_visit = b.date

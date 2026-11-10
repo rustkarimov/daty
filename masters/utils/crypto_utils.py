@@ -1,11 +1,11 @@
 """
 Утилиты для шифрования/расшифровки персональных данных.
-
-Единая точка входа для всех операций с телефонами клиентов.
-Убирает копипаст try/except InvalidToken по всему проекту.
 """
+import hashlib
+import hmac
 import logging
 import re
+
 from cryptography.fernet import Fernet, InvalidToken
 
 logger = logging.getLogger(__name__)
@@ -69,6 +69,12 @@ def decrypt_phone_normalized(encrypted_phone, key):
     raw = decrypt_phone(encrypted_phone, key)
     return re.sub(r'\D', '', raw)
 
+
+def normalize_phone(phone):
+    """Оставляет только цифры."""
+    return re.sub(r'\D', '', phone or '')
+
+
 def format_phone(phone_cleaned):
     """
     Форматирует 11-значный номер в 'X XXX XXX-XX-XX'.
@@ -80,3 +86,36 @@ def format_phone(phone_cleaned):
         f"{phone_cleaned[0]} {phone_cleaned[1:4]} "
         f"{phone_cleaned[4:7]}-{phone_cleaned[7:9]}-{phone_cleaned[9:11]}"
     )
+
+
+def compute_phone_hash(phone, key):
+    """
+    Детерминированный HMAC-SHA256 от нормализованного телефона.
+
+    :param phone: телефон (строка, может быть с форматированием)
+    :param key: секретный ключ мастера (bytes). Обычно master.encryption_key.
+    :return: hex-строка (64 символа) или None, если phone пустой.
+
+    Используется для быстрого поиска записей клиента:
+    одинаковый телефон у одного мастера → одинаковый хеш.
+    У разных мастеров (разные ключи) → разные хеши.
+    Без ключа восстановить телефон нельзя (HMAC).
+    """
+    phone_cleaned = normalize_phone(phone)
+    if not phone_cleaned:
+        return None
+    if not key:
+        logger.warning("compute_phone_hash: key не задан, возвращаю None")
+        return None
+
+    # key может быть bytes (BinaryField) или str — приводим к bytes
+    if isinstance(key, str):
+        key_bytes = key.encode()
+    else:
+        key_bytes = bytes(key)
+
+    return hmac.new(
+        key_bytes,
+        phone_cleaned.encode(),
+        hashlib.sha256,
+    ).hexdigest()

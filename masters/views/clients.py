@@ -18,6 +18,7 @@ from ..utils.crypto_utils import (
     decrypt_phone,
     decrypt_phone_normalized,
     format_phone,
+    compute_phone_hash,
 )
 
 
@@ -29,6 +30,9 @@ from ..utils.crypto_utils import (
 def _collect_clients(master, only_confirmed=False):
     """
     Собирает список клиентов мастера.
+
+    Оптимизация: используем phone_hash для группировки (без расшифровки
+    каждой записи). Расшифровываем телефон один раз на клиента.
 
     :param master: объект Master
     :param only_confirmed: если True — берём только записи со status='confirmed'.
@@ -59,39 +63,62 @@ def _collect_clients(master, only_confirmed=False):
 
     today = date.today()
 
+    # Группируем по phone_hash. Для каждой группы — расшифровываем
+    # телефон первой записи (один раз), чтобы получить phone_raw.
+    # Записи без phone_hash (старые, до миграции) обрабатываем отдельно:
+    # для них расшифровка — единственный путь.
+    by_hash = defaultdict(list)
+    no_hash = []
+
     for booking in bookings:
-        phone_cleaned = decrypt_phone_normalized(booking.encrypted_phone, key)
+        if booking.phone_hash:
+            by_hash[booking.phone_hash].append(booking)
+        else:
+            no_hash.append(booking)
+
+    # Обрабатываем группы с phone_hash
+    for phone_hash, group in by_hash.items():
+        # Расшифровка — один раз на группу (из первой записи)
+        first = group[0]
+        phone_cleaned = decrypt_phone_normalized(first.encrypted_phone, key)
         if not phone_cleaned:
+            # Не удалось расшифровать — пропускаем всю группу.
+            # (Такое возможно только для «битых» записей.)
             continue
 
-        client_key = phone_cleaned
-
-        clients_data[client_key]['names'].add(booking.client_name)
+        client_key = phone_hash  # используем хеш как ключ группы
         clients_data[client_key]['phone'] = format_phone(phone_cleaned)
         clients_data[client_key]['phone_raw'] = phone_cleaned
 
-        # «Визит» = confirmed + дата в прошлом (или сегодня)
-        if booking.status == 'confirmed' and booking.date <= today:
-            clients_data[client_key]['total_visits'] += 1
+        for booking in group:
+            _accumulate_client_booking(
+                clients_data[client_key], booking, today,
+            )
 
-        # Услуги — только по подтверждённым
-        if booking.status == 'confirmed':
-            service_name = booking.service.name
-            if booking.service.category:
-                service_name = f"{booking.service.category.name}: {service_name}"
-            clients_data[client_key]['services'][service_name] += 1
-
-            if (clients_data[client_key]['first_visit'] is None
-                    or booking.date < clients_data[client_key]['first_visit']):
-                clients_data[client_key]['first_visit'] = booking.date
-            if (clients_data[client_key]['last_visit'] is None
-                    or booking.date > clients_data[client_key]['last_visit']):
-                clients_data[client_key]['last_visit'] = booking.date
+    # Обрабатываем записи без phone_hash (старые данные)
+    for booking in no_hash:
+        phone_cleaned = decrypt_phone_normalized(booking.encrypted_phone, key)
+        if not phone_cleaned:
+            continue
+        client_key = phone_cleaned
+        if not clients_data[client_key]['phone']:
+            clients_data[client_key]['phone'] = format_phone(phone_cleaned)
+            clients_data[client_key]['phone_raw'] = phone_cleaned
+        _accumulate_client_booking(clients_data[client_key], booking, today)
 
     # Добавляем клиентов из ЧС, которых нет в списке
     blacklisted = BlacklistedClient.objects.filter(master=master)
     for bl in blacklisted:
-        if bl.phone not in clients_data:
+        # Проверяем, есть ли уже такой клиент по phone_hash
+        bl_hash = compute_phone_hash(bl.phone, key)
+        present = False
+        if bl_hash and bl_hash in clients_data:
+            present = True
+        elif bl.phone in clients_data:
+            present = True
+
+        if not present:
+            # Добавляем как отдельного клиента
             clients_data[bl.phone] = {
                 'names': {bl.name or 'Без имени'},
                 'phone': format_phone(bl.phone),
@@ -105,6 +132,30 @@ def _collect_clients(master, only_confirmed=False):
     blacklisted_phones = set(blacklisted.values_list('phone', flat=True))
 
     return clients_data, blacklisted_phones
+
+
+def _accumulate_client_booking(client, booking, today):
+    """
+    Накапливает данные записи в клиента (визиты, услуги, даты).
+    Вынесено из _collect_clients для читаемости.
+    """
+    client['names'].add(booking.client_name)
+
+    # «Визит» = confirmed + дата в прошлом (или сегодня)
+    if booking.status == 'confirmed' and booking.date <= today:
+        client['total_visits'] += 1
+
+    # Услуги — только по подтверждённым
+    if booking.status == 'confirmed':
+        service_name = booking.service.name
+        if booking.service.category:
+            service_name = f"{booking.service.category.name}: {service_name}"
+        client['services'][service_name] += 1
+
+        if client['first_visit'] is None or booking.date < client['first_visit']:
+            client['first_visit'] = booking.date
+        if client['last_visit'] is None or booking.date > client['last_visit']:
+            client['last_visit'] = booking.date
 
 
 def _serialize_client(client_key, data, blacklisted_phones):
@@ -338,31 +389,23 @@ def api_blacklist_add(request):
             defaults={'name': name, 'reason': reason},
         )
 
-        # Отменяем все будущие записи этого клиента
+        # Отменяем все будущие записи этого клиента.
+        # Используем phone_hash для быстрого поиска (O(1) по индексу).
         today = date.today()
         key = master.get_encryption_key()
+        phone_hash = compute_phone_hash(phone_cleaned, key)
 
         cancelled_count = 0
-        future_bookings = Booking.objects.filter(
-            master=master,
-            date__gte=today,
-            status='confirmed',
-        )
 
-        import logging
-        logger = logging.getLogger(__name__)
+        if phone_hash:
+            future_bookings = Booking.objects.filter(
+                master=master,
+                date__gte=today,
+                status='confirmed',
+                phone_hash=phone_hash,
+            )
 
-        for booking in future_bookings:
-            # decrypt_phone никогда не бросает исключение — возвращает ''
-            decrypted = decrypt_phone(booking.encrypted_phone, key)
-            if not decrypted:
-                logger.warning(
-                    f"Не удалось расшифровать телефон записи #{booking.id} "
-                    f"при добавлении в ЧС — запись не отменена"
-                )
-                continue
-
-            if re.sub(r'\D', '', decrypted) == phone_cleaned:
+            for booking in future_bookings:
                 # Сохраняем в CancelledBooking
                 CancelledBooking.objects.create(
                     master=master,

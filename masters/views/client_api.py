@@ -16,7 +16,11 @@ from ..utils.response_utils import api_success, api_error
 from ..utils.schedule_utils import ScheduleCalculator
 from ..utils.master_utils import get_master_by_identifier
 from ..utils.call_utils import request_call_verification, check_call_status
-from ..utils.crypto_utils import decrypt_phone, decrypt_phone_normalized
+from ..utils.crypto_utils import (
+    decrypt_phone,
+    decrypt_phone_normalized,
+    compute_phone_hash,
+)
 
 
 # ============================================================
@@ -365,16 +369,18 @@ def api_client_check_phone(request, identifier):
     if len(phone_cleaned) != 11:
         return api_error('Введите корректный номер телефона (11 цифр)', status=400)
 
-    # Ищем записи с таким телефоном
+    # Ищем записи с таким телефоном по хешу (O(1) по индексу)
     key = master.get_encryption_key()
+    phone_hash = compute_phone_hash(phone_cleaned, key)
 
-    has_bookings = False
-    bookings = Booking.objects.filter(master=master, status='confirmed')
-    for b in bookings:
-        b_phone = decrypt_phone_normalized(b.encrypted_phone, key)
-        if b_phone == phone_cleaned:
-            has_bookings = True
-            break
+    if not phone_hash:
+        return api_error('Записи с таким номером не найдены', status=404)
+
+    has_bookings = Booking.objects.filter(
+        master=master,
+        status='confirmed',
+        phone_hash=phone_hash,
+    ).exists()
 
     if not has_bookings:
         return api_error('Записи с таким номером не найдены', status=404)
@@ -497,21 +503,22 @@ def my_bookings_view(request, identifier):
     if not client_phone or client_master_id != master.id:
         return redirect(f'/{identifier}/')
 
-    # Находим все записи клиента
+    # Находим все будущие записи клиента по хешу (O(1) по индексу)
     key = master.get_encryption_key()
+    phone_hash = compute_phone_hash(client_phone, key)
 
-    bookings = []
     today = date.today()
-    all_bookings = Booking.objects.filter(
-        master=master,
-        status='confirmed',
-        date__gte=today
-    ).order_by('date', 'time')
-
-    for b in all_bookings:
-        b_phone = decrypt_phone_normalized(b.encrypted_phone, key)
-        if b_phone == client_phone:
-            bookings.append(b)
+    if phone_hash:
+        bookings = list(
+            Booking.objects.filter(
+                master=master,
+                status='confirmed',
+                phone_hash=phone_hash,
+                date__gte=today,
+            ).order_by('date', 'time')
+        )
+    else:
+        bookings = []
 
     return render(request, 'masters/public/my_bookings.html', {
         'master': master,
