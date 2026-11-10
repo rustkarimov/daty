@@ -275,6 +275,10 @@ def api_client_update_booking(request, identifier, token):
     if new_date == date.today() and new_time < datetime.now().time():
         return api_error('Время уже прошло. Выберите другое.', status=409)
 
+    # Отдельная проверка: время уже прошло (сегодня)
+    if new_date == date.today() and new_time < datetime.now().time():
+        return api_error('Время уже прошло. Выберите другое.', status=409)
+
     # Проверяем доступность
     calculator = ScheduleCalculator(booking.master)
 
