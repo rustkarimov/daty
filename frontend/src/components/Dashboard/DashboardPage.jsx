@@ -92,6 +92,7 @@ export default function DashboardPage({
                 key={`upcoming-${refreshKey}`}
                 masterSlug={masterSlug}
                 masterMaxLink={masterMaxLink}
+                masterMode={masterMode}
                 onEdit={handleEditBooking}
                 onDataChanged={handleDataChanged}
             />

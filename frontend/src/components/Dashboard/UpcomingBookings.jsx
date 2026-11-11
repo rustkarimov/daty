@@ -6,7 +6,14 @@ import PortalMenu from './PortalMenu';
 import styles from './UpcomingBookings.module.css';
 import useModal from '../../hooks/useModal';
 
-export default function UpcomingBookings({ masterSlug, masterMaxLink, onEdit, onDataChanged }) {
+export default function UpcomingBookings({
+    masterSlug,
+    masterMaxLink,
+    masterMode = 'home',
+    onEdit,
+    onDataChanged,
+}) {
+    const isAway = masterMode === 'away';
     const [bookings, setBookings] = useState([]);
     const [total, setTotal] = useState(0);
     const [page, setPage] = useState(1);
@@ -180,7 +187,7 @@ export default function UpcomingBookings({ masterSlug, masterMaxLink, onEdit, on
                                         <th>Время</th>
                                         <th>Клиент</th>
                                         <th>Услуги</th>
-                                        <th>Статус</th>
+                                        {isAway && <th>Статус</th>}
                                         <th></th>
                                     </tr>
                                 </thead>
@@ -194,13 +201,15 @@ export default function UpcomingBookings({ masterSlug, masterMaxLink, onEdit, on
                                             <td>{b.time}</td>
                                             <td>{b.client_name}</td>
                                             <td>{b.service_name}</td>
-                                            <td>
-                                                {b.status === 'pending' ? (
-                                                    <span className={styles.statusPending}>Ожидает</span>
-                                                ) : (
-                                                    <span className={styles.statusConfirmed}>Подтверждена</span>
-                                                )}
-                                            </td>
+                                            {isAway && (
+                                                <td className={styles.statusCell}>
+                                                    {b.status === 'pending' ? (
+                                                        <span className={styles.statusPending}>Ожидает</span>
+                                                    ) : (
+                                                        <span className={styles.statusConfirmed}>Подтверждена</span>
+                                                    )}
+                                                </td>
+                                            )}
                                             <td className={styles.actionsCell}>
                                                 <div className={styles.allButtonsRow}>
                                                     <button
