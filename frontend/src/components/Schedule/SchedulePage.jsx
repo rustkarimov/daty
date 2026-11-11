@@ -24,7 +24,10 @@ export default function SchedulePage({
     initialArrivalWindow = 30,
     initialMinLeadTime = 0,
     initialHomeBuffer = 0,
+    initialPendingReminderEnabled = true,
+    initialPendingReminderHours = 4,
 }) {
+
     // Данные
     const [schedules, setSchedules] = useState([]);
     const [futureExtraDays, setFutureExtraDays] = useState([]);
@@ -121,6 +124,8 @@ export default function SchedulePage({
                 isAway={isAway}
                 initialMinLeadTime={initialMinLeadTime}
                 initialHomeBuffer={initialHomeBuffer}
+                initialPendingReminderEnabled={initialPendingReminderEnabled}
+                initialPendingReminderHours={initialPendingReminderHours}
             />
 
             {/* Секция 2: Выездной режим (только away) */}

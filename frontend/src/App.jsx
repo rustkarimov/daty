@@ -76,6 +76,8 @@ function PagePortals() {
                     initialArrivalWindow={parseInt(scheduleEl.dataset.arrivalWindow || '30', 10)}
                     initialMinLeadTime={parseInt(scheduleEl.dataset.minLeadTime || '0', 10)}
                     initialHomeBuffer={parseInt(scheduleEl.dataset.homeBuffer || '0', 10)}
+                    initialPendingReminderEnabled={scheduleEl.dataset.pendingReminderEnabled !== 'false'}
+                    initialPendingReminderHours={parseInt(scheduleEl.dataset.pendingReminderHours || '4', 10)}
                 />,
                 scheduleEl
             )}

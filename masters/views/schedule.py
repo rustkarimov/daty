@@ -725,24 +725,32 @@ def api_delete_day_off_by_date(request):
 @login_required
 @require_http_methods(["POST"])
 def api_update_general_settings(request):
-    """Сохраняет общие настройки: ограничитель и буфер для дома."""
+    """Сохраняет общие настройки: ограничитель, буфер, напоминания."""
     try:
         master = request.user.master
         data = json.loads(request.body)
 
         lead_time = data.get('min_booking_lead_time')
         home_buffer = data.get('home_buffer_between_bookings')
+        pending_reminder_enabled = data.get('pending_reminder_enabled')
+        pending_reminder_hours = data.get('pending_reminder_hours')
 
         if lead_time is not None:
             master.min_booking_lead_time = max(0, int(lead_time))
         if home_buffer is not None and master.work_mode == 'home':
             master.home_buffer_between_bookings = max(0, int(home_buffer))
+        if pending_reminder_enabled is not None:
+            master.pending_reminder_enabled = bool(pending_reminder_enabled)
+        if pending_reminder_hours is not None:
+            master.pending_reminder_hours = max(1, int(pending_reminder_hours))
 
         master.save()
 
         return api_success({
             'min_booking_lead_time': master.min_booking_lead_time,
             'home_buffer_between_bookings': master.home_buffer_between_bookings,
+            'pending_reminder_enabled': master.pending_reminder_enabled,
+            'pending_reminder_hours': master.pending_reminder_hours,
         })
     except json.JSONDecodeError:
         return api_error('Неверный формат данных', status=400)

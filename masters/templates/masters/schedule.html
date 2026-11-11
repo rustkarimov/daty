@@ -15,6 +15,8 @@
      data-away-travel-after="{{ master.away_travel_time_after_default|default:0 }}"
      data-arrival-window="{{ master.arrival_window_minutes|default:30 }}"
      data-min-lead-time="{{ master.min_booking_lead_time|default:0 }}"
-     data-home-buffer="{{ master.home_buffer_between_bookings|default:0 }}"></div>
+     data-home-buffer="{{ master.home_buffer_between_bookings|default:0 }}"
+     data-pending-reminder-enabled="{{ master.pending_reminder_enabled|yesno:'true,false' }}"
+     data-pending-reminder-hours="{{ master.pending_reminder_hours|default:4 }}"></div>
 {% csrf_token %}
 {% endblock %}

@@ -97,6 +97,17 @@ class Master(models.Model):
         verbose_name="Статус Push-уведомлений",
     )
 
+    pending_reminder_enabled = models.BooleanField(
+        default=True,
+        verbose_name="Напоминать о неподтверждённых заявках",
+        help_text="Отправлять push-уведомление, если pending-заявка висит слишком долго",
+    )
+    pending_reminder_hours = models.IntegerField(
+        default=4,
+        verbose_name="Через сколько часов напоминать",
+        help_text="Через сколько часов после создания pending-заявки отправить напоминание",
+    )
+
     # ---- Режим работы ----
     work_mode = models.CharField(
         max_length=10,

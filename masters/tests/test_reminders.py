@@ -139,3 +139,34 @@ class SendPendingRemindersTest(TestCase):
             0,
             "Подтверждённая запись не должна триггерить напоминание"
         )
+
+    def test_skips_if_master_disabled_reminders(self):
+        """Если мастер отключил напоминания — уведомление не создаётся."""
+        self.master.pending_reminder_enabled = False
+        self.master.save()
+
+        self._make_pending_booking(hours_ago=5)
+        self._run_command()
+
+        self.assertEqual(
+            Notification.objects.filter(
+                type='warning', title='Ждет подтверждения'
+            ).count(),
+            0,
+            "Мастер отключил напоминания — не должно быть уведомлений"
+        )
+
+    def test_uses_master_custom_hours(self):
+        """Если мастер задал 1 час — запись старше 1 часа триггерит."""
+        self.master.pending_reminder_hours = 1
+        self.master.save()
+
+        self._make_pending_booking(hours_ago=2)  # старше 1 часа
+        self._run_command()
+
+        self.assertEqual(
+            Notification.objects.filter(
+                type='warning', title='Ждет подтверждения'
+            ).count(),
+            1,
+        )

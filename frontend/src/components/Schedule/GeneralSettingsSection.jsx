@@ -1,6 +1,7 @@
 // frontend/src/components/Schedule/GeneralSettingsSection.jsx
 //
-// Секция «Общие настройки»: лид-тайм (для всех) + буфер (только дома).
+// Секция «Общие настройки»: лид-тайм, буфер (дома),
+// напоминания о pending-заявках (только для away).
 
 import React, { useState } from 'react';
 import useModal from '../../hooks/useModal';
@@ -11,10 +12,14 @@ export default function GeneralSettingsSection({
     isAway,
     initialMinLeadTime = 0,
     initialHomeBuffer = 0,
+    initialPendingReminderEnabled = true,
+    initialPendingReminderHours = 4,
     onSaved = null,
 }) {
     const [minLeadTime, setMinLeadTime] = useState(initialMinLeadTime);
     const [homeBuffer, setHomeBuffer] = useState(initialHomeBuffer);
+    const [pendingReminderEnabled, setPendingReminderEnabled] = useState(initialPendingReminderEnabled);
+    const [pendingReminderHours, setPendingReminderHours] = useState(initialPendingReminderHours);
     const [saving, setSaving] = useState(false);
 
     const { showAlert } = useModal();
@@ -25,6 +30,8 @@ export default function GeneralSettingsSection({
             const data = await updateGeneralSettings({
                 min_booking_lead_time: parseInt(minLeadTime) || 0,
                 home_buffer_between_bookings: parseInt(homeBuffer) || 0,
+                pending_reminder_enabled: pendingReminderEnabled,
+                pending_reminder_hours: parseInt(pendingReminderHours) || 4,
             });
             if (data.success) {
                 showAlert('Настройки сохранены', 'success');
@@ -81,6 +88,52 @@ export default function GeneralSettingsSection({
                             />
                         </div>
                     </div>
+                )}
+
+                {/* Напоминания о неподтверждённых заявках — только для away */}
+                {isAway && (
+                    <>
+                        <div className={styles.travelTimeRow}>
+                            <div className={styles.travelTimeField}>
+                                <label className={styles.travelTimeLabel}>
+                                    <i className="fas fa-bell me-1" />
+                                    Напоминать о неподтверждённых заявках
+                                </label>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={pendingReminderEnabled}
+                                        onChange={e => setPendingReminderEnabled(e.target.checked)}
+                                    />
+                                    <span style={{ fontSize: '0.9rem', color: 'var(--gray-700)' }}>
+                                        {pendingReminderEnabled ? 'Включено' : 'Отключено'}
+                                    </span>
+                                </div>
+                                <small style={{ color: 'var(--gray-500)', fontSize: '0.75rem', marginTop: '4px', display: 'block' }}>
+                                    Только для выездного режима
+                                </small>
+                            </div>
+                        </div>
+
+                        {pendingReminderEnabled && (
+                            <div className={styles.travelTimeRow}>
+                                <div className={styles.travelTimeField}>
+                                    <label className={styles.travelTimeLabel}>
+                                        Через сколько часов напоминать
+                                    </label>
+                                    <input
+                                        type="number"
+                                        className={styles.travelTimeInput}
+                                        min="1"
+                                        step="1"
+                                        value={pendingReminderHours}
+                                        onChange={e => setPendingReminderHours(e.target.value)}
+                                        placeholder="4"
+                                    />
+                                </div>
+                            </div>
+                        )}
+                    </>
                 )}
 
                 <button
