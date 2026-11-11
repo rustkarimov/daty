@@ -21,6 +21,8 @@ from ..utils.crypto_utils import (
     compute_phone_hash,
 )
 
+from django.utils import timezone
+
 
 # ============================================================
 # ВСПОМОГАТЕЛЬНОЕ
@@ -431,7 +433,7 @@ def api_blacklist_add(request):
                 'phone': obj.phone,
                 'name': obj.name,
                 'reason': obj.reason,
-                'created_at': obj.created_at.strftime('%d.%m.%Y %H:%M'),
+                'created_at': timezone.localtime(obj.created_at).strftime('%d.%m.%Y %H:%M'),
             },
         })
 
@@ -469,7 +471,7 @@ def api_get_blacklist(request):
         'phone': c.phone,
         'name': c.name or 'Без имени',
         'reason': c.reason or '',
-        'created_at': c.created_at.strftime('%d.%m.%Y %H:%M'),
+        'created_at': timezone.localtime(c.created_at).strftime('%d.%m.%Y %H:%M'),
     } for c in clients]
 
     return JsonResponse({'blacklist': data})

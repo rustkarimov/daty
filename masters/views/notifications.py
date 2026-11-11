@@ -7,6 +7,8 @@ from django.contrib.auth.decorators import login_required
 
 from ..models import Notification
 
+from django.utils import timezone
+
 
 @login_required
 def get_notifications(request):
@@ -26,7 +28,7 @@ def get_notifications(request):
         'title': n.title,
         'message': n.message,
         'is_read': n.is_read,
-        'created_at': n.created_at.strftime('%d.%m.%Y %H:%M'),
+        'created_at': timezone.localtime(n.created_at).strftime('%d.%m.%Y %H:%M'),
     } for n in notifications_list]
     
     return JsonResponse({

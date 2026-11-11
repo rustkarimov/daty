@@ -8,6 +8,7 @@ from django.views.decorators.http import require_http_methods
 
 from ..models import SupportMessage
 from ..utils.response_utils import api_success, api_error
+from django.utils import timezone
 
 
 @login_required
@@ -28,7 +29,7 @@ def get_support_messages(request):
             'id': msg.id,
             'direction': msg.direction,
             'message': msg.message,
-            'created_at': msg.created_at.strftime('%H:%M %d.%m.%Y'),
+            'created_at': timezone.localtime(msg.created_at).strftime('%H:%M %d.%m.%Y'),
         })
     
     return JsonResponse({
