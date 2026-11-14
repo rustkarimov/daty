@@ -1,3 +1,4 @@
+// frontend/src/components/Services/CategoryModal.jsx
 import React, { useState, useEffect } from 'react';
 import useModal from '../../hooks/useModal';
 import {
@@ -18,7 +19,11 @@ export default function CategoryModal({
     useBodyLock();
     const [formId, setFormId] = useState('');
     const [formName, setFormName] = useState('');
-    const [formOrder, setFormOrder] = useState(0);
+    // Следующий порядок: max(order) + 1 (или 1, если категорий нет)
+    const nextOrder = categories.length > 0
+        ? Math.max(...categories.map(c => c.order || 0)) + 1
+        : 1;
+    const [formOrder, setFormOrder] = useState(nextOrder);
     const [saving, setSaving] = useState(false);
 
     // Inline-edit список
@@ -33,12 +38,13 @@ export default function CategoryModal({
         if (mode === 'edit' && category) {
             setFormId(category.id);
             setFormName(category.name);
-            setFormOrder(category.order || 0);
+            setFormOrder(category.order || 1);
         } else {
             setFormId('');
             setFormName('');
-            setFormOrder(0);
+            setFormOrder(nextOrder);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [mode, category]);
 
     function handleBackdropClick(e) {
@@ -57,16 +63,15 @@ export default function CategoryModal({
 
         setSaving(true);
         try {
-            const payload = { name, order: parseInt(formOrder) || 0 };
+            const payload = { name, order: parseInt(formOrder) || 1 };
             const data = formId
                 ? await editCategory(formId, payload)
                 : await addCategory(payload);
 
             if (data.success) {
-                // Очищаем форму и остаёмся в модалке — чтобы можно было ещё добавлять
                 setFormId('');
                 setFormName('');
-                setFormOrder(0);
+                setFormOrder(nextOrder);
                 onSaved();
             } else {
                 showAlert(data.error || 'Ошибка сохранения', 'error');
@@ -82,7 +87,7 @@ export default function CategoryModal({
     function handleStartEdit(cat) {
         setEditingId(cat.id);
         setEditingName(cat.name);
-        setEditingOrder(cat.order || 0);
+        setEditingOrder(cat.order || 1);
     }
 
     function handleCancelEdit() {
@@ -101,7 +106,7 @@ export default function CategoryModal({
         try {
             const data = await editCategory(catId, {
                 name,
-                order: parseInt(editingOrder) || 0,
+                order: parseInt(editingOrder) || 1,
             });
             if (data.success) {
                 setEditingId(null);
@@ -135,8 +140,6 @@ export default function CategoryModal({
         }
     }
 
-    // ---------- Заголовок модалки ----------
-
     const titleIcon = mode === 'edit' ? 'fa-edit' : 'fa-folder-plus';
     const titleText = mode === 'edit' ? 'Редактировать категорию' : 'Добавить категорию';
 
@@ -159,7 +162,6 @@ export default function CategoryModal({
                 </div>
 
                 <div className={styles.body}>
-                    {/* ---- Форма добавления / редактирования ---- */}
                     <form className={styles.form} onSubmit={handleSaveForm}>
                         <div className={styles.formField}>
                             <label className={styles.formLabel}>Название категории</label>
@@ -179,7 +181,7 @@ export default function CategoryModal({
                                 className={styles.formInput}
                                 value={formOrder}
                                 onChange={e => setFormOrder(e.target.value)}
-                                min="0"
+                                min="1"
                             />
                             <small className={styles.formHint}>
                                 Чем меньше число, тем выше категория в списке
@@ -204,7 +206,6 @@ export default function CategoryModal({
                         </button>
                     </form>
 
-                    {/* ---- Список существующих категорий ---- */}
                     <div className={styles.listBlock}>
                         <div className={styles.listTitle}>Другие категории</div>
 
@@ -231,7 +232,7 @@ export default function CategoryModal({
                                                             className={styles.editOrder}
                                                             value={editingOrder}
                                                             onChange={e => setEditingOrder(e.target.value)}
-                                                            min="0"
+                                                            min="1"
                                                         />
                                                     </div>
                                                     <div className={styles.itemActions}>
