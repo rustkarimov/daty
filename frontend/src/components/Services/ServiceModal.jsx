@@ -7,6 +7,7 @@ import useBodyLock from '../../hooks/useBodyLock';
 export default function ServiceModal({
     mode = 'add',
     serviceId = null,
+    initialCategoryId = null,
     categories = [],
     onClose,
     onSaved,
@@ -17,7 +18,9 @@ export default function ServiceModal({
     const { showAlert } = useModal();
 
     // Поля формы
-    const [formCategoryId, setFormCategoryId] = useState('');
+    const [formCategoryId, setFormCategoryId] = useState(
+        initialCategoryId ? String(initialCategoryId) : ''
+    );
     const [formName, setFormName] = useState('');
     const [formDescription, setFormDescription] = useState('');
     const [formDuration, setFormDuration] = useState('');

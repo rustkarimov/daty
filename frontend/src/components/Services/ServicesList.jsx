@@ -7,6 +7,7 @@ export default function ServicesList({
     categories,
     uncategorized,
     onAddService,
+    onAddServiceInCategory,
     onEditService,
     onEditCategory,
     onDataChanged,
@@ -111,6 +112,14 @@ export default function ServicesList({
                                 <button
                                     type="button"
                                     className={styles.iconBtn}
+                                    onClick={() => onAddServiceInCategory(cat.id)}
+                                    title="Добавить услугу в эту категорию"
+                                >
+                                    <i className="fas fa-plus" />
+                                </button>
+                                <button
+                                    type="button"
+                                    className={styles.iconBtn}
                                     onClick={() => onEditCategory(cat)}
                                     title="Редактировать категорию"
                                 >
@@ -144,27 +153,42 @@ export default function ServicesList({
             })}
 
             {/* Услуги без категории */}
-            {uncategorized.length > 0 && (
-                <div className={styles.categoryCard}>
-                    <div className={styles.categoryHeader} style={{ cursor: 'default' }}>
-                        <div className={styles.categoryTitle}>
-                            <i className="fas fa-tag" />
-                            <span>Без категории</span>
-                            <span className={styles.badge}>{uncategorized.length}</span>
+            {uncategorized.length > 0 && (() => {
+                const isOpen = openCategories.has('uncategorized');
+                const canCollapse = categories.length > 0;
+                return (
+                    <div className={styles.categoryCard}>
+                        <div
+                            className={styles.categoryHeader}
+                            onClick={canCollapse ? () => toggleCategory('uncategorized') : undefined}
+                            style={{ cursor: canCollapse ? 'pointer' : 'default' }}
+                        >
+                            <div className={styles.categoryTitle}>
+                                {canCollapse && (
+                                    <i
+                                        className={`fas fa-chevron-right ${styles.chevron} ${isOpen ? styles.chevronOpen : ''}`}
+                                    />
+                                )}
+                                <i className="fas fa-tag" />
+                                <span>Без категории</span>
+                                <span className={styles.badge}>{uncategorized.length}</span>
+                            </div>
                         </div>
+                        {(!canCollapse || isOpen) && (
+                            <div className={styles.servicesGrid}>
+                                {uncategorized.map(service => (
+                                    <ServiceCard
+                                        key={service.id}
+                                        service={service}
+                                        onEdit={() => onEditService(service.id)}
+                                        onDelete={() => handleDeleteService(service)}
+                                    />
+                                ))}
+                            </div>
+                        )}
                     </div>
-                    <div className={styles.servicesGrid}>
-                        {uncategorized.map(service => (
-                            <ServiceCard
-                                key={service.id}
-                                service={service}
-                                onEdit={() => onEditService(service.id)}
-                                onDelete={() => handleDeleteService(service)}
-                            />
-                        ))}
-                    </div>
-                </div>
-            )}
+                );
+            })()}
         </div>
     );
 }

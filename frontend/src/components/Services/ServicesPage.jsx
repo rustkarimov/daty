@@ -44,7 +44,11 @@ export default function ServicesPage() {
     }
 
     function openAddService() {
-        setServiceModal({ mode: 'add' });
+        setServiceModal({ mode: 'add', categoryId: null });
+    }
+
+    function openAddServiceInCategory(categoryId) {
+        setServiceModal({ mode: 'add', categoryId });
     }
 
     function openEditService(serviceId) {
@@ -100,6 +104,7 @@ export default function ServicesPage() {
                     categories={categories}
                     uncategorized={uncategorized}
                     onAddService={openAddService}
+                    onAddServiceInCategory={openAddServiceInCategory}
                     onEditService={openEditService}
                     onEditCategory={openEditCategory}
                     onDataChanged={handleDataChanged}
@@ -122,6 +127,7 @@ export default function ServicesPage() {
                 <ServiceModal
                     mode={serviceModal.mode}
                     serviceId={serviceModal.serviceId}
+                    initialCategoryId={serviceModal.categoryId || null}
                     categories={categories}
                     onClose={closeServiceModal}
                     onSaved={handleDataChanged}
