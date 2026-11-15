@@ -12,6 +12,7 @@ from ..models import Service, ServiceCategory
 from ..utils.response_utils import api_success, api_error
 from ..utils.master_utils import get_master_by_identifier
 
+from django.db.models import Max
 
 # ============================================================
 # СТРАНИЦА УПРАВЛЕНИЯ УСЛУГАМИ
@@ -144,12 +145,12 @@ def get_categories(request):
     master = request.user.master
     categories = ServiceCategory.objects.filter(master=master, is_active=True)
     uncategorized = Service.objects.filter(
-        master=master, category__isnull=True, is_active=True
+        master=master, category__isnull=True
     )
 
     data = []
     for cat in categories:
-        services = Service.objects.filter(master=master, category=cat, is_active=True)
+        services = Service.objects.filter(master=master, category=cat)
         data.append({
             'id': cat.id,
             'name': cat.name,
@@ -162,6 +163,7 @@ def get_categories(request):
                 'duration': s.duration,
                 'price': float(s.price),
                 'mode': s.mode,
+                'is_active': s.is_active,   # ← добавили
             } for s in services]
         })
 
@@ -174,6 +176,7 @@ def get_categories(request):
             'duration': s.duration,
             'price': float(s.price),
             'mode': s.mode,
+            'is_active': s.is_active,   # ← добавили
         } for s in uncategorized]
     })
 
@@ -193,10 +196,20 @@ def api_add_category(request):
         if not data.get('name'):
             return api_error('Название категории обязательно', status=400)
 
+                
+
+        # Если order не передан — ставим следующий (max+1)
+        order = data.get('order')
+        if order is None:
+            max_order = ServiceCategory.objects.filter(master=master).aggregate(
+                Max('order')
+            )['order__max'] or 0
+            order = max_order + 1
+
         category = ServiceCategory.objects.create(
             master=master,
             name=data.get('name'),
-            order=data.get('order', 0),
+            order=int(order) or 1,
             mode=master.work_mode,
         )
 
@@ -224,7 +237,8 @@ def api_edit_category(request, category_id):
             return api_error('Название категории обязательно', status=400)
 
         category.name = data.get('name')
-        category.order = data.get('order', 0)
+        if 'order' in data:
+            category.order = int(data['order']) or 1
         category.save()
 
         return api_success({'message': 'Категория обновлена'})

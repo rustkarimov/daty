@@ -224,7 +224,7 @@ class ServiceCategory(models.Model):
     """Категория услуг (группа)."""
     master = models.ForeignKey(Master, on_delete=models.CASCADE, related_name='service_categories')
     name = models.CharField(max_length=100, verbose_name="Название категории")
-    order = models.IntegerField(default=0, verbose_name="Порядок сортировки")
+    order = models.IntegerField(default=1, verbose_name="Порядок сортировки")
     is_active = models.BooleanField(default=True, verbose_name="Активна")
     mode = models.CharField(
         max_length=10,

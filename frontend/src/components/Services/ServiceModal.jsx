@@ -165,7 +165,7 @@ export default function ServiceModal({
                                     className={styles.formInput}
                                     value={formName}
                                     onChange={e => setFormName(e.target.value)}
-                                    placeholder="Например: Классический маникюр"
+                                    placeholder=""
                                     autoFocus
                                 />
                             </div>
@@ -223,12 +223,14 @@ export default function ServiceModal({
                                     checked={formIsActive}
                                     onChange={e => setFormIsActive(e.target.checked)}
                                 />
-                                <label htmlFor="service-active" className={styles.checkboxLabel}>
-                                    Активна
-                                </label>
-                                <span className={styles.checkboxHint}>
-                                    Неактивные услуги не видны клиентам
-                                </span>
+                                <div className={styles.checkboxLabelGroup}>
+                                    <label htmlFor="service-active" className={styles.checkboxLabel}>
+                                        Активна
+                                    </label>
+                                    <span className={styles.checkboxHint}>
+                                        Неактивные услуги не видны клиентам
+                                    </span>
+                                </div>
                             </div>
                         </form>
                     )}

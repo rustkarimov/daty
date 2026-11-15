@@ -172,8 +172,10 @@ export default function ServicesList({
 // ---------- Карточка услуги ----------
 
 function ServiceCard({ service, onEdit, onDelete }) {
+    const isInactive = service.is_active === false;
+
     return (
-        <div className={styles.serviceCard}>
+        <div className={`${styles.serviceCard} ${isInactive ? styles.serviceCardInactive : ''}`}>
             <div className={styles.serviceName}>{service.name}</div>
 
             {service.description && (
