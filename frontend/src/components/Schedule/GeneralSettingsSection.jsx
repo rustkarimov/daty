@@ -56,7 +56,7 @@ export default function GeneralSettingsSection({
                     <div className={styles.travelTimeField}>
                         <label className={styles.travelTimeLabel}>
                             <i className="fas fa-clock me-1" />
-                            Не принимать записи за (часов)
+                            Не принимать записи за сколько часов?
                         </label>
                         <input
                             type="number"
@@ -75,7 +75,7 @@ export default function GeneralSettingsSection({
                         <div className={styles.travelTimeField}>
                             <label className={styles.travelTimeLabel}>
                                 <i className="fas fa-coffee me-1" />
-                                Буфер между записями (мин)
+                                Установить паузу после каждой записи (мин)?
                             </label>
                             <input
                                 type="number"
@@ -141,7 +141,7 @@ export default function GeneralSettingsSection({
                     className={styles.btnPrimary}
                     onClick={handleSave}
                     disabled={saving}
-                    style={{ marginTop: '12px' }}
+                    style={{ marginTop: '5px' }}
                 >
                     {saving ? (
                         <><i className="fas fa-spinner fa-spin" /> Сохранение...</>

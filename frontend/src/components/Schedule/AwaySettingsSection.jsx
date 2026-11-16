@@ -110,7 +110,7 @@ export default function AwaySettingsSection({
                     className={styles.btnPrimary}
                     onClick={handleSave}
                     disabled={saving}
-                    style={{ marginTop: '12px' }}
+                    style={{ marginTop: '5px' }}
                 >
                     {saving ? (
                         <><i className="fas fa-spinner fa-spin" /> Сохранение...</>

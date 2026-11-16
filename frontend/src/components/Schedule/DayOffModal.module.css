@@ -209,7 +209,14 @@
     }
 
     .formInput {
-        font-size: 16px;
+        font-size: 16px;   /* не зумит */
+        height: 44px;       /* чуть выше для удобства */
+    }
+
+    .formInput[type="date"] {
+        height: 44px;
+        line-height: 44px;
+        padding: 0 12px;
     }
 
     .footer {
