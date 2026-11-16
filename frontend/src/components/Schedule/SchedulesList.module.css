@@ -157,18 +157,21 @@
     }
 
     /* Строка 2: Рабочие часы (одна строка) */
-    .table tbody td[data-label="start"],
-    .table tbody td[data-label="end"] {
-        display: inline-flex;
-        font-size: 12px;
-        color: var(--gray-700);
+    .table tbody td[data-label="start"] {
+        display: flex;
+        align-items: baseline;
+        gap: 6px;
+        font-size: 13px;
+        font-weight: 600;           /* ← выделить */
+        color: var(--gray-800);
     }
 
     .table tbody td[data-label="start"]::before {
         content: "Рабочие часы";
         font-weight: 500;
         color: var(--gray-500);
-        margin-right: 8px;
+        font-size: 12px;
+        flex-shrink: 0;
     }
 
     .table tbody td[data-label="end"] {

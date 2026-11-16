@@ -1,12 +1,23 @@
-import React, { useState } from 'react';
 import useModal from '../../../hooks/useModal';
 import styles from './BreaksEditor.module.css';
+import React, { useState, useEffect } from 'react';
 
-export default function BreaksEditor({ breaks, onChange }) {
+export default function BreaksEditor({ breaks, onChange, onDraftChange }) {
     const [editingIndex, setEditingIndex] = useState(null);
     const [editValues, setEditValues] = useState({ start: '', end: '' });
     const [newBreak, setNewBreak] = useState(null);
     const { showAlert, showConfirm } = useModal();
+
+    // Сообщаем родителю о draft (newBreak / editValues)
+    useEffect(() => {
+        if (onDraftChange) {
+            onDraftChange({
+                newBreak,
+                editValues,
+                editingIndex,
+            });
+        }
+    }, [newBreak, editValues, editingIndex, onDraftChange]);
 
     function handleEditClick(index) {
         setEditingIndex(index);

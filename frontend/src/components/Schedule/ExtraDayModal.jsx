@@ -12,6 +12,7 @@ export default function ExtraDayModal({ schedules = [], onClose, onSaved }) {
     const [startTime, setStartTime] = useState('');
     const [endTime, setEndTime] = useState('');
     const [breaks, setBreaks] = useState([]);
+    const [breakDraft, setBreakDraft] = useState(null);
     const [saving, setSaving] = useState(false);
     const { showAlert, showConfirm } = useModal();
 
@@ -67,7 +68,14 @@ export default function ExtraDayModal({ schedules = [], onClose, onSaved }) {
         }
 
         // Проверка перерывов
-        const validBreaks = breaks.filter(b => b.start && b.end);
+        // Если в BreaksEditor есть несохранённый перерыв — добавляем его
+        let finalBreaks = [...breaks];
+        if (breakDraft && breakDraft.newBreak && breakDraft.newBreak.start && breakDraft.newBreak.end) {
+            finalBreaks.push(breakDraft.newBreak);
+        }
+
+        // Проверка перерывов
+        const validBreaks = finalBreaks.filter(b => b.start && b.end);
         for (const b of validBreaks) {
             if (b.start >= b.end) {
                 showAlert(`Перерыв ${b.start}-${b.end}: время начала не может быть позже окончания`, 'warning');
@@ -170,7 +178,11 @@ export default function ExtraDayModal({ schedules = [], onClose, onSaved }) {
                             </div>
                         </div>
 
-                        <BreaksEditor breaks={breaks} onChange={setBreaks} />
+                        <BreaksEditor
+                            breaks={breaks}
+                            onChange={setBreaks}
+                            onDraftChange={setBreakDraft}
+                        />
                     </form>
                 </div>
 
