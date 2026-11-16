@@ -74,7 +74,7 @@ export default function ServicesPage() {
                 <h2>Мои услуги</h2>
             </div>
 
-            {/* Кнопки действий */}
+            {/* Кнопки действий (десктоп) */}
             <div className={styles.actionsBar}>
                 <button
                     type="button"
@@ -86,7 +86,7 @@ export default function ServicesPage() {
                 </button>
                 <button
                     type="button"
-                    className={styles.btnPrimary}
+                    className={styles.btnOutline}
                     onClick={openAddService}
                 >
                     <i className="fas fa-plus" />
@@ -110,6 +110,28 @@ export default function ServicesPage() {
                     onDataChanged={handleDataChanged}
                 />
             )}
+
+            {/* Sticky-кнопки (только мобильные) — после списка */}
+            <div className={styles.actionsBarStickyWrapper}>
+                <div className={styles.actionsBarSticky}>
+                    <button
+                        type="button"
+                        className={styles.btnOutline}
+                        onClick={openAddCategory}
+                    >
+                        <i className="fas fa-folder-plus" />
+                        Категория
+                    </button>
+                    <button
+                        type="button"
+                        className={styles.btnOutline}
+                        onClick={openAddService}
+                    >
+                        <i className="fas fa-plus" />
+                        Услуга
+                    </button>
+                </div>
+            </div>
 
             {/* Модалка категории */}
             {categoryModal && (
