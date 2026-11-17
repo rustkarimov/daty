@@ -14,6 +14,7 @@ import {
     loadUpcomingExtraDays,
     loadPastExtraDays,
     loadDaysOff,
+    loadVacations,
 } from '../../api/schedule';
 import styles from './SchedulePage.module.css';
 
@@ -27,7 +28,6 @@ export default function SchedulePage({
     initialPendingReminderEnabled = true,
     initialPendingReminderHours = 4,
 }) {
-
     // Данные
     const [schedules, setSchedules] = useState([]);
     const [futureExtraDays, setFutureExtraDays] = useState([]);
@@ -35,11 +35,13 @@ export default function SchedulePage({
     const [pastDaysHasMore, setPastDaysHasMore] = useState(false);
     const [pastDaysPage, setPastDaysPage] = useState(1);
     const [daysOff, setDaysOff] = useState([]);
+    const [vacations, setVacations] = useState([]);
 
     // Загрузка
     const [loadingSchedules, setLoadingSchedules] = useState(true);
     const [loadingExtra, setLoadingExtra] = useState(true);
     const [loadingDaysOff, setLoadingDaysOff] = useState(true);
+    const [loadingVacations, setLoadingVacations] = useState(true);
 
     // Модалки
     const [scheduleModal, setScheduleModal] = useState(null);
@@ -94,11 +96,25 @@ export default function SchedulePage({
             });
     }, []);
 
+    const reloadVacations = useCallback(() => {
+        setLoadingVacations(true);
+        loadVacations()
+            .then(data => {
+                setVacations(data.vacations || []);
+                setLoadingVacations(false);
+            })
+            .catch(error => {
+                console.error('Ошибка загрузки отпусков:', error);
+                setLoadingVacations(false);
+            });
+    }, []);
+
     useEffect(() => {
         reloadSchedules();
         reloadExtraDays();
         reloadDaysOff();
-    }, [reloadSchedules, reloadExtraDays, reloadDaysOff]);
+        reloadVacations();
+    }, [reloadSchedules, reloadExtraDays, reloadDaysOff, reloadVacations]);
 
     function loadMorePastDays() {
         const nextPage = pastDaysPage + 1;
@@ -119,7 +135,7 @@ export default function SchedulePage({
                 <h2>Расписание</h2>
             </div>
 
-            {/* Секция 1: Общие настройки (лид-тайм + буфер для дома) */}
+            {/* Секция 1: Общие настройки */}
             <GeneralSettingsSection
                 isAway={isAway}
                 initialMinLeadTime={initialMinLeadTime}
@@ -158,11 +174,14 @@ export default function SchedulePage({
                 onAdd={() => setExtraDayModal(true)}
             />
 
-            {/* Секция 5: Выходные дни */}
+            {/* Секция 5: Выходные и отпуска */}
             <DaysOffSection
                 daysOff={daysOff}
+                vacations={vacations}
                 loading={loadingDaysOff}
+                loadingVacations={loadingVacations}
                 onDataChanged={reloadDaysOff}
+                onDataChangedVacations={reloadVacations}
                 onAdd={() => setDayOffModal(true)}
             />
 
@@ -187,7 +206,10 @@ export default function SchedulePage({
             {dayOffModal && (
                 <DayOffModal
                     onClose={() => setDayOffModal(false)}
-                    onSaved={reloadDaysOff}
+                    onSaved={() => {
+                        reloadDaysOff();
+                        reloadVacations();
+                    }}
                 />
             )}
         </div>

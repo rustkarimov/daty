@@ -158,12 +158,15 @@
 
     /* Строка 2: Рабочие часы (одна строка) */
     .table tbody td[data-label="start"] {
-        display: flex;
-        align-items: baseline;
-        gap: 6px;
+        display: flex !important;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-start !important;   /* прижать влево */
+        gap: 8px;
         font-size: 13px;
-        font-weight: 600;           /* ← выделить */
+        font-weight: 600;
         color: var(--gray-800);
+        width: 100%;
     }
 
     .table tbody td[data-label="start"]::before {
@@ -184,6 +187,13 @@
 
     .workTimeMobile {
         display: inline;
+    }
+
+    /* Мобильная версия — сразу после «Рабочие часы» */
+    .table tbody td[data-label="start"] .workTimeMobile {
+        display: inline !important;
+        margin-left: 0 !important;   /* убрать авто-отступ */
+        white-space: nowrap;
     }
 
     /* Строка 3: Перерывы */

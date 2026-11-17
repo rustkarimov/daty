@@ -75,7 +75,11 @@ from .schedule import (
     # Время на дорогу (away)
     api_update_away_travel,
 
-    api_update_general_settings
+    api_update_general_settings,
+    get_vacations_list,
+    api_add_vacation,
+    api_check_vacation_conflicts,
+    api_delete_vacation,
 )
 
 from .bookings import (  

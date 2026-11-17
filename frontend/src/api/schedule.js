@@ -79,3 +79,28 @@ export function updateGeneralSettings(data) {
         body: JSON.stringify(data),
     });
 }
+
+
+// ---------- ОТПУСКА ----------
+
+export function loadVacations() {
+    return request('/api/vacations/list/', { method: 'GET' });
+}
+
+export function addVacation(data) {
+    return request('/api/vacations/add/', {
+        method: 'POST',
+        body: JSON.stringify(data),
+    });
+}
+
+export function checkVacationConflicts(data) {
+    return request('/api/vacations/check-conflicts/', {
+        method: 'POST',
+        body: JSON.stringify(data),
+    });
+}
+
+export function deleteVacation(id) {
+    return request(`/api/vacations/${id}/delete/`, { method: 'POST' });
+}

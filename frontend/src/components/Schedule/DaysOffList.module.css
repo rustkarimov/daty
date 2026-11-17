@@ -146,4 +146,10 @@
         height: 28px;
         font-size: 12px;
     }
+
+    /* Десктоп: причина всегда есть (пусто, если нет) */
+    /* Мобильные: скрываем, если пусто */
+    .table tbody td[data-label="reason"]:empty {
+        display: none !important;
+    }
 }

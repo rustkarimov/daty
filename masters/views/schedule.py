@@ -4,7 +4,7 @@
 и away (AwaySchedule/AwayExtraDay/AwayDayOff).
 """
 import json
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.contrib import messages
@@ -14,7 +14,7 @@ from django.views.decorators.http import require_http_methods
 from ..models import (
     Schedule, Break, ExtraWorkingDay, ExtraWorkingDayBreak, DayOff,
     AwaySchedule, AwayExtraDay, AwayDayOff,
-    Booking, AwayBreak, AwayExtraDayBreak,
+    Booking, AwayBreak, AwayExtraDayBreak, Vacation,
 )
 from ..utils.response_utils import api_success, api_error
 
@@ -823,3 +823,264 @@ def _pluralize_bookings(n):
     if n1 == 1:
         return 'запись'
     return 'записей'
+
+
+# ============================================================
+# ОТПУСКА
+# ============================================================
+
+@login_required
+def get_vacations_list(request):
+    """Возвращает список будущих отпусков мастера."""
+    master = request.user.master
+    today = date.today()
+
+    vacations = Vacation.objects.filter(
+        master=master,
+        end_date__gte=today,
+    ).order_by('start_date')
+
+    def get_month_name(month_num):
+        months = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+                  'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']
+        return months[month_num - 1]
+
+    data = []
+    for v in vacations:
+        data.append({
+            'id': v.id,
+            'start_date': v.start_date.strftime('%Y-%m-%d'),
+            'end_date': v.end_date.strftime('%Y-%m-%d'),
+            'start_display': f"{v.start_date.day} {get_month_name(v.start_date.month)}",
+            'end_display': f"{v.end_date.day} {get_month_name(v.end_date.month)}",
+            'days_count': v.days_count,
+            'reason': v.reason or '',
+        })
+
+    return JsonResponse({'vacations': data})
+
+
+@login_required
+@require_http_methods(["POST"])
+def api_add_vacation(request):
+    """Добавляет отпуск (диапазон дат), отменяет записи и рабочие дни."""
+    try:
+        master = request.user.master
+        data = json.loads(request.body)
+
+        start_date_str = data.get('start_date')
+        end_date_str = data.get('end_date')
+        reason = data.get('reason', '')
+
+        if not start_date_str or not end_date_str:
+            return api_error('Укажите начало и конец отпуска', status=400)
+
+        try:
+            start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+            end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+        except ValueError as e:
+            return api_error(f'Неверный формат даты: {e}', status=400)
+
+        if end_date < start_date:
+            return api_error('Дата окончания не может быть раньше начала', status=400)
+
+        if start_date < date.today():
+            return api_error('Нельзя добавить отпуск в прошлом', status=400)
+
+        # Проверка пересечения с существующими отпусками
+        overlapping = Vacation.objects.filter(
+            master=master,
+            start_date__lte=end_date,
+            end_date__gte=start_date,
+        )
+        if overlapping.exists():
+            return api_error('Отпуск пересекается с существующим', status=409)
+
+        models = get_schedule_models(master)
+        DayOffModel = models['DayOff']
+        ExtraModel = models['ExtraWorkingDay']
+
+        # 1. Отменяем записи в периоде (переносим в CancelledBooking)
+        from ..models import CancelledBooking
+
+        current = start_date
+        cancelled_count = 0
+        while current <= end_date:
+            bookings = Booking.objects.filter(
+                master=master, date=current, status__in=['confirmed', 'pending']
+            )
+            for b in bookings:
+                CancelledBooking.objects.create(
+                    master=master,
+                    service=b.service,
+                    client_name=b.client_name,
+                    encrypted_phone=bytes(b.encrypted_phone),
+                    client_comment=b.client_comment,
+                    date=b.date,
+                    time=b.time,
+                    cancelled_by='master',
+                    reason=f'Отпуск с {start_date.strftime("%d.%m")} по {end_date.strftime("%d.%m")}',
+                    original_booking_id=b.id,
+                )
+                b.delete()
+                cancelled_count += 1
+            current += timedelta(days=1)
+
+        # 2. Удаляем доп. рабочие дни в периоде
+        ExtraModel.objects.filter(
+            master=master,
+            date__gte=start_date,
+            date__lte=end_date,
+        ).delete()
+
+        # 3. Удаляем выходные в периоде (отпуск важнее)
+        DayOffModel.objects.filter(
+            master=master,
+            date__gte=start_date,
+            date__lte=end_date,
+        ).delete()
+
+        # 4. Создаём отпуск
+        vacation = Vacation.objects.create(
+            master=master,
+            start_date=start_date,
+            end_date=end_date,
+            reason=reason,
+        )
+
+        message = f'Отпуск добавлен: {vacation.days_count} дн.'
+        if cancelled_count > 0:
+            message += f'. Отменено записей: {cancelled_count}.'
+
+        return api_success({
+            'message': message,
+            'vacation': {
+                'id': vacation.id,
+                'start_date': vacation.start_date.strftime('%Y-%m-%d'),
+                'end_date': vacation.end_date.strftime('%Y-%m-%d'),
+                'days_count': vacation.days_count,
+                'reason': vacation.reason or '',
+            },
+            'cancelled_count': cancelled_count,
+        })
+
+    except json.JSONDecodeError:
+        return api_error('Неверный формат данных', status=400)
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).exception(f'Ошибка в api_add_vacation: {e}')
+        return api_error('Ошибка при добавлении отпуска', status=500)
+
+
+@login_required
+@require_http_methods(["POST"])
+def api_check_vacation_conflicts(request):
+    """
+    Проверяет конфликты в диапазоне отпуска:
+    - рабочие дни (по расписанию или extra_day), которые будут отменены
+    - записи (confirmed / pending), которые будут отменены
+    """
+    try:
+        master = request.user.master
+        data = json.loads(request.body)
+
+        start_date_str = data.get('start_date')
+        end_date_str = data.get('end_date')
+
+        if not start_date_str or not end_date_str:
+            return api_error('Укажите начало и конец отпуска', status=400)
+
+        try:
+            start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+            end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+        except ValueError as e:
+            return api_error(f'Неверный формат даты: {e}', status=400)
+
+        if end_date < start_date:
+            return api_error('Дата окончания не может быть раньше начала', status=400)
+
+        models = get_schedule_models(master)
+        ScheduleModel = models['Schedule']
+        ExtraModel = models['ExtraWorkingDay']
+        DayOffModel = models['DayOff']
+
+        current = start_date
+        working_dates = []
+        booking_dates = []
+        booking_details = []
+
+        while current <= end_date:
+            day_of_week = current.weekday()
+
+            has_schedule = ScheduleModel.objects.filter(
+                master=master, day_of_week=day_of_week
+            ).exists()
+            has_extra = ExtraModel.objects.filter(master=master, date=current).exists()
+
+            is_day_off = DayOffModel.objects.filter(master=master, date=current).exists()
+            is_vacation = Vacation.objects.filter(
+                master=master,
+                start_date__lte=current,
+                end_date__gte=current,
+            ).exists()
+
+            if (has_schedule or has_extra) and not is_day_off and not is_vacation:
+                working_dates.append(current.strftime('%d.%m'))
+
+            bookings = Booking.objects.filter(
+                master=master, date=current, status__in=['confirmed', 'pending']
+            )
+            count = bookings.count()
+            if count > 0:
+                booking_dates.append(current.strftime('%d.%m'))
+                booking_details.append({
+                    'date': current.strftime('%d.%m'),
+                    'count': count,
+                })
+
+            current += timedelta(days=1)
+
+        has_conflicts = bool(working_dates or booking_dates)
+
+        parts = []
+        if working_dates:
+            parts.append(f"рабочий день — {', '.join(working_dates)}")
+        if booking_dates:
+            parts.append(f"записи — {', '.join(booking_dates)}")
+
+        if parts:
+            message = (
+                f"В выбранный период отпуска есть {' и '.join(parts)}. "
+                f"Если сохранить отпуск, то записи и рабочие дни отменятся."
+            )
+        else:
+            message = ""
+
+        return api_success({
+            'has_conflicts': has_conflicts,
+            'working_dates': working_dates,
+            'booking_dates': booking_dates,
+            'booking_details': booking_details,
+            'message': message,
+        })
+
+    except json.JSONDecodeError:
+        return api_error('Неверный формат данных', status=400)
+    except Exception as e:
+        return api_error('Ошибка проверки', status=500)
+
+
+@login_required
+@require_http_methods(["POST"])
+def api_delete_vacation(request, vacation_id):
+    """Удаляет отпуск по ID."""
+    try:
+        master = request.user.master
+        vacation = Vacation.objects.get(id=vacation_id, master=master)
+        vacation.delete()
+        return api_success({'message': 'Отпуск удален'})
+    except Vacation.DoesNotExist:
+        return api_error('Отпуск не найден', status=404)
+    except Exception:
+        return api_error('Ошибка при удалении отпуска', status=500)
+

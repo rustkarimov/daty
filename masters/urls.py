@@ -80,6 +80,12 @@ urlpatterns = [
     path('api/days-off/add/', views.api_add_day_off, name='api_add_day_off'),
     path('api/days-off/<int:dayoff_id>/delete/', views.api_delete_day_off, name='api_delete_day_off'),
 
+    #Отпуск
+    path('api/vacations/list/', views.get_vacations_list, name='api_vacations_list'),
+    path('api/vacations/add/', views.api_add_vacation, name='api_add_vacation'),
+    path('api/vacations/<int:vacation_id>/delete/', views.api_delete_vacation, name='api_delete_vacation'),
+    path('api/vacations/check-conflicts/', views.api_check_vacation_conflicts, name='api_vacation_conflicts'),
+
     #количество записей
     path('api/bookings/counts/', views.get_bookings_counts, name='api_bookings_counts'),
     path('api/bookings/by-date/', views.get_bookings_by_date, name='api_bookings_by_date'),

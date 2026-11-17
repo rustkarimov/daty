@@ -364,6 +364,39 @@ class ExtraWorkingDayBreak(models.Model):
 
 
 # ============================================================
+# ОТПУСКА
+# ============================================================
+
+class Vacation(models.Model):
+    """Отпуск мастера (диапазон дат)."""
+    master = models.ForeignKey(
+        Master, on_delete=models.CASCADE, related_name='vacations',
+        verbose_name="Мастер",
+    )
+    start_date = models.DateField(verbose_name="Начало отпуска")
+    end_date = models.DateField(verbose_name="Конец отпуска (включительно)")
+    reason = models.CharField(max_length=200, verbose_name="Причина", blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Отпуск"
+        verbose_name_plural = "Отпуска"
+        ordering = ['-start_date']
+        indexes = [
+            models.Index(fields=['master', 'start_date', 'end_date']),
+        ]
+
+    def __str__(self):
+        return f"{self.start_date} — {self.end_date}"
+
+    def includes_date(self, d):
+        return self.start_date <= d <= self.end_date
+
+    @property
+    def days_count(self):
+        return (self.end_date - self.start_date).days + 1
+
+# ============================================================
 # РАСПИСАНИЕ (ВЫЕЗД)
 # ============================================================
 
@@ -706,7 +739,6 @@ class CancelledBooking(models.Model):
                 pass
 
         super().save(*args, **kwargs)
-
 
 # ============================================================
 # ЧЁРНЫЙ СПИСОК
