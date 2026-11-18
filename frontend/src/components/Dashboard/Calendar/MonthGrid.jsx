@@ -26,6 +26,7 @@ export default function MonthGrid({ year, month, calendarData, countsData, onDay
         const extraDay = calendarData?.extra_days?.[dateStr];
         const schedule = calendarData?.schedules?.[dayIdx];
         const isDayOff = calendarData?.days_off?.includes(dateStr);
+        const isVacation = calendarData?.vacations?.includes(dateStr);
 
         let workingClass = '';
         let statusText = '';
@@ -45,7 +46,13 @@ export default function MonthGrid({ year, month, calendarData, countsData, onDay
             workingClass = 'non-working';
         }
 
-        return { workingClass, statusText, hasBreaks };
+        // Отпуск важнее выходного — если отпуск, принудительно workingClass
+        // (чтобы на мобильном был голубой фон, а не «прозрачный» nonWorking)
+        if (isVacation) {
+            workingClass = 'working';
+        }
+
+        return { workingClass, statusText, hasBreaks, isVacation };
     }
 
     const dayCells = [];

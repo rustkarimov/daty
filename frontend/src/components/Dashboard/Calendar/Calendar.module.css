@@ -148,6 +148,21 @@
     color: #666;
 }
 
+/* ---- Отпуск (голубой) ---- */
+.dateCell.vacation {
+    background-color: #dbeafe;
+    border-color: #93c5fd;
+}
+
+.dateCell.vacation .dateNumber {
+    color: #1e40af;
+    font-weight: 600;
+}
+
+.dateCell.vacation .dateTime {
+    color: #1e40af;
+}
+
 /* ============================================================ */
 /* ========== ИКОНКИ В ЯЧЕЙКЕ ================================= */
 /* ============================================================ */
@@ -343,6 +358,12 @@
         min-width: 0;
         overflow: visible;
     }
+
+    /* Отпуск — голубой кружок */
+    .dateCell.vacation .dateNumber {
+        background-color: #dbeafe;
+        color: #1e40af;
+    }
     
     /* ---- Цифра дня (круг) ---- */
     .dateNumber {
@@ -379,9 +400,22 @@
     }
     
     /* ---- Рабочий день — синий кружок ---- */
+
     .dateCell.working .dateNumber {
         background-color: var(--primary-light);
     }
+
+    /* Отпуск перекрывает рабочий/выходной */
+    .dateCell.vacation .dateNumber {
+        background-color: #dbeafe !important;
+        color: #1e40af !important;
+        font-weight: 600;
+    }
+
+    .dateCell.vacation.today .dateNumber {
+        outline-color: #1e40af !important;
+    }
+ 
     
     /* ---- Нерабочий день — без кружка ---- */
     .dateCell.nonWorking .dateNumber {

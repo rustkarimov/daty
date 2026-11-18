@@ -132,10 +132,21 @@ def get_calendar_schedule(request):
                 } for b in day.breaks.all()]
             }
 
+    # Отпуска (общие для обоих режимов)
+    from ..models import Vacation
+    vacations = Vacation.objects.filter(master=master)
+    vacations_list = []
+    for v in vacations:
+        current = v.start_date
+        while current <= v.end_date:
+            vacations_list.append(current.strftime('%Y-%m-%d'))
+            current += timedelta(days=1)
+
     return JsonResponse({
         'schedules': schedules_data,
         'days_off': days_off_list,
         'extra_days': extra_days_data,
+        'vacations': vacations_list,   # ← добавили
         'mode': master.work_mode,
     })
 
