@@ -53,10 +53,22 @@ export default function DaysOffList({ daysOff, loading, onDataChanged }) {
                     {futureDays.map(day => (
                         <tr key={day.id}>
                             <td data-label="date">
-                                <strong>{day.date_display}</strong>
+                                <div className={styles.dayCell}>
+                                    <strong>{day.date_display}</strong>
+                                    <div className={styles.mobileActions}>
+                                        <button
+                                            type="button"
+                                            className={`${styles.iconBtn} ${styles.iconBtnDanger}`}
+                                            onClick={() => handleDelete(day)}
+                                            title="Удалить"
+                                        >
+                                            <i className="fas fa-trash" />
+                                        </button>
+                                    </div>
+                                </div>
                             </td>
                             <td data-label="reason">{day.reason || '—'}</td>
-                            <td data-label="actions">
+                            <td data-label="actions" className={styles.desktopActions}>
                                 <div className={styles.actionIcons}>
                                     <button
                                         type="button"

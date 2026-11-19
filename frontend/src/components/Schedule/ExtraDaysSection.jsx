@@ -1,7 +1,4 @@
 // frontend/src/components/Schedule/ExtraDaysSection.jsx
-//
-// Секция «Дополнительно работаю»: доп. дни + кнопка «Добавить».
-
 import React from 'react';
 import ExtraDaysList from './ExtraDaysList';
 import styles from './SchedulePage.module.css';
@@ -17,7 +14,38 @@ export default function ExtraDaysSection({
 }) {
     return (
         <div className={styles.card}>
-            <div className={styles.sectionTitle}>Дополнительно работаю</div>
+            <div style={{
+                display: 'flex',
+                justifyContent: 'flex-start',
+                alignItems: 'center',
+                gap: 10,
+                marginBottom: 12,
+            }}>
+                <div className={styles.sectionTitle} style={{ margin: 0 }}>
+                    Дополнительно работаю
+                </div>
+                <button
+                    type="button"
+                    onClick={onAdd}
+                    style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: '50%',
+                        border: 'none',
+                        background: 'var(--primary)',
+                        color: 'white',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        fontSize: '0.9rem',
+                        flexShrink: 0,
+                    }}
+                    title="Добавить допдень"
+                >
+                    <i className="fas fa-plus" />
+                </button>
+            </div>
 
             <ExtraDaysList
                 futureDays={futureDays}
@@ -27,17 +55,6 @@ export default function ExtraDaysSection({
                 onLoadMorePast={onLoadMorePast}
                 onDataChanged={onDataChanged}
             />
-
-            <div className={styles.sectionActions}>
-                <button
-                    type="button"
-                    className={styles.btnPrimary}
-                    onClick={onAdd}
-                >
-                    <i className="fas fa-plus" />
-                    Добавить допдень
-                </button>
-            </div>
         </div>
     );
 }

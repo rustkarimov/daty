@@ -15,16 +15,45 @@ export default function DaysOffSection({
 }) {
     return (
         <div className={styles.card}>
-            <div className={styles.sectionTitle}>Выходные дни</div>
+            <div style={{
+                display: 'flex',
+                justifyContent: 'flex-start',
+                alignItems: 'center',
+                gap: 10,
+                marginBottom: 12,
+            }}>
+                <div className={styles.sectionTitle} style={{ margin: 0 }}>
+                    Выходные дни
+                </div>
+                <button
+                    type="button"
+                    onClick={onAdd}
+                    style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: '50%',
+                        border: 'none',
+                        background: 'var(--primary)',
+                        color: 'white',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        fontSize: '0.9rem',
+                        flexShrink: 0,
+                    }}
+                    title="Добавить выходной"
+                >
+                    <i className="fas fa-plus" />
+                </button>
+            </div>
 
-            {/* Выходные */}
             <DaysOffList
                 daysOff={daysOff}
                 loading={loading}
                 onDataChanged={onDataChanged}
             />
 
-            {/* Отпуска */}
             <div style={{ marginTop: 16 }}>
                 <div style={{
                     fontSize: '0.85rem',
@@ -33,24 +62,13 @@ export default function DaysOffSection({
                     marginBottom: 8,
                 }}>
                     <i className="fas fa-plane me-1" style={{ color: 'var(--primary)' }} />
-                    Отпуск
+                    Отпуска
                 </div>
                 <VacationList
                     vacations={vacations}
                     loading={loadingVacations}
                     onDataChanged={onDataChangedVacations}
                 />
-            </div>
-
-            <div className={styles.sectionActions}>
-                <button
-                    type="button"
-                    className={styles.btnPrimary}
-                    onClick={onAdd}
-                >
-                    <i className="fas fa-plus" />
-                    Добавить выходной
-                </button>
             </div>
         </div>
     );

@@ -64,7 +64,27 @@ export default function SchedulesList({
                     {schedules.map(schedule => (
                         <tr key={schedule.id}>
                             <td data-label="day">
-                                <strong>{schedule.day_name}</strong>
+                                <div className={styles.dayCell}>
+                                    <strong>{schedule.day_name}</strong>
+                                    <div className={styles.mobileActions}>
+                                        <button
+                                            type="button"
+                                            className={styles.iconBtn}
+                                            onClick={() => onEdit(schedule)}
+                                            title="Изменить"
+                                        >
+                                            <i className="fas fa-edit" />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className={`${styles.iconBtn} ${styles.iconBtnDanger}`}
+                                            onClick={() => handleDelete(schedule)}
+                                            title="Удалить"
+                                        >
+                                            <i className="fas fa-trash" />
+                                        </button>
+                                    </div>
+                                </div>
                             </td>
                             <td data-label="start">
                                 <span className={styles.workTimeDesktop}>
@@ -86,7 +106,7 @@ export default function SchedulesList({
                                     <span className={styles.textMuted}>—</span>
                                 )}
                             </td>
-                            <td data-label="actions">
+                            <td data-label="actions" className={styles.desktopActions}>
                                 <div className={styles.actionIcons}>
                                     <button
                                         type="button"

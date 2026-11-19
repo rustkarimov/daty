@@ -1,7 +1,4 @@
 // frontend/src/components/Schedule/SchedulesSection.jsx
-//
-// Секция «Регулярная работа»: список дней недели + кнопка «Добавить».
-
 import React from 'react';
 import SchedulesList from './SchedulesList';
 import styles from './SchedulePage.module.css';
@@ -16,7 +13,38 @@ export default function SchedulesSection({
 }) {
     return (
         <div className={styles.card}>
-            <div className={styles.sectionTitle}>Регулярная работа</div>
+            <div style={{
+                display: 'flex',
+                justifyContent: 'flex-start',
+                alignItems: 'center',
+                gap: 10,
+                marginBottom: 12,
+            }}>
+                <div className={styles.sectionTitle} style={{ margin: 0 }}>
+                    Регулярная работа
+                </div>
+                <button
+                    type="button"
+                    onClick={onAdd}
+                    style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: '50%',
+                        border: 'none',
+                        background: 'var(--primary)',
+                        color: 'white',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        fontSize: '0.9rem',
+                        flexShrink: 0,
+                    }}
+                    title="Добавить рабочий день"
+                >
+                    <i className="fas fa-plus" />
+                </button>
+            </div>
 
             <SchedulesList
                 schedules={schedules}
@@ -25,17 +53,6 @@ export default function SchedulesSection({
                 onDelete={onDelete}
                 onDataChanged={onDataChanged}
             />
-
-            <div className={styles.sectionActions}>
-                <button
-                    type="button"
-                    className={styles.btnPrimary}
-                    onClick={onAdd}
-                >
-                    <i className="fas fa-plus" />
-                    Добавить рабочий день
-                </button>
-            </div>
         </div>
     );
 }

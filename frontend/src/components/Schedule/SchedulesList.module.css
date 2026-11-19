@@ -111,6 +111,21 @@
 }
 
 /* ============================================================ */
+/* ========== МОБИЛЬНЫЕ ИКОНКИ В СТРОКЕ ДНЯ =================== */
+/* ============================================================ */
+
+.dayCell {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.mobileActions {
+    display: none;
+}
+
+/* ============================================================ */
 /* ==================== АДАПТИВ =============================== */
 /* ============================================================ */
 
@@ -237,5 +252,22 @@
         width: 28px;
         height: 28px;
         font-size: 12px;
+    }
+
+    .mobileActions {
+        display: flex;
+        gap: 2px;
+        align-items: center;
+    }
+
+    .desktopActions {
+        display: none !important;
+    }
+
+    /* Для новых действий — минимальные отступы */
+    .mobileActions .iconBtn {
+        width: 26px;
+        height: 26px;
+        font-size: 11px;
     }
 }

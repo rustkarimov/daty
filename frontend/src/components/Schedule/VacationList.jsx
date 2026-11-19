@@ -1,9 +1,7 @@
-// frontend/src/components/Schedule/VacationList.jsx
 import React from 'react';
 import useModal from '../../hooks/useModal';
 import { deleteVacation } from '../../api/schedule';
 import styles from './DaysOffList.module.css';
-
 
 function pluralizeDays(n) {
     n = Math.abs(n) % 100;
@@ -66,17 +64,27 @@ export default function VacationList({ vacations, loading, onDataChanged }) {
                         return (
                             <tr key={v.id}>
                                 <td data-label="date">
-                                    <strong>
-                                        {v.start_display} — {v.end_display}
-                                    </strong>
+                                    <div className={styles.dayCell}>
+                                        <strong>
+                                            {v.start_display} — {v.end_display}
+                                        </strong>
+                                        <div className={styles.mobileActions}>
+                                            <button
+                                                type="button"
+                                                className={`${styles.iconBtn} ${styles.iconBtnDanger}`}
+                                                onClick={() => handleDelete(v)}
+                                                title="Удалить"
+                                            >
+                                                <i className="fas fa-trash" />
+                                            </button>
+                                        </div>
+                                    </div>
                                 </td>
                                 <td data-label="days">
                                     {v.days_count} {daysWord}
                                 </td>
-                                <td data-label="reason">
-                                    {v.reason || ''}
-                                </td>
-                                <td data-label="actions">
+                                <td data-label="reason">{v.reason || ''}</td>
+                                <td data-label="actions" className={styles.desktopActions}>
                                     <div className={styles.actionIcons}>
                                         <button
                                             type="button"

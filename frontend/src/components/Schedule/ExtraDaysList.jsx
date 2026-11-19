@@ -65,7 +65,19 @@ export default function ExtraDaysList({
                                         {futureDays.map(day => (
                                             <tr key={day.id}>
                                                 <td data-label="day">
-                                                    <strong>{day.date_display}</strong>
+                                                    <div className={styles.dayCell}>
+                                                        <strong>{day.date_display}</strong>
+                                                        <div className={styles.mobileActions}>
+                                                            <button
+                                                                type="button"
+                                                                className={`${styles.iconBtn} ${styles.iconBtnDanger}`}
+                                                                onClick={() => handleDelete(day)}
+                                                                title="Удалить"
+                                                            >
+                                                                <i className="fas fa-trash" />
+                                                            </button>
+                                                        </div>
+                                                    </div>
                                                 </td>
                                                 <td data-label="start">
                                                     {day.start_time} - {day.end_time}
@@ -81,7 +93,7 @@ export default function ExtraDaysList({
                                                         <span className={styles.textMuted}>—</span>
                                                     )}
                                                 </td>
-                                                <td data-label="actions">
+                                                <td data-label="actions" className={styles.desktopActions}>
                                                     <div className={styles.actionIcons}>
                                                         <button
                                                             type="button"
