@@ -325,7 +325,11 @@
     /* ---- Меньше отступы в сетке ---- */
     .dates {
         gap: 6px;
+        row-gap: 14px;
+        grid-auto-rows: 45px; 
     }
+
+    
     
     .weekdays {
         gap: 3px;
@@ -437,10 +441,12 @@
     .dateCell.today .dateNumber {
         color: black;
         font-weight: 600;
-        background: transparent;
-        outline: 1.5px solid var(--primary);  /* ← outline вместо box-shadow */
-        outline-offset: 0;
-
+        /* background: transparent; */
+        /* outline: 1.5px solid var(--primary);   */
+        /* outline-offset: 0; */
+        outline: none;
+        border: 1.5px solid var(--primary);
+        box-sizing: border-box;
     }
     
     /* ---- Иконки под цифрой (бейдж + перерыв) ---- */
@@ -510,7 +516,7 @@
     /* ---- Больше вертикального отступа между рядами ---- */
     .dates {
         gap: 6px;
-        row-gap: 16px;
+        row-gap: 10px;
     }
     
     /* ---- Меньше цифра ---- */
@@ -522,6 +528,6 @@
     .icons {
         min-height: 10px;
         gap: 1px;
-        margin-top: 1px;
+        margin-top: -1px;
     }
 }
