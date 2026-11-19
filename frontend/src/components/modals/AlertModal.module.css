@@ -77,10 +77,9 @@
 
 .footer {
     padding: 12px 20px;
-    background: var(--gray-50);
-    border-top: 1px solid var(--gray-200);
     display: flex;
     justify-content: center;
+    gap: 8px;
 }
 
 .btnPrimary {
@@ -126,14 +125,36 @@
 
 @media (max-width: 768px) {
     .backdrop {
-        padding: 16px;
+        padding: 12px;
     }
     
     .modal {
         max-width: 100%;
+        border-radius: 16px;
+        padding-bottom: 0 !important;   /* ← перебить глобальное правило */
     }
     
+    .header {
+        padding: 14px 16px;       /* чуть компактнее */
+    }
+
+    .title {
+        font-size: 0.95rem;
+    }
+
     .body {
-        padding: 16px;
+        padding: 14px 16px;       /* было 20px / 16px */
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+
+    .footer {
+        padding: 10px 16px;       /* было 12px 20px */
+    }
+
+    .btnPrimary {
+        padding: 8px 24px;
+        font-size: 0.85rem;
+        min-width: 110px;
     }
 }

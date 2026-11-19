@@ -11,7 +11,8 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 from cryptography.fernet import Fernet, InvalidToken
 
-from ..models import Booking, Schedule, DayOff, ExtraWorkingDay, AwaySchedule, AwayExtraDay, AwayDayOff, Master, Service, CustomUser
+from ..models import Booking, Schedule, DayOff, ExtraWorkingDay, AwaySchedule, AwayExtraDay, AwayDayOff, Master, Service, CustomUser, Vacation
+
 from ..utils.response_utils import api_success, api_error
 from ..utils.crypto_utils import decrypt_phone, format_phone
 
@@ -588,9 +589,16 @@ def get_day_status(request):
             'end': b.end_time.strftime('%H:%M')
         } for b in schedule.breaks.all()]
 
+    is_vacation = Vacation.objects.filter(
+        master=master,
+        start_date__lte=target_date,
+        end_date__gte=target_date,
+    ).exists()
+
     return JsonResponse({
         'is_extra': extra_day is not None,
         'is_day_off': is_day_off,
+        'is_vacation': is_vacation,
         'has_schedule': schedule is not None,
         'schedule_start': start_time,
         'schedule_end': end_time,
@@ -599,7 +607,7 @@ def get_day_status(request):
         'breaks': breaks,
         'date': date_str,
         'mode': master.work_mode,
-        # ↓ для away-timeline
+
         'arrival_window_minutes': master.arrival_window_minutes or 0,
         'away_travel_time_before_default': master.away_travel_time_before_default or 0,
         'away_travel_time_after_default': master.away_travel_time_after_default or 0,

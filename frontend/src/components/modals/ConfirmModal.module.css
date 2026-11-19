@@ -60,8 +60,6 @@
 
 .footer {
     padding: 12px 20px;
-    background: var(--gray-50);
-    border-top: 1px solid var(--gray-200);
     display: flex;
     justify-content: center;
     gap: 8px;
@@ -133,23 +131,41 @@
 
 @media (max-width: 768px) {
     .backdrop {
-        padding: 16px;
+        padding: 12px;            /* было 16px */
     }
 
     .modal {
         max-width: 100%;
+        border-radius: 16px;
+        padding-bottom: 0 !important;   /* ← перебить глобальное правило */
+    }
+
+
+    .header {
+        padding: 14px 16px;
+    }
+
+    .title {
+        font-size: 0.95rem;
     }
 
     .body {
-        padding: 16px;
+        padding: 14px 16px;       /* было 20px / 16px */
+        font-size: 0.9rem;
+        line-height: 1.4;
     }
 
     .footer {
-        flex-direction: column-reverse;
+        padding: 10px 16px;
+        flex-direction: row;      /* кнопки в ряд (не в колонку) */
+        gap: 8px;
     }
 
     .btnSecondary,
     .btnConfirm {
-        width: 100%;
+        flex: 1;                  /* обе одинаковой ширины */
+        padding: 8px 16px;
+        font-size: 0.85rem;
+        min-width: 0;
     }
 }

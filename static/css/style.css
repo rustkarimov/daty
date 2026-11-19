@@ -1394,8 +1394,13 @@ body {
     /* ============================================================ */
 
     /* Все React-модалки (Vite CSS-модули генерируют классы с _modal_) */
-    [class*="_modal_"] {
+    /* [class*="_modal_"] {
         padding-bottom: calc(var(--mobile-nav-height, 80px) + 8px) !important;
+    } */
+
+    /* Все React-модалки, КРОМЕ системных */
+    [class*="_modal_"]:not([class*="_AlertModal_"]):not([class*="_ConfirmModal_"]):not([class*="_PushPrePrompt_"]) {
+        padding-bottom: calc(var(--mobile-nav-height, 80px) + 8px);
     }
 
     /* Bootstrap-модалки (для публичных страниц) */
