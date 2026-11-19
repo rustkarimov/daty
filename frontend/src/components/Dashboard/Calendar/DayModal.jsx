@@ -287,9 +287,14 @@ export default function DayModal({ dateStr, masterSlug, masterMode = 'home', onC
                             </div>
                         ) : (
                             <>
-                                {/* Инфо о дне: часы работы / выходной */}
+                                {/* Инфо о дне: часы работы / выходной / отпуск */}
                                 <div className={styles.dayInfo}>
-                                    {isDayOff ? (
+                                    {dayData?.is_vacation ? (
+                                        <div className={styles.dayInfoOff} style={{ color: '#1e40af' }}>
+                                            <i className="fas fa-plane" />
+                                            Отпуск
+                                        </div>
+                                    ) : isDayOff ? (
                                         <div className={styles.dayInfoOff}>
                                             <i className="fas fa-bed" />
                                             Выходной день
