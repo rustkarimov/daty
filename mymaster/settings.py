@@ -334,15 +334,61 @@ else:
 
 CKEDITOR_5_CONFIGS = {
     'default': {
+        # Базовый набор инструментов
         'toolbar': [
             'heading', '|',
-            'bold', 'italic', 'link', 'bulletedList', 'numberedList', '|',
-            'blockQuote', 'imageUpload', '|',
+            'bold', 'italic', 'strikethrough', 'underline', '|',
+            'link', 'imageUpload', 'mediaEmbed', '|',
+            'bulletedList', 'numberedList', 'blockQuote', '|',
+            'insertTable', '|',  # Таблицы
             'undo', 'redo',
         ],
+        
+        # Расширенные возможности
+        'simpleUpload': {
+            'uploadUrl': '/upload/',  # URL для загрузки
+            'headers': {
+                'X-CSRF-Token': '{{ csrf_token }}'
+            }
+        },
+        
+        # Дополнительные плагины
+        'extraPlugins': ['essentials', 'uploadadapter', 'list', 'indent', 'paragraph', 'heading', 'bold', 'italic', 'link', 'image', 'table'],
+        
+        # Настройки языка
         'language': 'ru',
+        
+        # Настройки форматирования
+        'placeholder': 'Введите текст...',
+        'autoParagraph': True,
+        'enter': 'p',
+        
+        # Настройки таблиц
+        'table': {
+            'contentToolbar': [
+                'tableColumn',
+                'tableRow',
+                'mergeTableCells',
+                'tableProperties',
+                'tableCellProperties'
+            ]
+        },
+        
+        # Настройки стилей
+        'styles': [
+            {
+                'name': 'Цитата',
+                'element': 'blockquote'
+            },
+            {
+                'name': 'Код',
+                'element': 'pre'
+            }
+        ]
     },
 }
 
+# Настройки загрузки файлов
 CKEDITOR_5_FILE_UPLOAD_PERMISSION = "staff"
 CKEDITOR_5_UPLOAD_PATH = 'uploads/'
+CKEDITOR_5_UPLOAD_BACKEND = 'path.to.your.upload.backend'  # Если нужен кастомный бэкенд
