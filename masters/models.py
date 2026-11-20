@@ -8,6 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
 from cryptography.fernet import Fernet
 import secrets
+from django_ckeditor_5.fields import CKEditor5Field
 
 
 def generate_booking_token():
@@ -892,3 +893,55 @@ class ClientSession(models.Model):
 
     def __str__(self):
         return f"{self.phone} — {self.master} — {'✅' if self.is_confirmed else '⏳'}"
+
+
+
+# ============================================================
+# СТАТЬИ (БЛОГ)
+# ============================================================
+
+class Article(models.Model):
+    """Статья для блога (промо-страница)."""
+
+    slug = models.SlugField(
+        max_length=200,
+        unique=True,
+        verbose_name="URL (slug)",
+        help_text="Латиница, дефисы. Например: kak-vesti-raspisanie",
+    )
+    title = models.CharField(max_length=200, verbose_name="Заголовок")
+    excerpt = models.TextField(
+        max_length=300,
+        blank=True,
+        verbose_name="Краткое описание",
+        help_text="Показывается в карточке на промо-странице (до 300 символов)",
+    )
+    content = CKEditor5Field(verbose_name="Содержимое", config_name='default')
+    cover = models.ImageField(
+        upload_to='articles/covers/',
+        null=True,
+        blank=True,
+        verbose_name="Обложка",
+        help_text="Показывается в карточке и в соцсетях",
+    )
+    meta_description = models.CharField(
+        max_length=160,
+        blank=True,
+        verbose_name="Meta description",
+        help_text="Для SEO. До 160 символов.",
+    )
+
+    is_published = models.BooleanField(default=True, verbose_name="Опубликована")
+    published_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Дата публикации",
+    )
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Обновлена")
+
+    class Meta:
+        verbose_name = "Статья"
+        verbose_name_plural = "Статьи"
+        ordering = ['-published_at']
+
+    def __str__(self):
+        return self.title

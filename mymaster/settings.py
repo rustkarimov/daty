@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'masters.apps.MastersConfig',
     'crispy_forms',
     'crispy_bootstrap5',
+    'django_ckeditor_5',
 
 ]
 
@@ -330,3 +331,18 @@ else:
         },
     }
 
+
+CKEDITOR_5_CONFIGS = {
+    'default': {
+        'toolbar': [
+            'heading', '|',
+            'bold', 'italic', 'link', 'bulletedList', 'numberedList', '|',
+            'blockQuote', 'imageUpload', '|',
+            'undo', 'redo',
+        ],
+        'language': 'ru',
+    },
+}
+
+CKEDITOR_5_FILE_UPLOAD_PERMISSION = "staff"
+CKEDITOR_5_UPLOAD_PATH = 'uploads/'

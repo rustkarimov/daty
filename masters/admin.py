@@ -14,6 +14,7 @@ from .models import (
     PhoneVerification,
     Notification,
     CancelledBooking,
+    Article,
 )
 
 # Импортируем регистрацию чата поддержки
@@ -158,3 +159,25 @@ class NotificationAdmin(admin.ModelAdmin):
                 count += 1
         self.message_user(request, f'✅ Уведомления отправлены всем мастерам ({count})')
     send_to_all_masters.short_description = '📢 Отправить ВСЕМ мастерам'
+
+
+
+
+@admin.register(Article)
+class ArticleAdmin(admin.ModelAdmin):
+    list_display = ['title', 'slug', 'is_published', 'published_at']
+    list_filter = ['is_published', 'published_at']
+    search_fields = ['title', 'slug', 'content']
+    prepopulated_fields = {'slug': ('title',)}
+    fieldsets = (
+        (None, {
+            'fields': ('title', 'slug', 'is_published')
+        }),
+        ('Контент', {
+            'fields': ('excerpt', 'content', 'cover')
+        }),
+        ('SEO', {
+            'fields': ('meta_description',),
+            'classes': ('collapse',),
+        }),
+    )
