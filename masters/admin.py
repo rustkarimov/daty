@@ -20,6 +20,8 @@ from .models import (
 # Импортируем регистрацию чата поддержки
 from . import admin_support  # noqa: F401
 
+from tinymce.models import HTMLField
+from tinymce.widgets import AdminTinyMCE
 
 # ============================================================
 # ПОЛЬЗОВАТЕЛИ
@@ -161,23 +163,16 @@ class NotificationAdmin(admin.ModelAdmin):
     send_to_all_masters.short_description = '📢 Отправить ВСЕМ мастерам'
 
 
-
-
-@admin.register(Article)
 class ArticleAdmin(admin.ModelAdmin):
-    list_display = ['title', 'slug', 'is_published', 'published_at']
-    list_filter = ['is_published', 'published_at']
-    search_fields = ['title', 'slug', 'content']
-    prepopulated_fields = {'slug': ('title',)}
-    fieldsets = (
-        (None, {
-            'fields': ('title', 'slug', 'is_published')
-        }),
-        ('Контент', {
-            'fields': ('excerpt', 'content', 'cover')
-        }),
-        ('SEO', {
-            'fields': ('meta_description',),
-            'classes': ('collapse',),
-        }),
-    )
+    list_display = ['title', 'published_at', 'is_published']
+    search_fields = ['title', 'content']
+    list_filter = ['is_published']
+    date_hierarchy = 'published_at'
+    formfield_overrides = {
+        HTMLField: {'widget': AdminTinyMCE()}
+    }
+    prepopulated_fields = {'slug': ('title',)}  # автоматическое заполнение slug
+
+admin.site.register(Article, ArticleAdmin)
+
+

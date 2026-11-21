@@ -344,3 +344,6 @@ TINYMCE_DEFAULT_CONFIG = {
     'paste_as_text': True,  # вставлять как текст
     'paste_remove_styles': True,  # удалять стили при вставке
 }
+
+TINYMCE_FILEBROWSER_URL = '/filebrowser/'  # если используете FileBrowser
+TINYMCE_IMAGE_UPLOAD_URL = '/upload/'  # URL для загрузки изображений
