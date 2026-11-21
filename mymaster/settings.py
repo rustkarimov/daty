@@ -44,7 +44,7 @@ INSTALLED_APPS = [
     'masters.apps.MastersConfig',
     'crispy_forms',
     'crispy_bootstrap5',
-    'django_ckeditor_5',
+    'tinymce',
 
 ]
 
@@ -333,38 +333,14 @@ else:
 
 
 
-
-# CKEditor5 Full Configuration
-CKEDITOR_5_CONFIGS = {
-    'default': {
-        'toolbar': {
-            'toolbar_panel_id': 'toolbar',
-            'toolbar_width': '100%',
-            'items': [
-                'undo', 'redo', '|',
-                'heading', '|',
-                'bold', 'italic', 'underline', 'strikethrough', '|',
-                'alignment', 'fontFamily', 'fontColor', 'fontBackgroundColor', '|',
-                'link', 'imageUpload', 'mediaEmbed', 'fileUpload', '|',
-                'bulletedList', 'numberedList', 'todoList', '|',
-                'blockQuote', 'insertTable', 'codeBlock', 'code', '|',
-                'findAndReplace', 'highlight', 'removeFormat'
-            ],
-            'shouldNotGroupWhenFull': True
-        },
-        'language': 'ru', # set any language you want
-        'image': {
-            'toolbar': [
-                'imageTextAlternative', 'imageStyle:full', 'imageStyle:side'
-            ]
-        },
-        'table': {
-            'contentToolbar': ['tableColumn', 'tableRow', 'mergeTableCells']
-        },
-        'placeholder': 'Enter Your Text...',
-    }
+TINYMCE_DEFAULT_CONFIG = {
+    'theme': 'silver',  # или 'oxide' для более современного вида
+    'width': 800,
+    'height': 400,
+    'plugins': 'autoresize link image code lists table paste',
+    'toolbar': 'undo redo | formatselect | bold italic | alignleft aligncenter alignright | bullist numlist | link image code',
+    'menubar': False,  # отключить меню
+    'statusbar': False,  # отключить строку состояния
+    'paste_as_text': True,  # вставлять как текст
+    'paste_remove_styles': True,  # удалять стили при вставке
 }
-
-
-CKEDITOR_5_FILE_UPLOAD_PERMISSION = "staff"
-CKEDITOR_5_UPLOAD_PATH = 'uploads/'
