@@ -118,9 +118,7 @@ urlpatterns = [
     path('api/push/check/', views.api_push_check, name='api_push_check'),
 
 
-    # Публичная страница мастера
-    path('id<int:master_id>/', views.master_by_id, name='master_by_id'),
-    path('<str:login>/', views.master_by_login, name='master_by_login'),
+    
     
     path('api/master/<str:identifier>/categories/', views.get_master_categories, name='api_master_categories'),
     path('api/<str:identifier>/dates/', views.get_available_dates, name='api_dates'),
@@ -154,9 +152,12 @@ urlpatterns = [
     path('api/support/send/', views.send_support_message, name='api_support_send'),
     path('api/support/unread/', views.get_unread_support_count, name='api_support_unread'),
 
-    
+    path('blog/', views.blog_list, name='blog_list'),
+    path('blog/<slug:slug>/', views.blog_detail, name='blog_detail'),
 
 
-    
+    # Публичная страница мастера
+    path('id<int:master_id>/', views.master_by_id, name='master_by_id'),
+    path('<str:login>/', views.master_by_login, name='master_by_login'),
 
 ]

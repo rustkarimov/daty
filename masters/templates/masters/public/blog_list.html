@@ -1,0 +1,30 @@
+{% extends 'masters/public/promo_base.html' %}
+{% block title %}Блог — ДАТЫ{% endblock %}
+
+{% block content %}
+<section class="blog-page">
+    <div class="container">
+        <div class="section-header text-center">
+            <h1 class="hero-title" style="font-size: 2.4rem;">Блог</h1>
+            <p class="hero-description mx-auto">
+                Разбираемся, как самозанятым работать проще и зарабатывать больше
+            </p>
+        </div>
+
+        <div class="blog-grid">
+            {% for article in articles %}
+            <a href="/blog/{{ article.slug }}/" class="blog-card">
+                <div class="blog-card-date">{{ article.published_at|date:"d.m.Y" }}</div>
+                <h2 class="blog-card-title">{{ article.title }}</h2>
+                <p class="blog-card-excerpt">
+                    {{ article.excerpt|default:article.title|truncatechars:160 }}
+                </p>
+                <span class="blog-card-link">Читать →</span>
+            </a>
+            {% empty %}
+            <p class="text-center text-muted">Скоро здесь появятся первые статьи</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

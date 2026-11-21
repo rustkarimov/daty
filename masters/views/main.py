@@ -6,12 +6,20 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.conf import settings
 
+from django.shortcuts import render, get_object_or_404
+from ..models import Article
+
+
+
 
 def home(request):
     """Главная промо-страница сайта. Залогиненных мастеров редиректим в кабинет."""
     if request.user.is_authenticated:
         return redirect('dashboard')
-    return render(request, 'masters/public/index.html')
+
+    latest_articles = Article.objects.filter(is_published=True).order_by('-published_at')[:3]
+    return render(request, 'masters/public/index.html',{
+        'latest_articles': latest_articles,})
 
 
 def service_worker(request):
@@ -27,3 +35,16 @@ def service_worker(request):
     response['Service-Worker-Allowed'] = '/'
     response['Cache-Control'] = 'no-cache'
     return response
+
+
+
+
+
+def blog_list(request):
+    articles = Article.objects.filter(is_published=True).order_by('-published_at')
+    return render(request, 'masters/public/blog_list.html', {'articles': articles})
+
+
+def blog_detail(request, slug):
+    article = get_object_or_404(Article, slug=slug, is_published=True)
+    return render(request, 'masters/public/blog_detail.html', {'article': article})

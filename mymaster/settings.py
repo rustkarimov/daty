@@ -332,63 +332,39 @@ else:
     }
 
 
+
+
+# CKEditor5 Full Configuration
 CKEDITOR_5_CONFIGS = {
     'default': {
-        # Базовый набор инструментов
-        'toolbar': [
-            'heading', '|',
-            'bold', 'italic', 'strikethrough', 'underline', '|',
-            'link', 'imageUpload', 'mediaEmbed', '|',
-            'bulletedList', 'numberedList', 'blockQuote', '|',
-            'insertTable', '|',  # Таблицы
-            'undo', 'redo',
-        ],
-        
-        # Расширенные возможности
-        'simpleUpload': {
-            'uploadUrl': '/upload/',  # URL для загрузки
-            'headers': {
-                'X-CSRF-Token': '{{ csrf_token }}'
-            }
+        'toolbar': {
+            'toolbar_panel_id': 'toolbar',
+            'toolbar_width': '100%',
+            'items': [
+                'undo', 'redo', '|',
+                'heading', '|',
+                'bold', 'italic', 'underline', 'strikethrough', '|',
+                'alignment', 'fontFamily', 'fontColor', 'fontBackgroundColor', '|',
+                'link', 'imageUpload', 'mediaEmbed', 'fileUpload', '|',
+                'bulletedList', 'numberedList', 'todoList', '|',
+                'blockQuote', 'insertTable', 'codeBlock', 'code', '|',
+                'findAndReplace', 'highlight', 'removeFormat'
+            ],
+            'shouldNotGroupWhenFull': True
         },
-        
-        # Дополнительные плагины
-        'extraPlugins': ['essentials', 'uploadadapter', 'list', 'indent', 'paragraph', 'heading', 'bold', 'italic', 'link', 'image', 'table'],
-        
-        # Настройки языка
-        'language': 'ru',
-        
-        # Настройки форматирования
-        'placeholder': 'Введите текст...',
-        'autoParagraph': True,
-        'enter': 'p',
-        
-        # Настройки таблиц
-        'table': {
-            'contentToolbar': [
-                'tableColumn',
-                'tableRow',
-                'mergeTableCells',
-                'tableProperties',
-                'tableCellProperties'
+        'language': 'ru', # set any language you want
+        'image': {
+            'toolbar': [
+                'imageTextAlternative', 'imageStyle:full', 'imageStyle:side'
             ]
         },
-        
-        # Настройки стилей
-        'styles': [
-            {
-                'name': 'Цитата',
-                'element': 'blockquote'
-            },
-            {
-                'name': 'Код',
-                'element': 'pre'
-            }
-        ]
-    },
+        'table': {
+            'contentToolbar': ['tableColumn', 'tableRow', 'mergeTableCells']
+        },
+        'placeholder': 'Enter Your Text...',
+    }
 }
 
-# Настройки загрузки файлов
+
 CKEDITOR_5_FILE_UPLOAD_PERMISSION = "staff"
 CKEDITOR_5_UPLOAD_PATH = 'uploads/'
-CKEDITOR_5_UPLOAD_BACKEND = 'path.to.your.upload.backend'  # Если нужен кастомный бэкенд
