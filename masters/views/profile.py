@@ -56,57 +56,75 @@ def api_profile_update(request):
 
         data = json.loads(request.body)
 
-        first_name = (data.get('first_name') or '').strip()
-        last_name = (data.get('last_name') or '').strip()
-        bio = (data.get('bio') or '').strip()
-        address = (data.get('address') or '').strip()
-        new_login = (data.get('login') or '').strip()
+        def get_field(name):
+            val = data.get(name)
+            return val.strip() if isinstance(val, str) else None
+
+        first_name = get_field('first_name')
+        last_name = get_field('last_name')
+        bio = get_field('bio')
+        address = get_field('address')
+        new_login = get_field('login')
 
         # Валидация логина
-        if new_login and new_login != (master.login or ''):
-            if len(new_login) < 3:
+        if new_login is not None:
+            if not new_login and master.login:
                 return JsonResponse({
                     'success': False,
-                    'error': 'Логин должен содержать минимум 3 символа'
+                    'error': 'Логин нельзя удалить. Введите новый логин или оставьте текущий.'
                 }, status=400)
+                
+            if new_login and new_login != (master.login or ''):
+                if len(new_login) < 3:
+                    return JsonResponse({
+                        'success': False,
+                        'error': 'Логин должен содержать минимум 3 символа'
+                    }, status=400)
 
-            if not re.match(r'^[a-zA-Z0-9_-]+$', new_login):
-                return JsonResponse({
-                    'success': False,
-                    'error': 'Логин может содержать только латиницу, цифры, дефис и подчеркивание'
-                }, status=400)
+                if not re.match(r'^[a-zA-Z0-9_-]+$', new_login):
+                    return JsonResponse({
+                        'success': False,
+                        'error': 'Логин может содержать только латиницу, цифры, дефис и подчеркивание'
+                    }, status=400)
 
-            if new_login.lower().startswith('id'):
-                return JsonResponse({
-                    'success': False,
-                    'error': 'Логин не может начинаться с "id"'
-                }, status=400)
+                if new_login.lower().startswith('id'):
+                    return JsonResponse({
+                        'success': False,
+                        'error': 'Логин не может начинаться с "id"'
+                    }, status=400)
 
-            if Master.objects.exclude(pk=master.pk).filter(login=new_login).exists():
-                return JsonResponse({
-                    'success': False,
-                    'error': 'Этот логин уже занят'
-                }, status=409)
+                if Master.objects.exclude(pk=master.pk).filter(login=new_login).exists():
+                    return JsonResponse({
+                        'success': False,
+                        'error': 'Этот логин уже занят'
+                    }, status=409)
 
-            master.login = new_login
-        elif not new_login:
-            master.login = None
+            # Сохраняем (или очищаем, если пусто)
+            if new_login:
+                master.login = new_login
+            # Если пусто — не трогаем (логин остаётся прежним)
 
         # Режим работы
         work_mode = data.get('work_mode')
         if work_mode in ('home', 'away'):
             master.work_mode = work_mode
 
-        master.first_name = first_name
-        master.last_name = last_name
-        master.bio = bio
-        master.address = address
+        if first_name is not None:
+            master.first_name = first_name
+        if last_name is not None:
+            master.last_name = last_name
+        if bio is not None:
+            master.bio = bio
+        if address is not None:
+            master.address = address
         master.save()
 
         # Обновляем User
         user = request.user
-        user.first_name = first_name
-        user.last_name = last_name
+        if first_name is not None:
+            user.first_name = first_name
+        if last_name is not None:
+            user.last_name = last_name
         user.save()
 
         return JsonResponse({

@@ -129,6 +129,47 @@
     word-break: break-all;
 }
 
+.linkBlock {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px;
+    margin-top: 6px;
+}
+
+.linkLabel {
+    font-size: 0.8rem;
+    color: var(--gray-500);
+    flex-shrink: 0;
+}
+
+.linkText {
+    font-size: 0.8rem;
+    color: var(--gray-800);
+    word-break: break-all;
+    font-weight: 500;
+}
+
+.viewAsClient {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    color: var(--primary);
+    text-decoration: none;
+    padding: 4px 12px;
+    border: 1px solid var(--primary);
+    border-radius: 20px;
+    width: fit-content;
+    transition: background 0.2s ease;
+}
+
+.viewAsClient:hover {
+    background: var(--primary-light);
+}
+
+
 /* ---- Две колонки ---- */
 .row {
     display: flex;
@@ -235,6 +276,15 @@
     .formInput,
     .formTextarea {
         font-size: 16px;
+    }
+
+    .linkPreview {
+        font-size: 0.8rem;
+    }
+
+    .viewAsClient {
+        font-size: 0.7rem;
+        padding: 3px 10px;
     }
 
     .row {

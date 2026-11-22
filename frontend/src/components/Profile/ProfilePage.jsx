@@ -196,16 +196,26 @@ export default function ProfilePage({ initialData, masterId }) {
                         </div>
 
                         <div className={styles.formField}>
-                            <label className={styles.formLabel}>Логин (для красивой ссылки)</label>
+                            <label className={styles.formLabel}>Логин (для именной ссылки)</label>
                             <input
                                 type="text"
                                 className={styles.formInput}
                                 value={login}
                                 onChange={e => setLogin(e.target.value)}
                             />
-                            <small className={styles.hint}>
-                                Ваша ссылка: <span className={styles.linkPreview}>{publicUrl}</span>
-                            </small>
+                            <div className={styles.linkBlock}>
+                                <span className={styles.linkLabel}>Твоя ссылка:</span>{' '}
+                                <span className={styles.linkText}>{publicUrl}</span>
+                            </div>
+                            <a
+                                href={publicUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={styles.viewAsClient}
+                            >
+                                <i className="fas fa-external-link-alt" />
+                                Как страницу видят клиенты
+                            </a>
                         </div>
 
 
