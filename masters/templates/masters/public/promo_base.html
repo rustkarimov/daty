@@ -6,6 +6,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}ДАТЫ{% endblock %}</title>
+
+    <meta name="description" content="{% block description %}
+        {% if article %}{{ article.meta_description }}
+        {% else %}Сервис для самозанятых мастеров: онлайн-запись клиентов, управление расписанием, автоматизация работы для парикмахеров, мастеров маникюра, репетиторов и всех, кто работает на себя{% endif %}
+    {% endblock %}">
+
+    <meta name="keywords" content="{% block keywords %}
+        {% if article %}{{ article.meta_keywords }}
+        {% else %}самозанятый, мастер, запись клиентов, онлайн-запись, расписание, репетитор, услуги на дому, выездной мастер{% endif %}
+    {% endblock %}">
+
+
     
     <!-- Bootstrap 5 CSS (локально) -->
     <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">

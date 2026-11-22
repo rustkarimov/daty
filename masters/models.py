@@ -15,6 +15,8 @@ from django.dispatch import receiver
 
 from tinymce.models import HTMLField
 
+from django.utils import timezone
+
 def generate_booking_token():
     """Генерирует уникальный токен для записи."""
     return secrets.token_urlsafe(16)  # 22 символа, URL-safe
@@ -908,12 +910,17 @@ class ClientSession(models.Model):
 class Article(models.Model):
     title = models.CharField(max_length=255)
     content = HTMLField()
-    published_at = models.DateTimeField(auto_now_add=True)
+    published_at = models.DateTimeField(editable=True)  # Убрали auto_now_add
     is_published = models.BooleanField(default=False)
     slug = models.SlugField(unique=True, blank=True)
 
-@receiver(pre_save, sender=Article)
-def create_slug(sender, instance, **kwargs):
-    if not instance.slug:
-        instance.slug = slugify(instance.title)
+    # SEO поля
+    meta_title = models.CharField(max_length=60, blank=True, help_text='Заголовок для SEO (до 60 символов)')
+    meta_description = models.CharField(max_length=160, blank=True, help_text='Описание для SEO (до 160 символов)')
+    meta_keywords = models.CharField(max_length=255, blank=True, help_text='Ключевые слова через запятую')
 
+    def save(self, *args, **kwargs):
+        if not self.pk:  # Если это новая запись
+            self.published_at = timezone.now()
+            self.slug = slugify(self.title)  # Автоматически создаем slug
+        super().save(*args, **kwargs)

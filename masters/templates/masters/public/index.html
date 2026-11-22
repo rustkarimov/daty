@@ -2,7 +2,13 @@
 {% extends 'masters/public/promo_base.html' %}
 {% load static %}
 
-{% block title %}ДАТЫ — умное расписание для самозанятых мастеров{% endblock %}
+
+{% block title %}ДАТЫ — сервис для мастеров, самозанятых, тех, кто работает на себя{% endblock %}
+
+{% block description %}Платформа для мастеров и специалистов: онлайн-запись клиентов, умный календарь, автоматизация работы для парикмахеров, репетиторов, мастеров маникюра и всех, кто работает на себя{% endblock %}
+
+{% block keywords %}самозанятый мастер, онлайн запись, расписание для мастеров, услуги на дому, работа с клиентами{% endblock %}
+
 
 
 {% block content %}
@@ -65,39 +71,6 @@
         </div>
     </div>
 </div>
-
-
-<!-- ============================================================ -->
-<!-- СЕКЦИЯ: СТАТЬИ-->
-<!-- ============================================================ -->
-<section class="blog-preview-section" id="blog">
-    <div class="container">
-        <div class="section-header text-center">
-            <h2 class="hero-title">Блог</h2>
-            <p class="hero-description mx-auto">
-                Полезные статьи для самозанятых: финансы, клиенты, продуктивность
-            </p>
-        </div>
-
-        <div class="blog-grid">
-            {% for article in latest_articles %}
-            <a href="/blog/{{ article.slug }}/" class="blog-card">
-                <div class="blog-card-date">{{ article.created_at|date:"d.m.Y" }}</div>
-                <h3 class="blog-card-title">{{ article.title }}</h3>
-                <p class="blog-card-excerpt">
-                    {{ article.excerpt|default:article.title }}
-                </p>
-                <span class="blog-card-link">Читать →</span>
-            </a>
-            {% endfor %}
-        </div>
-
-        <div class="text-center mt-4">
-            <a href="/blog/" class="btn-outline-pink">Все статьи →</a>
-        </div>
-    </div>
-</section>
-<!-- END BLOG PREVIEW SECTION -->
 
 
 <!-- ============================================================ -->
@@ -700,6 +673,36 @@
     </div>
 </section>
 
+
+<!-- ============================================================ -->
+<!-- СЕКЦИЯ: СТАТЬИ-->
+<!-- ============================================================ -->
+<section class="blog-preview-section" id="blog">
+    <div class="container">
+        <div class="section-header text-center">
+            <h2 class="hero-title">Почитать</h2>
+            <p class="hero-description mx-auto">
+            </p>
+        </div>
+
+        <div class="blog-grid">
+            {% for article in latest_articles %}
+            <a href="/blog/{{ article.slug }}/" class="blog-card">
+                <div class="blog-card-date">{{ article.created_at|date:"d.m.Y" }}</div>
+                <h3 class="blog-card-title">{{ article.title }}</h3>
+                <p class="blog-card-excerpt">
+                    {{ article.excerpt|default:article.title }}
+                </p>
+                <span class="blog-card-link">Читать</span>
+            </a>
+            {% endfor %}
+        </div>
+
+        <div class="text-center mt-4">
+            <a href="/blog/" class="btn-outline-pink">Все статьи</a>
+        </div>
+    </div>
+</section>
 
 <!-- ============================================================ -->
 <!-- СЕКЦИЯ: CTA (финальный призыв) -->

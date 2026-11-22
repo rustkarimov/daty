@@ -4,6 +4,8 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
+from django.db import models
+
 from .models import (
     CustomUser,
     Master,
@@ -22,6 +24,9 @@ from . import admin_support  # noqa: F401
 
 from tinymce.models import HTMLField
 from tinymce.widgets import AdminTinyMCE
+
+from django.forms import DateInput
+
 
 # ============================================================
 # ПОЛЬЗОВАТЕЛИ
@@ -169,9 +174,21 @@ class ArticleAdmin(admin.ModelAdmin):
     list_filter = ['is_published']
     date_hierarchy = 'published_at'
     formfield_overrides = {
-        HTMLField: {'widget': AdminTinyMCE()}
+        HTMLField: {'widget': AdminTinyMCE()},
+        models.DateField: {'widget': DateInput(attrs={'type': 'date'})}
     }
-    prepopulated_fields = {'slug': ('title',)}  # автоматическое заполнение slug
+    prepopulated_fields = {'slug': ('title',)}
+    fields = (
+        'slug',
+        'content',
+        'published_at',
+        'is_published',
+        'title',
+        'meta_title',
+        'meta_description',
+        'meta_keywords',        
+    )
+
 
 admin.site.register(Article, ArticleAdmin)
 

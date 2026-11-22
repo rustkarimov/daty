@@ -347,3 +347,6 @@ TINYMCE_DEFAULT_CONFIG = {
 
 TINYMCE_FILEBROWSER_URL = '/filebrowser/'  # если используете FileBrowser
 TINYMCE_IMAGE_UPLOAD_URL = '/upload/'  # URL для загрузки изображений
+
+SITE_DESCRIPTION = "Сервис для самозанятых мастеров и онлайн-специалистов: онлайн-запись, управление расписанием, автоматизация работы"
+SITE_KEYWORDS = "самозанятый, мастер, запись клиентов, онлайн-запись, расписание, репетитор, услуги на дому"

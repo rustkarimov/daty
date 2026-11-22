@@ -1,5 +1,26 @@
 {% extends 'masters/public/promo_base.html' %}
-{% block title %}{{ article.title }} — ДАТЫ{% endblock %}
+
+
+
+{% block title %}{{ article.meta_title|default:article.title }}{% endblock %}
+
+{% block description %}
+    {% if article.meta_description %}
+        {{ article.meta_description }}
+    {% else %}
+        {{ article.title }} — полезная статья для самозанятых мастеров и специалистов
+    {% endif %}
+{% endblock %}
+
+{% block keywords %}
+    {% if article.meta_keywords %}
+        {{ article.meta_keywords }}
+    {% else %}
+        самозанятый мастер, работа на себя, бизнес мастера, услуги на дому
+    {% endif %}
+{% endblock %}
+
+
 
 {% block content %}
 <article class="article-page">
@@ -14,8 +35,8 @@
         </div>
 
         <div class="article-cta">
-            <h3>Управляйте записями без хаоса</h3>
-            <p>ДАТЫ — умное расписание для самозанятых мастеров</p>
+            <h3>Управляй записями</h3>
+            <p>ДАТЫ — умное расписание для мастеров, самозанятых, фрилансеров</p>
             <a href="/" class="btn-pink">Попробовать бесплатно</a>
         </div>
     </div>
