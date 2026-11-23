@@ -302,7 +302,7 @@
     align-items: center;
     font-size: 0.85rem;
     padding: 6px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.6);
+    border-bottom: none;
 }
 
 .summaryRow:last-of-type {
@@ -331,7 +331,8 @@
 
 .summaryMeta {
     display: flex;
-    gap: 16px;
+    flex-direction: column;
+    gap: 4px;
     margin-top: 10px;
     font-size: 0.8rem;
     color: var(--gray-500);
@@ -341,6 +342,11 @@
     display: inline-flex;
     align-items: center;
     gap: 4px;
+}
+
+.summaryMetaText {
+    color: var(--gray-800);   /* чёрный/тёмный */
+    font-weight: 500;
 }
 
 /* ---- Поля формы ---- */
@@ -533,6 +539,14 @@
 .twoCols {
         flex-direction: column;
         gap: 0;
+}
+
+.stepCard {
+    background: var(--gray-50);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    border: 1px solid var(--gray-100);
 }
 
 

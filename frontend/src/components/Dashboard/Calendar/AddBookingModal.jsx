@@ -27,8 +27,6 @@ export default function AddBookingModal({
     const [createdBooking, setCreatedBooking] = useState(null);
 
     // ---- Флаг: была ли создана хотя бы одна запись ----
-    // Нужен, чтобы при закрытии через «Отмену»/крестик/backdrop
-    // обновить дашборд, если записи уже создавались.
     const [createdAny, setCreatedAny] = useState(false);
 
     // ---- Рефы для скролла ----
@@ -63,6 +61,9 @@ export default function AddBookingModal({
         selectedSlotEnd,
         selectDate,
         selectTime,
+        hasMoreDates,
+        loadMoreDates,
+        loadingMoreDates,
         clientName,
         clientPhone,
         clientAddress,
@@ -149,8 +150,6 @@ export default function AddBookingModal({
     }
 
     // ---- «Готово» ----
-    // onCreated вызываем напрямую, а не через handleClose,
-    // чтобы не было двойного вызова.
     function handleFinish() {
         if (onCreated) onCreated();
         onClose();
@@ -163,7 +162,7 @@ export default function AddBookingModal({
         }
         return slot.start;
     }
-    
+
     return (
         <div className={shared.backdrop} onClick={handleBackdropClick}>
             <div className={shared.modal} onClick={e => e.stopPropagation()}>
@@ -241,15 +240,20 @@ export default function AddBookingModal({
                                                 Шаг 2: Дата и время
                                             </label>
 
-                                            <DateGrid
-                                                dates={availableDates}
-                                                selectedDate={selectedDate}
-                                                onSelect={handleDateClick}
-                                                loading={loadingDates}
-                                            />
+                                            <div className={shared.stepCard}>
+                                                <DateGrid
+                                                    dates={availableDates}
+                                                    selectedDate={selectedDate}
+                                                    onSelect={handleDateClick}
+                                                    loading={loadingDates}
+                                                    hasMore={hasMoreDates}
+                                                    onLoadMore={loadMoreDates}
+                                                    loadingMore={loadingMoreDates}
+                                                />
+                                            </div>
 
                                             {selectedDate && (
-                                                <div ref={slotsRef}>
+                                                <div className={shared.stepCard} ref={slotsRef}>
                                                     <SlotGrid
                                                         slots={availableSlots}
                                                         selectedTime={selectedTime}

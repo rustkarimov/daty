@@ -133,6 +133,9 @@ function EditBookingModalForm({
         selectedTime,
         selectDate,
         selectTime,
+        hasMoreDates,
+        loadMoreDates,
+        loadingMoreDates,
         clientName,
         clientPhone,
         clientAddress,
@@ -246,6 +249,9 @@ function EditBookingModalForm({
                                             selectedDate={selectedDate}
                                             onSelect={handleDateClick}
                                             loading={loadingDates}
+                                            hasMore={hasMoreDates}
+                                            onLoadMore={loadMoreDates}
+                                            loadingMore={loadingMoreDates}
                                         />
                                     </div>
 

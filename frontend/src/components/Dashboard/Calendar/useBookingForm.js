@@ -64,6 +64,11 @@ export default function useBookingForm({
     const [selectedTime, setSelectedTime] = useState(initialTime || defaultTime || '');
     const [selectedSlotEnd, setSelectedSlotEnd] = useState('');
 
+    // ---- Пагинация дат ----
+    const [datesPage, setDatesPage] = useState(1);
+    const [hasMoreDates, setHasMoreDates] = useState(false);
+    const [loadingMoreDates, setLoadingMoreDates] = useState(false);
+
     // ---- Клиент ----
     const [clientName, setClientName] = useState('');
     const [clientPhone, setClientPhone] = useState('');
@@ -104,7 +109,6 @@ export default function useBookingForm({
     }, [masterSlug]);
 
     // ---- Загрузка дефолтов мастера (away: travel_before/after) ----
-    // Только для add: клиент их не видит, в edit — из записи.
     useEffect(() => {
         if (!isAway || isEdit || isClient) return;
         const d = defaultDate || new Date().toISOString().split('T')[0];
@@ -156,19 +160,26 @@ export default function useBookingForm({
         }
     }, [isEdit, selectedService, initialServiceId, categories, uncategorized]);
 
-    // ---- Загрузка дат ----
+    // ---- Загрузка дат (первая страница, с пагинацией) ----
     useEffect(() => {
         if (servicesArray.length === 0) {
             setAvailableDates([]);
             setAvailableSlots([]);
+            setDatesPage(1);
+            setHasMoreDates(false);
             return;
         }
         if (!totalDuration) return;
 
         setLoadingDates(true);
-        loadAvailableDates(masterSlug, totalDuration)
+        setDatesPage(1);
+
+        const limit = window.innerWidth >= 768 ? 16 : 15;
+
+        loadAvailableDates(masterSlug, totalDuration, 1, limit)
             .then(data => {
                 setAvailableDates(data.dates || []);
+                setHasMoreDates(!!data.has_more);
                 setLoadingDates(false);
             })
             .catch(error => {
@@ -176,6 +187,26 @@ export default function useBookingForm({
                 setLoadingDates(false);
             });
     }, [servicesArray.length, totalDuration, masterSlug]);
+
+    // ---- Догрузка дат ----
+    const loadMoreDates = useCallback(async () => {
+        if (loadingMoreDates || !hasMoreDates) return;
+
+        setLoadingMoreDates(true);
+        const nextPage = datesPage + 1;
+        const limit = window.innerWidth >= 768 ? 16 : 15;
+
+        try {
+            const data = await loadAvailableDates(masterSlug, totalDuration, nextPage, limit);
+            setAvailableDates(prev => [...prev, ...(data.dates || [])]);
+            setHasMoreDates(!!data.has_more);
+            setDatesPage(nextPage);
+        } catch (error) {
+            console.error('Ошибка догрузки дат:', error);
+        } finally {
+            setLoadingMoreDates(false);
+        }
+    }, [masterSlug, totalDuration, datesPage, hasMoreDates, loadingMoreDates]);
 
     // ---- Загрузка слотов ----
     useEffect(() => {
@@ -315,7 +346,6 @@ export default function useBookingForm({
             }
 
             if (isClient) {
-                // Клиент: created_by='client', без travel/duration_extra
                 const data = await createBookings(masterSlug, {
                     services: selectedServices.map(s => s.id),
                     client_name: clientName.trim(),
@@ -335,7 +365,6 @@ export default function useBookingForm({
                 }
             }
 
-            // Мастер: created_by='master', с travel/duration_extra
             const data = await createMultipleBookings(masterSlug, {
                 services: selectedServices.map(s => s.id),
                 client_name: clientName.trim(),
@@ -396,6 +425,11 @@ export default function useBookingForm({
         selectedSlotEnd,
         selectDate,
         selectTime,
+
+        // Пагинация дат
+        hasMoreDates,
+        loadMoreDates,
+        loadingMoreDates,
 
         // Клиент
         clientName,

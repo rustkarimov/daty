@@ -48,7 +48,7 @@ export default function BookingSummary({
                 </div>
             ))}
 
-            {!single && (
+            {services.length > 1 && (
                 <div className={shared.summaryTotal}>
                     <span>Итого</span>
                     <span className={shared.summaryTotalValue}>
@@ -60,11 +60,11 @@ export default function BookingSummary({
             <div className={shared.summaryMeta}>
                 <span className={shared.summaryMetaItem}>
                     <i className="far fa-calendar-alt" />
-                    {formatDate(date)}
+                    <span className={shared.summaryMetaText}>{formatDate(date)}</span>
                 </span>
-                <span className={shared.summaryMetaItem}>
+                <span className={shared.summaryMetaItem} style={{ marginTop: 4 }}>
                     <i className="far fa-clock" />
-                    {timeLabel}
+                    <span className={shared.summaryMetaText}>{timeLabel}</span>
                 </span>
             </div>
         </div>
