@@ -6,6 +6,7 @@ import ClientFormStep from './ClientFormStep';
 import ConfirmationStep from './ConfirmationStep';
 import ClientAuthModal from './ClientAuthModal';
 import styles from './MasterPage.module.css';
+import BookingSummary from '../Dashboard/Calendar/BookingSummary';
 
 export default function MasterPage({
     identifier,
@@ -89,6 +90,21 @@ export default function MasterPage({
                             selectedTime={selectedTime}
                             onChange={handleTimeChange}
                         />
+                    )}
+
+                    {showForm && (
+                        <div className="card mb-4">
+                            <div className="card-body">
+                                <BookingSummary
+                                    services={selectedServices}
+                                    date={selectedDate}
+                                    time={selectedTime?.start}
+                                    slotEnd={selectedTime?.end}
+                                    totalDuration={selectedServices.reduce((s, x) => s + x.duration, 0)}
+                                    totalPrice={selectedServices.reduce((s, x) => s + x.price, 0)}
+                                />
+                            </div>
+                        </div>
                     )}
 
                     {showForm && (

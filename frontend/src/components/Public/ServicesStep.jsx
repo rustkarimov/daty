@@ -191,42 +191,7 @@ export default function ServicesStep({ identifier, selectedServices, onChange })
                         </div>
                     </div>
                 )}
-
-                {/* Итого */}
-                {selectedServices.length > 0 && (
-                    <div className={styles.summary}>
-                        <div className={styles.summaryTitle}>
-                            <i className="fas fa-list me-1" />
-                            Выбрано ({selectedServices.length}):
-                        </div>
-                        {selectedServices.map((s) => (
-                            <div key={s.id} className={styles.summaryItem}>
-                                <span>
-                                    {s.category_name ? `${s.category_name}: ` : ''}{s.name}
-                                </span>
-                                <div className={styles.summaryMeta}>
-                                    <span>{s.duration} мин</span>
-                                    <span>{s.price} ₽</span>
-                                    <button
-                                        type="button"
-                                        className={styles.removeBtn}
-                                        onClick={() => toggleService(s, s.category_name)}
-                                        aria-label="Убрать"
-                                    >
-                                        <i className="fas fa-times" />
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
-                        <div className={styles.summaryTotal}>
-                            <span>Итого</span>
-                            <span>
-                                {selectedServices.reduce((sum, s) => sum + s.duration, 0)} мин / {' '}
-                                {selectedServices.reduce((sum, s) => sum + s.price, 0)} ₽
-                            </span>
-                        </div>
-                    </div>
-                )}
+                
             </div>
         </div>
     );

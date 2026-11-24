@@ -73,47 +73,7 @@ export default function ClientFormStep({
                 </h5>
             </div>
             <div className="card-body">
-                <div className={styles.summary}>
-                    <div className={styles.summaryLabel}>
-                        <i className="fas fa-list me-1" />
-                        Выбранные услуги
-                    </div>
-                    {selectedServices.map(s => (
-                        <div key={s.id} className={styles.summaryItem}>
-                            <span>
-                                {s.category_name ? `${s.category_name}: ` : ''}{s.name}
-                            </span>
-                            <span className={styles.summaryMeta}>
-                                {s.duration} мин · {s.price} ₽
-                            </span>
-                        </div>
-                    ))}
-                    <div className={styles.summaryTotal}>
-                        <span>Итого</span>
-                        <span>{totalDuration} мин / {totalPrice} ₽</span>
-                    </div>
-                    <div className="row g-2 mt-2">
-                        <div className="col-6">
-                            <div className={styles.summaryItem}>
-                                <span className={styles.summaryLabelSmall}>
-                                    <i className="far fa-calendar-alt me-1" />Дата
-                                </span>
-                                <span className={styles.summaryValue}>{formatDate(selectedDate)}</span>
-                            </div>
-                        </div>
-                        <div className="col-6">
-                            <div className={styles.summaryItem}>
-                                <span className={styles.summaryLabelSmall}>
-                                    <i className="far fa-clock me-1" />Время
-                                </span>
-                                <span className={styles.summaryValue}>{timeLabel}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <hr />
-
+                
                 <form onSubmit={handleSubmit}>
                     <ClientForm
                         name={clientName}

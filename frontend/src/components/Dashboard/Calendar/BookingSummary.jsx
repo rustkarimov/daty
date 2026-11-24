@@ -41,10 +41,10 @@ export default function BookingSummary({
 
             {services.map(s => (
                 <div key={s.id} className={shared.summaryRow}>
-                    <span>{s.name}</span>
-                    <span className={shared.summaryRowMeta}>
+                    <div className={shared.summaryRowName}>{s.name}</div>
+                    <div className={shared.summaryRowMeta}>
                         {s.duration} мин · {s.price} ₽
-                    </span>
+                    </div>
                 </div>
             ))}
 

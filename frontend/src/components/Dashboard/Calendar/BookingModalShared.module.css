@@ -200,6 +200,18 @@
     border-top: 1px solid var(--gray-200);
 }
 
+
+
+/* Обёртка шага — больше НЕ серая, просто нейтральный контейнер */
+.stepCard {
+    background: transparent;        /* было: var(--gray-50) */
+    border-radius: 12px;
+    padding: 0;                    /* было: 12px 14px */
+    margin-bottom: 10px;
+    border: none;                  /* было: 1px solid var(--gray-100) */
+}
+
+/* Даты — белый фон (оставляем как есть, но явно) */
 .dateCard {
     flex: 0 0 calc(25% - 6px);
     padding: 6px 4px;
@@ -259,6 +271,21 @@
     color: var(--gray-700);
 }
 
+/* Слоты — СЕРЫЙ фон (единственное место, где он должен быть) */
+.slotCard {
+    flex: 0 0 calc(16.666% - 7px);
+    padding: 4px;
+    border-radius: 8px;
+    border: 1px solid var(--gray-200);
+    background: var(--gray-100);          /* ← серый фон только у слотов */
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--gray-700);
+}
+
 .slotCard:hover {
     border-color: var(--primary-light);
     background: var(--primary-lighter);
@@ -297,9 +324,10 @@
 }
 
 .summaryRow {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    ммdisplay: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
     font-size: 0.85rem;
     padding: 6px 0;
     border-bottom: none;
@@ -541,13 +569,7 @@
         gap: 0;
 }
 
-.stepCard {
-    background: var(--gray-50);
-    border-radius: 12px;
-    padding: 12px 14px;
-    margin-bottom: 10px;
-    border: 1px solid var(--gray-100);
-}
+
 
 
 /* ---- Анимация ---- */
