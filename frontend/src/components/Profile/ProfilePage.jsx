@@ -19,6 +19,8 @@ export default function ProfilePage({ initialData, masterId }) {
 
     const avatarPlaceholder = (firstName?.[0] || initialData.phone?.[0] || 'U').toUpperCase();
 
+    const [showPhoneOnPublic, setShowPhoneOnPublic] = useState(initialData.show_phone_on_public || false);
+
     // ---------- Аватар ----------
 
     function handleAvatarClick() {
@@ -89,6 +91,7 @@ export default function ProfilePage({ initialData, masterId }) {
                 login: login,
                 address: address,
                 bio: bio,
+                show_phone_on_public: showPhoneOnPublic,
             });
 
             if (data.success) {
@@ -172,6 +175,27 @@ export default function ProfilePage({ initialData, masterId }) {
                             <small className={styles.hint}>
                                 Телефон используется для входа и не может быть изменён
                             </small>
+
+                            {/* НОВЫЙ ЧЕКБОКС */}
+                            <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <input
+                                    type="checkbox"
+                                    id="show-phone-checkbox"
+                                    checked={showPhoneOnPublic}
+                                    onChange={(e) => setShowPhoneOnPublic(e.target.checked)}
+                                    style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                                />
+                                <label htmlFor="show-phone-checkbox" style={{ 
+                                    fontSize: '0.85rem', 
+                                    fontWeight: '700', 
+                                    color: 'var(--gray-800)', 
+                                    textTransform: 'uppercase',
+                                    cursor: 'pointer',
+                                    margin: 0 
+                                }}>
+                                    Показывать номер телефона на твоей странице?
+                                </label>
+                            </div>
                         </div>
 
                         <div className={styles.row}>
@@ -228,7 +252,10 @@ export default function ProfilePage({ initialData, masterId }) {
                                 onChange={e => setAddress(e.target.value)}
                                 placeholder="Например: Москва, ул. Тверская 15"
                             />
-                            <small className={styles.hint}>Ваш адрес для клиентов</small>
+                            <small className={styles.hint}>
+                                Твой адрес размещается на твоей странице. Заполнять необязательно. 
+                                Тогда адрес можно скидывать клиентам через мессенджеры с главной страницы кабинета.
+                            </small>
                         </div>
 
                         <div className={styles.formField}>
