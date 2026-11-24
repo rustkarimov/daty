@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import ServicesStep from './ServicesStep';
 import DatesStep from './DatesStep';
 import TimesStep from './TimesStep';
@@ -20,6 +20,10 @@ export default function MasterPage({
     const [confirmedBooking, setConfirmedBooking] = useState(null);
     const [authModalOpen, setAuthModalOpen] = useState(false);
 
+    // Рефы для автоскролла
+    const timesRef = useRef(null);
+    const summaryRef = useRef(null);
+
     const isAway = masterMode === 'away';
 
     function handleReset() {
@@ -38,11 +42,27 @@ export default function MasterPage({
     function handleDateChange(d) {
         setSelectedDate(d);
         setSelectedTime(null);
+
+        // Скролл к блоку времени (с задержкой, чтобы React успел отрендерить)
+        setTimeout(() => {
+            if (timesRef.current) {
+                const y = timesRef.current.getBoundingClientRect().top + window.pageYOffset - 80;
+                window.scrollTo({ top: y, behavior: 'smooth' });
+            }
+        }, 300);
     }
 
     function handleTimeChange(t) {
         // t = { start, end }
         setSelectedTime(t);
+
+        // Скролл к сводке (с задержкой, чтобы React успел отрендерить)
+        setTimeout(() => {
+            if (summaryRef.current) {
+                const y = summaryRef.current.getBoundingClientRect().top + window.pageYOffset - 80;
+                window.scrollTo({ top: y, behavior: 'smooth' });
+            }
+        }, 300);
     }
 
     function handleBookingSuccess(result) {
@@ -83,26 +103,30 @@ export default function MasterPage({
                     )}
 
                     {showTimes && (
-                        <TimesStep
-                            identifier={identifier}
-                            selectedServices={selectedServices}
-                            selectedDate={selectedDate}
-                            selectedTime={selectedTime}
-                            onChange={handleTimeChange}
-                        />
+                        <div ref={timesRef}>
+                            <TimesStep
+                                identifier={identifier}
+                                selectedServices={selectedServices}
+                                selectedDate={selectedDate}
+                                selectedTime={selectedTime}
+                                onChange={handleTimeChange}
+                            />
+                        </div>
                     )}
 
                     {showForm && (
-                        <div className="card mb-4">
-                            <div className="card-body">
-                                <BookingSummary
-                                    services={selectedServices}
-                                    date={selectedDate}
-                                    time={selectedTime?.start}
-                                    slotEnd={selectedTime?.end}
-                                    totalDuration={selectedServices.reduce((s, x) => s + x.duration, 0)}
-                                    totalPrice={selectedServices.reduce((s, x) => s + x.price, 0)}
-                                />
+                        <div ref={summaryRef}>
+                            <div className="card mb-4">
+                                <div className="card-body">
+                                    <BookingSummary
+                                        services={selectedServices}
+                                        date={selectedDate}
+                                        time={selectedTime?.start}
+                                        slotEnd={selectedTime?.end}
+                                        totalDuration={selectedServices.reduce((s, x) => s + x.duration, 0)}
+                                        totalPrice={selectedServices.reduce((s, x) => s + x.price, 0)}
+                                    />
+                                </div>
                             </div>
                         </div>
                     )}

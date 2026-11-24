@@ -6,7 +6,6 @@
 import React from 'react';
 import useBookingForm from '../Dashboard/Calendar/useBookingForm';
 import ClientForm from '../Dashboard/Calendar/ClientForm';
-import styles from './ClientFormStep.module.css';
 import { formatDate } from '../../utils/date';
 
 export default function ClientFormStep({
@@ -88,7 +87,7 @@ export default function ClientFormStep({
                         showAwayFields={false}
                     />
 
-                    <button type="submit" className="btn btn-pink w-100" disabled={saving}>
+                    <button type="submit" className="btn btn-pink w-100" disabled={saving} style={{ justifyContent: 'center' }}>
                         {saving
                             ? 'Отправка...'
                             : (isAway ? 'Оформить предварительную запись' : 'Записаться')}
