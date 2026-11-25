@@ -1,33 +1,60 @@
 {% extends 'masters/public/promo_base.html' %}
-
-
+{% load static %}
 
 {% block title %}{{ article.meta_title|default:article.title }}{% endblock %}
 
 {% block description %}
-    {% if article.meta_description %}
-        {{ article.meta_description }}
-    {% else %}
-        {{ article.title }} — полезная статья для самозанятых мастеров и специалистов
-    {% endif %}
+    {% if article.meta_description %}{{ article.meta_description }}
+    {% elif article.excerpt %}{{ article.excerpt }}
+    {% else %}{{ article.content|striptags|truncatechars:160 }}{% endif %}
 {% endblock %}
 
 {% block keywords %}
-    {% if article.meta_keywords %}
-        {{ article.meta_keywords }}
-    {% else %}
-        самозанятый мастер, работа на себя, бизнес мастера, услуги на дому
-    {% endif %}
+    {% if article.meta_keywords %}{{ article.meta_keywords }}{% else %}самозанятый мастер, работа на себя, бизнес мастера, услуги на дому{% endif %}
 {% endblock %}
 
-
+{% block extra_head %}
+    <!-- Open Graph -->
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="{{ article.meta_title|default:article.title }}">
+    <meta property="og:description" content="{% if article.meta_description %}{{ article.meta_description }}{% elif article.excerpt %}{{ article.excerpt }}{% else %}{{ article.content|striptags|truncatechars:160 }}{% endif %}">
+    <meta property="og:url" content="{{ request.build_absolute_uri }}">
+    <meta property="og:site_name" content="ДАТЫ">
+    <meta property="article:published_time" content="{{ article.published_at|date:'c' }}">
+    
+    <!-- Schema.org (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": "{{ article.title|escapejs }}",
+      "datePublished": "{{ article.published_at|date:'c' }}",
+      "dateModified": "{{ article.published_at|date:'c' }}",
+      "author": {"@type": "Organization", "name": "ДАТЫ"},
+      "publisher": {
+        "@type": "Organization",
+        "name": "ДАТЫ",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "{{ request.scheme }}://{{ request.get_host }}{% static 'images/logo-small.png' %}"
+        }
+      }
+    }
+    </script>
+{% endblock %}
 
 {% block content %}
 <article class="article-page">
     <div class="container article-container">
-        <a href="/blog/" class="btn-outline-pink article-back-btn">← Все статьи</a>
+        <a href="{% url 'blog_list' %}" class="btn-outline-pink article-back-btn">← Все статьи</a>
 
-        <div class="article-meta">{{ article.published_at|date:"d.m.Y" }}</div>
+        <div class="article-meta">
+            {{ article.published_at|date:"d.m.Y" }}
+            {% if article.category %}
+                · <a href="{% url 'blog_category' article.category.slug %}" style="color: var(--primary); text-decoration: none;">{{ article.category.name }}</a>
+            {% endif %}
+        </div>
+        
         <h1 class="article-title">{{ article.title }}</h1>
 
         <div class="article-content">

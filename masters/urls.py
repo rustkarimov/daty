@@ -153,6 +153,7 @@ urlpatterns = [
     path('api/support/unread/', views.get_unread_support_count, name='api_support_unread'),
 
     path('blog/', views.blog_list, name='blog_list'),
+    path('blog/category/<slug:slug>/', views.blog_category, name='blog_category'),
     path('blog/<slug:slug>/', views.blog_detail, name='blog_detail'),
 
 

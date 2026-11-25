@@ -9,6 +9,8 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from cryptography.fernet import Fernet
 import secrets
 
+import transliterate
+
 from django.utils.text import slugify
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
@@ -911,21 +913,80 @@ class ClientSession(models.Model):
 # СТАТЬИ (БЛОГ)
 # ============================================================
 
+class ArticleCategory(models.Model):
+    """Рубрики для статей (SEO-кластеризация)."""
+    name = models.CharField(max_length=100, verbose_name="Название рубрики")
+    slug = models.SlugField(unique=True, blank=True, verbose_name="URL (слаг)")
+    description = models.TextField(blank=True, verbose_name="Описание для SEO")
+    order = models.IntegerField(default=1, verbose_name="Порядок сортировки")
 
-class Article(models.Model):
-    title = models.CharField(max_length=255)
-    content = HTMLField()
-    published_at = models.DateTimeField(editable=True)  # Убрали auto_now_add
-    is_published = models.BooleanField(default=False)
-    slug = models.SlugField(unique=True, blank=True)
+    class Meta:
+        verbose_name = "Рубрика"
+        verbose_name_plural = "Рубрики"
+        ordering = ['order', 'name']
 
-    # SEO поля
-    meta_title = models.CharField(max_length=60, blank=True, help_text='Заголовок для SEO (до 60 символов)')
-    meta_description = models.CharField(max_length=160, blank=True, help_text='Описание для SEO (до 160 символов)')
-    meta_keywords = models.CharField(max_length=255, blank=True, help_text='Ключевые слова через запятую')
+    def __str__(self):
+        return self.name
 
     def save(self, *args, **kwargs):
-        if not self.pk:  # Если это новая запись
+        if not self.slug:
+            self.slug = slugify(transliterate.translit(self.name, reversed=True))
+        super().save(*args, **kwargs)
+
+
+class Article(models.Model):
+    title = models.CharField(max_length=255, verbose_name="Заголовок")
+    category = models.ForeignKey(
+        ArticleCategory,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='articles',
+        verbose_name="Рубрика",
+    )
+    excerpt = models.TextField(
+        max_length=300,
+        blank=True,
+        verbose_name="Краткое описание (лид)",
+        help_text="Показывается в списке статей и в соцсетях (до 160 символов)"
+    )
+    content = HTMLField(verbose_name="Содержимое")
+    published_at = models.DateTimeField(
+        default=timezone.now,
+        verbose_name="Дата публикации",
+        help_text="Можно изменить на будущую или прошлую"
+    )
+    is_published = models.BooleanField(default=False, verbose_name="Опубликована")
+    slug = models.SlugField(unique=True, blank=True, verbose_name="URL (слаг)")
+
+    # SEO поля
+    meta_title = models.CharField(max_length=60, blank=True, verbose_name="SEO: Заголовок")
+    meta_description = models.CharField(max_length=160, blank=True, verbose_name="SEO: Описание")
+    meta_keywords = models.CharField(max_length=255, blank=True, verbose_name="SEO: Ключевые слова")
+
+    class Meta:
+        verbose_name = "Статья"
+        verbose_name_plural = "Статьи"
+        ordering = ['-published_at']
+
+    def __str__(self):
+        return self.title
+
+    def save(self, *args, **kwargs):
+        # Генерируем slug, если его нет (с транслитерацией кириллицы)
+        if not self.slug:
+            base_slug = slugify(transliterate.translit(self.title, reversed=True))
+            # Обрезаем, если слишком длинный
+            self.slug = base_slug[:50]
+            
+            # Защита от дублей
+            counter = 1
+            while Article.objects.filter(slug=self.slug).exclude(pk=self.pk).exists():
+                self.slug = f"{base_slug[:45]}-{counter}"
+                counter += 1
+                
+        # Если это новая статья и дата не задана вручную, ставим текущую
+        if not self.pk and not self.published_at:
             self.published_at = timezone.now()
-            self.slug = slugify(self.title)  # Автоматически создаем slug
+            
         super().save(*args, **kwargs)

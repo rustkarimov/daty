@@ -691,7 +691,7 @@
                 <div class="blog-card-date">{{ article.created_at|date:"d.m.Y" }}</div>
                 <h3 class="blog-card-title">{{ article.title }}</h3>
                 <p class="blog-card-excerpt">
-                    {{ article.excerpt|default:article.title }}
+                    {{ article.excerpt|default:article.content|striptags|truncatechars:100 }}
                 </p>
                 <span class="blog-card-link">Читать</span>
             </a>

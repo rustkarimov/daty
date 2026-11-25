@@ -7,8 +7,7 @@ from django.http import HttpResponse
 from django.conf import settings
 
 from django.shortcuts import render, get_object_or_404
-from ..models import Article
-
+from ..models import Article, ArticleCategory
 
 
 
@@ -36,14 +35,24 @@ def service_worker(request):
     response['Cache-Control'] = 'no-cache'
     return response
 
-
-
-
-
 def blog_list(request):
     articles = Article.objects.filter(is_published=True).order_by('-published_at')
-    return render(request, 'masters/public/blog_list.html', {'articles': articles})
+    categories = ArticleCategory.objects.all()
+    return render(request, 'masters/public/blog_list.html', {
+        'articles': articles,
+        'categories': categories,
+        'category': None,
+    })
 
+def blog_category(request, slug):
+    category = get_object_or_404(ArticleCategory, slug=slug)
+    articles = Article.objects.filter(is_published=True, category=category).order_by('-published_at')
+    categories = ArticleCategory.objects.all()
+    return render(request, 'masters/public/blog_list.html', {
+        'articles': articles,
+        'categories': categories,
+        'category': category,
+    })
 
 def blog_detail(request, slug):
     article = get_object_or_404(Article, slug=slug, is_published=True)

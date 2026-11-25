@@ -334,15 +334,17 @@ else:
 
 
 TINYMCE_DEFAULT_CONFIG = {
-    'theme': 'silver',  # или 'oxide' для более современного вида
-    'width': 800,
-    'height': 400,
-    'plugins': 'autoresize link image code lists table paste',
-    'toolbar': 'undo redo | formatselect | bold italic | alignleft aligncenter alignright | bullist numlist | link image code',
-    'menubar': False,  # отключить меню
-    'statusbar': False,  # отключить строку состояния
-    'paste_as_text': True,  # вставлять как текст
-    'paste_remove_styles': True,  # удалять стили при вставке
+    'theme': 'silver',
+    'width': '100%',
+    'height': 500,
+    'plugins': 'autoresize link image code lists table paste media',
+    'toolbar': 'undo redo | formatselect | bold italic | alignleft aligncenter alignright | bullist numlist | link image media | code',
+    'menubar': False,
+    'statusbar': False,
+    'paste_as_text': False,          # Разрешаем форматирование
+    'paste_remove_styles': True,     # Но удаляем мусорные стили
+    'paste_remove_styles_if_webkit': True,
+    'image_advtab': True,            # Продвинутые настройки картинок (отступы, рамки)
 }
 
 TINYMCE_FILEBROWSER_URL = '/filebrowser/'  # если используете FileBrowser

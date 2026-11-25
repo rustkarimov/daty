@@ -17,6 +17,7 @@ from .models import (
     Notification,
     CancelledBooking,
     Article,
+    ArticleCategory
 )
 
 # Импортируем регистрацию чата поддержки
@@ -168,28 +169,41 @@ class NotificationAdmin(admin.ModelAdmin):
     send_to_all_masters.short_description = '📢 Отправить ВСЕМ мастерам'
 
 
+
+# Регистрация рубрик
+@admin.register(ArticleCategory)
+class ArticleCategoryAdmin(admin.ModelAdmin):
+    list_display = ('name', 'order', 'slug')
+    list_editable = ('order',)
+    prepopulated_fields = {'slug': ('name',)}
+    search_fields = ('name',)
+
+
+# Обновлённый ArticleAdmin
+@admin.register(Article)
 class ArticleAdmin(admin.ModelAdmin):
-    list_display = ['title', 'published_at', 'is_published']
-    search_fields = ['title', 'content']
-    list_filter = ['is_published']
+    list_display = ['title', 'category', 'published_at', 'is_published']
+    list_filter = ['is_published', 'category']
+    search_fields = ['title', 'content', 'excerpt']
     date_hierarchy = 'published_at'
+    
     formfield_overrides = {
         HTMLField: {'widget': AdminTinyMCE()},
-        models.DateField: {'widget': DateInput(attrs={'type': 'date'})}
     }
     prepopulated_fields = {'slug': ('title',)}
+    
+    # Желаемый порядок полей
     fields = (
-        'slug',
-        'content',
-        'published_at',
-        'is_published',
         'title',
+        'category',
+        'excerpt',
+        'content',
+        'is_published',
+        'published_at',
+        'slug',
         'meta_title',
         'meta_description',
-        'meta_keywords',        
+        'meta_keywords',
     )
-
-
-admin.site.register(Article, ArticleAdmin)
 
 

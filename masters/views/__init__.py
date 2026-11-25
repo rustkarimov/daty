@@ -4,7 +4,7 @@ Views для приложения masters.
 """
 
 
-from .main import home, service_worker, blog_list, blog_detail
+from .main import home, service_worker, blog_list, blog_detail, blog_category
 
 from .policies import privacy_policy, terms_of_service, agree
 
