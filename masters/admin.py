@@ -66,7 +66,7 @@ class MasterAdmin(admin.ModelAdmin):
     readonly_fields = ['encryption_key', 'created_at', 'updated_at']
 
     fields = [
-        'user', 'phone', 'first_name', 'last_name', 'bio', 'login',
+        'user', 'phone', 'show_phone_on_public', 'first_name', 'last_name', 'bio', 'login',
         'work_mode',
         'away_travel_time_before_default', 'away_travel_time_after_default', 'arrival_window_minutes',
         'min_booking_lead_time', 'home_buffer_between_bookings',

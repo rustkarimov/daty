@@ -1504,6 +1504,36 @@ body {
     margin: 0 auto !important;
 }
 
+
+.public-contacts {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+.public-contacts .contact-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--primary);
+    font-weight: 600;
+    text-decoration: none;
+    font-size: 1.1rem;
+    transition: color 0.2s;
+}
+.public-contacts .contact-link:hover {
+    color: var(--primary-dark);
+    text-decoration: underline;
+}
+.public-contacts .contact-address {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--gray-600);
+    font-size: 0.95rem;
+}
+
+
 @media (max-width: 768px) {
     .public-page,
     .public-page .col-lg-8,

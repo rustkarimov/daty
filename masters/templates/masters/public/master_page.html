@@ -21,6 +21,22 @@
                 </div>
 
                 <h2>{{ master.first_name }} {{ master.last_name }}</h2>
+
+                <!-- Контакты -->
+                <div class="public-contacts mt-2 mb-3">
+                    {% if master.show_phone_on_public and master.user.phone %}
+                        <a href="tel:+{{ master.user.phone|cut:' '|cut:'-'|cut:'('|cut:')' }}" class="contact-link">
+                            <i class="fas fa-phone-alt"></i> {{ master.user.phone }}
+                        </a>
+                    {% endif %}
+
+                    {% if master.address and master.work_mode == 'home' %}
+                        <div class="contact-address mt-1">
+                            <i class="fas fa-map-marker-alt"></i> {{ master.address }}
+                        </div>
+                    {% endif %}
+                </div>
+
                 {% if master.bio %}
                     <p class="text-muted">{{ master.bio }}</p>
                 {% endif %}

@@ -46,7 +46,7 @@ def api_profile_update(request):
     """
     Сохраняет данные профиля мастера.
     POST /api/profile/update/
-    Body: JSON { first_name, last_name, login, address, bio, work_mode }
+    Body: JSON { first_name, last_name, login, address, bio, work_mode, show_phone_on_public }
     """
     try:
         try:
@@ -109,6 +109,12 @@ def api_profile_update(request):
         if work_mode in ('home', 'away'):
             master.work_mode = work_mode
 
+        # --- НОВОЕ ПОЛЕ: Показывать телефон ---
+        show_phone_on_public = data.get('show_phone_on_public')
+        if show_phone_on_public is not None:
+            master.show_phone_on_public = bool(show_phone_on_public)
+        # --------------------------------------
+
         if first_name is not None:
             master.first_name = first_name
         if last_name is not None:
@@ -117,6 +123,7 @@ def api_profile_update(request):
             master.bio = bio
         if address is not None:
             master.address = address
+        
         master.save()
 
         # Обновляем User
@@ -140,6 +147,7 @@ def api_profile_update(request):
                 'away_travel_time_before_default': master.away_travel_time_before_default,
                 'away_travel_time_after_default': master.away_travel_time_after_default,
                 'arrival_window_minutes': master.arrival_window_minutes,
+                'show_phone_on_public': master.show_phone_on_public, # ← ДОБАВЛЕНО В ОТВЕТ
             }
         })
 

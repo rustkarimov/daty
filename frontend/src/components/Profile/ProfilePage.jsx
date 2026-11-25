@@ -9,6 +9,9 @@ export default function ProfilePage({ initialData, masterId }) {
     const [login, setLogin] = useState(initialData.login || '');
     const [address, setAddress] = useState(initialData.address || '');
     const [bio, setBio] = useState(initialData.bio || '');
+    
+    // Стейт для чекбокса
+    const [showPhoneOnPublic, setShowPhoneOnPublic] = useState(initialData.show_phone_on_public || false);
 
     const [avatarUrl, setAvatarUrl] = useState(initialData.avatar_url || null);
     const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -18,8 +21,6 @@ export default function ProfilePage({ initialData, masterId }) {
     const { showAlert } = useModal();
 
     const avatarPlaceholder = (firstName?.[0] || initialData.phone?.[0] || 'U').toUpperCase();
-
-    const [showPhoneOnPublic, setShowPhoneOnPublic] = useState(initialData.show_phone_on_public || false);
 
     // ---------- Аватар ----------
 
@@ -38,9 +39,6 @@ export default function ProfilePage({ initialData, masterId }) {
 
         setUploadingAvatar(true);
         try {
-            // --- ХИТРОСТЬ С CANVAS ---
-            // Читаем файл, рисуем на холсте (браузер сам повернет как надо)
-            // и отправляем на сервер уже ровную картинку.
             const img = new Image();
             const objectUrl = URL.createObjectURL(file);
             
@@ -57,10 +55,8 @@ export default function ProfilePage({ initialData, masterId }) {
             ctx.drawImage(img, 0, 0);
             URL.revokeObjectURL(objectUrl);
 
-            // Конвертируем canvas обратно в Blob (файл)
             const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
             const newFile = new File([blob], file.name, { type: 'image/jpeg' });
-            // -------------------------
 
             const data = await uploadAvatar(newFile);
             if (data.success) {
@@ -176,23 +172,16 @@ export default function ProfilePage({ initialData, masterId }) {
                                 Телефон используется для входа и не может быть изменён
                             </small>
 
-                            {/* НОВЫЙ ЧЕКБОКС */}
-                            <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            {/* Кастомный чекбокс */}
+                            <div className={styles.checkboxField}>
                                 <input
                                     type="checkbox"
                                     id="show-phone-checkbox"
+                                    className={styles.checkboxInput}
                                     checked={showPhoneOnPublic}
                                     onChange={(e) => setShowPhoneOnPublic(e.target.checked)}
-                                    style={{ width: '18px', height: '18px', cursor: 'pointer' }}
                                 />
-                                <label htmlFor="show-phone-checkbox" style={{ 
-                                    fontSize: '0.85rem', 
-                                    fontWeight: '700', 
-                                    color: 'var(--gray-800)', 
-                                    textTransform: 'uppercase',
-                                    cursor: 'pointer',
-                                    margin: 0 
-                                }}>
+                                <label htmlFor="show-phone-checkbox" className={styles.checkboxLabel}>
                                     Показывать номер телефона на твоей странице?
                                 </label>
                             </div>

@@ -14,7 +14,8 @@
         "bio": "{{ master.bio|escapejs }}",
         "phone": "{{ master.user.phone }}",
         "avatar_url": "{% if master.avatar %}{{ master.avatar.url }}{% endif %}",
-        "work_mode": "{{ master.work_mode }}"
+        "work_mode": "{{ master.work_mode }}",
+        "show_phone_on_public": {{ master.show_phone_on_public|yesno:"true,false" }}
      }'></div>
 {% csrf_token %}
 {% endblock %}

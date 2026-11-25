@@ -174,6 +174,11 @@ class Master(models.Model):
     max_link = models.CharField(max_length=255, blank=True, null=True, verbose_name="Ссылка на профиль MAX")
     whatsapp_number = models.CharField(max_length=20, blank=True, null=True, verbose_name="Номер WhatsApp")
 
+    show_phone_on_public = models.BooleanField(
+        default=False,
+        verbose_name="Показывать телефон на публичной странице"
+    )
+
     class Meta:
         verbose_name = "Самозанятый мастер"
         verbose_name_plural = "Самозанятые мастера"
