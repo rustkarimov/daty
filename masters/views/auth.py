@@ -16,6 +16,9 @@ from ..utils.response_utils import api_success, api_error
 from ..utils.sms_utils import send_sms
 from ..utils.call_utils import request_call_verification, check_call_status
 
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
+
 
 def mobile_login(request):
     """Вход по номеру телефона и паролю."""
@@ -52,6 +55,15 @@ def mobile_register(request):
         
         if CustomUser.objects.filter(phone=phone).exists():
             return api_error('Пользователь с таким телефоном уже существует', status=409)
+
+        # --- ВАЛИДАЦИЯ ПАРОЛЯ ---
+        try:
+            validate_password(password)
+        except ValidationError as e:
+            # Берем первую ошибку из списка (чтобы не пугать пользователя длинным списком)
+            error_msg = e.messages[0] if e.messages else 'Пароль слишком простой'
+            return api_error(error_msg, status=400)
+        # -------------------------
         
         # Создаём пользователя (сигнал post_save автоматически создаст Master)
         user = CustomUser.objects.create_user(

@@ -14,6 +14,8 @@ from ..utils.schedule_utils import ScheduleCalculator
 from ..utils.response_utils import api_success, api_error
 from ..utils.master_utils import get_master_by_identifier
 
+from django.db import IntegrityError, transaction
+
 
 # ============================================================
 # ДОСТУПНЫЕ ДАТЫ И СЛОТЫ (ПУБЛИЧНЫЕ)
@@ -246,23 +248,28 @@ def create_booking(request, identifier):
 
         final_extra_minutes = int(duration_extra_minutes) if duration_extra_minutes is not None else 0
 
-        booking = Booking.objects.create(
-            master=master,
-            service=service,
-            client_name=client_name,
-            encrypted_phone=encrypted_phone,
-            client_comment=comment,
-            date=booking_date,
-            time=booking_time,
-            status=booking_status,
-            created_by=created_by,
-            confirmed_by_master=(created_by == 'master'),
-            service_mode='away' if is_away else 'home',
-            client_address=client_address if is_away else '',
-            travel_time_before=final_travel_before,
-            travel_time_after=final_travel_after,
-            duration_extra_minutes=final_extra_minutes,
-        )
+        # --- ЗАЩИТА ОТ ГОНКИ (RACE CONDITION) ---
+        try:
+            booking = Booking.objects.create(
+                master=master,
+                service=service,
+                client_name=client_name,
+                encrypted_phone=encrypted_phone,
+                client_comment=comment,
+                date=booking_date,
+                time=booking_time,
+                status=booking_status,
+                created_by=created_by,
+                confirmed_by_master=(created_by == 'master'),
+                service_mode='away' if is_away else 'home',
+                client_address=client_address if is_away else '',
+                travel_time_before=final_travel_before,
+                travel_time_after=final_travel_after,
+                duration_extra_minutes=final_extra_minutes,
+            )
+        except IntegrityError:
+            # Сюда попадаем, если два клиента одновременно нажали "Записаться"
+            return api_error('К сожалению, это время только что заняли. Пожалуйста, выберите другое.', status=409)
 
         # --- ДОБАВЛЯЕМ УВЕДОМЛЕНИЕ И PUSH ---
         if created_by == 'client':
@@ -405,53 +412,58 @@ def create_multiple_bookings(request, identifier):
 
         extra_minutes = int(duration_extra_minutes) if duration_extra_minutes is not None else 0
 
-        for i, service in enumerate(services):
-            booking_time = (datetime.combine(date.today(), start_time) + timedelta(minutes=time_offset)).time()
+        # --- ЗАЩИТА ОТ ГОНКИ (RACE CONDITION) ---
+        try:
+            with transaction.atomic():
+                for i, service in enumerate(services):
+                    booking_time = (datetime.combine(date.today(), start_time) + timedelta(minutes=time_offset)).time()
 
-            if len(services) > 1:
-                service_comment = f"{comment} (услуга {i+1} из {len(services)}: {service.name})"
-            else:
-                service_comment = comment
+                    if len(services) > 1:
+                        service_comment = f"{comment} (услуга {i+1} из {len(services)}: {service.name})"
+                    else:
+                        service_comment = comment
 
-            # travel_before: только для первой услуги (если мастер задал — его, иначе default)
-            if travel_time_before is not None and is_away and i == 0:
-                travel_before = int(travel_time_before)
-            else:
-                travel_before = travel_before_default if (is_away and i == 0) else 0
+                    # travel_before: только для первой услуги (если мастер задал — его, иначе default)
+                    if travel_time_before is not None and is_away and i == 0:
+                        travel_before = int(travel_time_before)
+                    else:
+                        travel_before = travel_before_default if (is_away and i == 0) else 0
 
-            # travel_after: только для последней услуги
-            if travel_time_after is not None and is_away and i == len(services) - 1:
-                travel_after = int(travel_time_after)
-            else:
-                travel_after = travel_after_default if (is_away and i == len(services) - 1) else 0
+                    # travel_after: только для последней услуги
+                    if travel_time_after is not None and is_away and i == len(services) - 1:
+                        travel_after = int(travel_time_after)
+                    else:
+                        travel_after = travel_after_default if (is_away and i == len(services) - 1) else 0
 
-            if created_by == 'master':
-                booking_status = 'confirmed'
-            elif is_away:
-                booking_status = 'pending'
-            else:
-                booking_status = 'confirmed'
+                    if created_by == 'master':
+                        booking_status = 'confirmed'
+                    elif is_away:
+                        booking_status = 'pending'
+                    else:
+                        booking_status = 'confirmed'
 
-            booking = Booking.objects.create(
-                master=master,
-                service=service,
-                client_name=client_name,
-                encrypted_phone=encrypted_phone,
-                client_comment=service_comment,
-                date=booking_date,
-                time=booking_time,
-                status=booking_status,
-                created_by=created_by,
-                confirmed_by_master=(created_by == 'master'),
-                service_mode='away' if is_away else 'home',
-                client_address=client_address if is_away else '',
-                travel_time_before=travel_before,
-                travel_time_after=travel_after,
-                duration_extra_minutes=extra_minutes,
-            )
-            created_bookings.append(booking)
-            services_list.append(service.name)
-            time_offset += service.duration
+                    booking = Booking.objects.create(
+                        master=master,
+                        service=service,
+                        client_name=client_name,
+                        encrypted_phone=encrypted_phone,
+                        client_comment=service_comment,
+                        date=booking_date,
+                        time=booking_time,
+                        status=booking_status,
+                        created_by=created_by,
+                        confirmed_by_master=(created_by == 'master'),
+                        service_mode='away' if is_away else 'home',
+                        client_address=client_address if is_away else '',
+                        travel_time_before=travel_before,
+                        travel_time_after=travel_after,
+                        duration_extra_minutes=extra_minutes,
+                    )
+                    created_bookings.append(booking)
+                    services_list.append(service.name)
+                    time_offset += service.duration
+        except IntegrityError:
+            return api_error('К сожалению, это время только что заняли. Пожалуйста, выберите другое.', status=409)
 
         end_time = (datetime.combine(date.today(), start_time) + timedelta(minutes=total_duration)).strftime('%H:%M')
 
