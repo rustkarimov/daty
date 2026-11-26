@@ -3,39 +3,33 @@
 /* ============================================================ */
 
 :root {
-    /* Основной (базовый) синий — остаётся */
-    --primary: #4053d3 !important;
+    /* --- ОСНОВНОЙ АКЦЕНТ (вместо яркого синего) --- */
+    /* Графитовый/черный */
+    --primary: #1a1a1e;          /* Главный цвет кнопок и активных элементов */
+    --primary-dark: #000000;     /* При наведении */
+    
+    /* --- ФОНЫ ДЛЯ АКЦЕНТОВ --- */
+    /* Раньше тут был голубой, теперь светло-серый */
+    --primary-light: #f1f5f9;    /* Выбранные слоты, ховеры */
+    --primary-lighter: #f8fafc;  /* Фон карточек, сводок */
+    --primary-gradient: linear-gradient(135deg, #2d2d33 0%, #1a1a1e 100%);
 
-    /* Для кнопок, ссылок, акцентов — чуть теплее, благороднее */
-    --primary-accent: #4a5fd8 !important;
+    /* --- ШКАЛА СЕРОГО (для текста и границ) --- */
+    --gray-50:  #f9fafb;         /* Самый светлый фон */
+    --gray-100: #f3f4f6;         /* Фон полей, инпутов */
+    --gray-200: #e5e7eb;         /* Границы (бордеры) */
+    --gray-300: #d1d5db;         /* Неактивные элементы */
+    --gray-400: #9ca3af;         /* Плейсхолдеры */
+    --gray-500: #6b7280;         /* Второстепенный текст (подписи) */
+    --gray-600: #4b5563;         /* Основной текст (чуть мягче черного) */
+    --gray-700: #374151;         
+    --gray-800: #1f2937;         /* Заголовки */
+    --gray-900: #111827;         /* Самый темный текст */
 
-    /* Для затемнённых состояний (hover, активные элементы) */
-    --primary-dark: #2f41b3 !important;
-
-    /* Для фонов карточек, лёгких заливок */
-    --primary-light: #c8d0fc !important;
-
-    /* Для самых светлых фонов (секции, подложки) */
-    --primary-lighter: #f4f6ff !important;
-
-    /* Основной градиент — плавный переход */
-    --primary-gradient: linear-gradient(135deg, #4053d3 0%, #6c7feb 50%, #8b9cf5 100%) !important;
-
-    --accent-light: #fef3c7;
-    --success: #10b981;
-    --danger: #ef4444;
-    --warning: #f59e0b;
-    --info: #3b82f6;
-    --gray-50: #f9fafb;
-    --gray-100: #f3f4f6;
-    --gray-200: #e5e7eb;
-    --gray-300: #d1d5db;
-    --gray-400: #9ca3af;
-    --gray-500: #6b7280;
-    --gray-600: #4b5563;
-    --gray-700: #374151;
-    --gray-800: #1f2937;
-    --gray-900: #111827;
+    /* --- СЛУЖЕБНЫЕ ЦВЕТА (оставляем яркими для UX) --- */
+    --success: #09aa24;          /* Зеленый (подтверждено) */
+    --danger: #ef4444;           /* Красный (удалить) */
+    --warning: #f59e0b;          /* Оранжевый (ожидает) */
 }
 
 
@@ -934,7 +928,8 @@ body {
 }
 
 .top-bar {
-    background: linear-gradient(135deg, #a8b4f5 0%, #8b9af0 50%, #6c7bdb 100%);
+    /* background: linear-gradient(135deg, #a8b4f5 0%, #8b9af0 50%, #6c7bdb 100%); */
+    background: white;
     margin: 16px 16px 0 16px;
     padding: 12px 24px;
     border-radius: 20px;
@@ -944,8 +939,8 @@ body {
     position: sticky;
     top: 16px;
     z-index: 100;
-    box-shadow: 0 4px 20px rgba(64, 83, 211, 0.06);
-    border: 1px solid rgba(64, 83, 211, 0.08);
+    /* box-shadow: 0 4px 20px rgba(64, 83, 211, 0.06); */
+    border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .top-bar-left {
@@ -1061,7 +1056,8 @@ body {
     border-radius: 30px;
     font-size: 0.9rem;
     font-weight: 500;
-    color: white;
+    color: var(--gray-700);
+    border: #000000 solid 1px;
 }
 
 .user-menu {
@@ -1094,23 +1090,24 @@ body {
     height: 32px;
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.3);
-    color: white;
+    color: var(--gray-700);
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 600;
     font-size: 0.9rem;
+    border: #000000 solid 1px;
 }
 
 .user-name {
     font-size: 0.9rem;
     font-weight: 500;
-    color: white;
+    color: var(--gray-700);
 }
 
 .user-avatar i {
     font-size: 0.75rem;
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--gray-700);
 }
 
 .mobile-avatar {
@@ -1122,20 +1119,20 @@ body {
     align-items: center;
     gap: 8px;
     padding: 8px 16px;
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(236, 236, 236, 0.15);
     border-radius: 30px;
-    color: white;
+    color: var(--gray-700);
     text-decoration: none;
     font-size: 0.9rem;
     font-weight: 500;
     transition: all 0.2s;
-    border: none;
     cursor: pointer;
+    border: #000000 solid 1px;
 }
 
 .add-booking-header-btn:hover {
     background: rgba(255, 255, 255, 0.25);
-    color: white;
+    color: var(--gray-700);
     text-decoration: none;
 }
 
@@ -1215,6 +1212,9 @@ body {
     .desktop-avatar {
         display: none !important;
     }
+    .avatar-placeholder {
+        border: none;
+    }
 
     .top-bar-left .user-avatar {
         background: transparent !important;
@@ -1234,8 +1234,8 @@ body {
     }
 
     .top-bar-left .avatar-placeholder {
-        background: var(--primary-gradient) !important;
-        color: white !important;
+        background: var(--gray-300);           /* ← стало (легкий серый) */
+        color: var(--gray-900);
         width: 32px !important;
         height: 32px !important;
         font-size: 0.85rem !important;
@@ -1303,6 +1303,7 @@ body {
         border: none !important;
         transition: all 0.2s ease !important;
         flex-shrink: 0 !important;
+    
     }
 
     .add-booking-header-btn i {
