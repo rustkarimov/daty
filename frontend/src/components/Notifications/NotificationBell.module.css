@@ -13,6 +13,7 @@
     background: rgba(255, 255, 255, 0.15);
     transition: background 0.2s ease;
     flex-shrink: 0;
+    border: #000000 solid 1px;
 }
 
 .bell:hover {
@@ -20,7 +21,7 @@
 }
 
 .icon {
-    color: white;
+    color: var(--gray-700);
     font-size: 1.1rem;
 }
 
@@ -44,6 +45,7 @@
         padding: 6px 8px;
         border-radius: 0;
         background: transparent;
+        border: none;
     }
 
     .bell:hover {
