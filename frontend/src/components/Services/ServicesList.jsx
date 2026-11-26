@@ -71,14 +71,19 @@ export default function ServicesList({
 
     if (!hasAnything) {
         return (
-            <div className={styles.emptyState}>
-                <i className="fas fa-cut" />
-                <h5>У вас пока нет услуг</h5>
-                <p>Добавьте первую услугу или категорию</p>
-                <button type="button" className={styles.btnPrimary} onClick={onAddService}>
-                    <i className="fas fa-plus" />
-                    Добавить услугу
-                </button>
+            <div className={styles.emptyStateWrapper}>
+                <div className={styles.emptyStateIcon}>
+                    <i className="fas fa-cut" />
+                </div>
+                <h5 className={styles.emptyStateTitle}>У вас пока нет услуг</h5>
+                <p className={styles.emptyStateDesc}>Добавьте первую услугу или категорию</p>
+                
+                <div className={styles.emptyStateBtnWrapper}>
+                    <button type="button" className={styles.emptyStateBtn} onClick={onAddService}>
+                        <i className="fas fa-plus" />
+                        Добавить услугу
+                    </button>
+                </div>
             </div>
         );
     }

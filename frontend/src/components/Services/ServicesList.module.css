@@ -170,51 +170,69 @@
 }
 
 /* ---- Пустое состояние ---- */
-.emptyState {
+.emptyStateWrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     text-align: center;
     padding: 60px 20px;
     background: white;
     border-radius: 16px;
     border: 1px solid var(--gray-200);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
-.emptyState i {
+.emptyStateIcon i {
     font-size: 4rem;
     color: var(--gray-300);
     margin-bottom: 16px;
     display: block;
 }
 
-.emptyState h5 {
+.emptyStateTitle {
     font-size: 1.2rem;
     font-weight: 600;
     color: var(--gray-700);
     margin-bottom: 8px;
+    margin-top: 0;
 }
 
-.emptyState p {
+.emptyStateDesc {
     color: var(--gray-500);
-    margin-bottom: 16px;
+    margin-bottom: 24px;
+    font-size: 0.9rem;
 }
 
-/* ---- Кнопка «Добавить услугу» в пустом состоянии ---- */
-.btnPrimary {
-    display: inline-flex;
+/* Обертка для кнопки */
+.emptyStateBtnWrapper {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+/* Сама кнопка */
+.emptyStateBtn {
+    display: inline-flex !important;
     align-items: center;
-    gap: 6px;
-    padding: 8px 20px;
-    font-size: 0.85rem;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 28px !important;
+    font-size: 0.9rem;
     font-weight: 500;
-    border-radius: 30px;
+    border-radius: 30px !important;
+    background: var(--primary) !important;
+    color: white !important;
+    border: none !important;
     cursor: pointer;
     transition: all 0.2s ease;
-    border: none;
-    background: var(--primary);
-    color: white;
+    width: auto !important;
+    max-width: 250px !important; /* Ограничиваем ширину */
 }
 
-.btnPrimary:hover {
-    background: var(--primary-dark);
+.emptyStateBtn:hover {
+    background: var(--primary-dark) !important;
+    transform: translateY(-1px);
 }
 
 
