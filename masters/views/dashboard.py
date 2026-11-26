@@ -37,19 +37,12 @@ def dashboard(request):
 
     total_services = Service.objects.filter(master=master).count()
 
-    # Добавляем количество уникальных клиентов
-    key = master.get_encryption_key()
-
-    unique_phones = set()
-    bookings = Booking.objects.filter(master=master, status='confirmed')
-
-    for booking in bookings:
-        phone = decrypt_phone(booking.encrypted_phone, key)
-        phone_cleaned = re.sub(r'\D', '', phone)
-        if phone_cleaned:
-            unique_phones.add(phone_cleaned)
-
-    total_clients = len(unique_phones)
+    # Считаем уникальных клиентов по хешу телефона (без расшифровки)
+    total_clients = Booking.objects.filter(
+        master=master, 
+        status='confirmed',
+        phone_hash__isnull=False
+    ).values('phone_hash').distinct().count()
 
     has_services = Service.objects.filter(master=master).exists()
     has_schedule = Schedule.objects.filter(master=master).exists()
