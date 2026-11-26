@@ -1356,10 +1356,12 @@ body {
         background: white;
         justify-content: space-around;
         padding: 12px 0;                                /* ← было 10 */
-        padding-bottom: max(12px, env(safe-area-inset-bottom, 12px));  /* ← было 10 */
         border-top: 1px solid var(--gray-200);
         z-index: 2000 !important;                       /* ← было 1060, выше модалок */
         box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+        padding-top: 10px;
+        padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+        height: auto; /* если была фиксированная высота, убираем её */
     }
 
     /* УБИРАЕМ старое правило с .modal.show padding-bottom — заменяем на новое */
@@ -1375,6 +1377,7 @@ body {
         flex: 1;
         padding: 4px 0;
         transition: color 0.2s;
+        padding-bottom: 10px;
     }
     
     .mobile-bottom-nav a i {
