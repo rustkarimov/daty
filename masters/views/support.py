@@ -29,6 +29,7 @@ def get_support_messages(request):
             'id': msg.id,
             'direction': msg.direction,
             'message': msg.message,
+            'image_url': msg.image.url if msg.image else None,
             'created_at': timezone.localtime(msg.created_at).strftime('%H:%M %d.%m.%Y'),
         })
     
@@ -42,27 +43,30 @@ def get_support_messages(request):
 @login_required
 @require_http_methods(["POST"])
 def send_support_message(request):
-    """Отправляет сообщение мастера в поддержку."""
+    """Отправляет сообщение мастера в поддержку (с возможностью прикрепить фото)."""
     try:
         master = request.user.master
-        data = json.loads(request.body)
-        message = data.get('message', '').strip()
         
-        if not message:
+        # Теперь мы принимаем FormData, а не JSON
+        message = request.POST.get('message', '').strip()
+        image_file = request.FILES.get('image')
+
+        if not message and not image_file:
             return api_error('Сообщение не может быть пустым', status=400)
-        
-        SupportMessage.objects.create(
+
+        support_msg = SupportMessage.objects.create(
             master=master,
             direction='user',
-            message=message.strip(),
-            is_read=False
+            message=message or ' ',
+            image=image_file,
+            is_read=False,
         )
         
         return api_success({'message': 'Сообщение отправлено'})
         
-    except json.JSONDecodeError:
-        return api_error('Неверный формат данных', status=400)
     except Exception as e:
+        import logging
+        logging.getLogger(__name__).exception(f'Ошибка отправки в поддержку: {e}')
         return api_error('Ошибка при отправке сообщения', status=500)
 
 
@@ -77,3 +81,28 @@ def get_unread_support_count(request):
     ).count()
     
     return JsonResponse({'unread_count': unread_count})
+
+
+@login_required
+@require_http_methods(["POST"])
+def delete_support_message(request, message_id):
+    """Удаляет сообщение мастера из чата."""
+    try:
+        master = request.user.master
+        # Мастер может удалять ТОЛЬКО свои сообщения
+        msg = SupportMessage.objects.filter(id=message_id, master=master, direction='user').first()
+        
+        if not msg:
+            return api_error('Сообщение не найдено или недоступно для удаления', status=404)
+            
+        # Удаляем файл картинки с диска, если он есть (чтобы не копился мусор)
+        if msg.image:
+            msg.image.delete(save=False)
+            
+        msg.delete()
+        return api_success({'message': 'Сообщение удалено'})
+        
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).exception(f'Ошибка удаления сообщения: {e}')
+        return api_error('Ошибка при удалении', status=500)

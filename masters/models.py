@@ -824,6 +824,12 @@ class SupportMessage(models.Model):
     message = models.TextField(verbose_name="Сообщение")
     is_read = models.BooleanField(default=False, verbose_name="Прочитано мастером")
     created_at = models.DateTimeField(auto_now_add=True)
+    image = models.ImageField(
+        upload_to='support_images/', 
+        null=True, 
+        blank=True, 
+        verbose_name="Изображение"
+    )
 
     class Meta:
         ordering = ['created_at']

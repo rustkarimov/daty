@@ -151,6 +151,7 @@ urlpatterns = [
     path('api/support/messages/', views.get_support_messages, name='api_support_messages'),
     path('api/support/send/', views.send_support_message, name='api_support_send'),
     path('api/support/unread/', views.get_unread_support_count, name='api_support_unread'),
+    path('api/support/messages/<int:message_id>/delete/', views.delete_support_message, name='api_support_delete'),
 
     path('blog/', views.blog_list, name='blog_list'),
     path('blog/category/<slug:slug>/', views.blog_category, name='blog_category'),

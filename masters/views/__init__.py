@@ -18,13 +18,14 @@ from .support import (
     get_support_messages,
     send_support_message,
     get_unread_support_count,
+    delete_support_message,
 )
 from .push import (  
     api_push_subscribe,
     api_push_unsubscribe,
     api_push_vapid_public_key,
     api_push_check,
-    api_push_status
+    api_push_status,
 )
 
 from .profile import profile, api_profile_update, upload_avatar

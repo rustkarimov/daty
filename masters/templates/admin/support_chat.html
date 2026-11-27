@@ -70,7 +70,12 @@
                     {% for msg in messages %}
                         <div class="message {{ msg.direction }}">
                             <div class="message-bubble">
-                                {{ msg.message|linebreaksbr }}
+                                {% if msg.image %}
+                                    <img src="{{ msg.image.url }}" alt="Вложение" style="max-width: 100%; border-radius: 8px; margin-bottom: 5px; display: block;">
+                                {% endif %}
+                                {% if msg.message and msg.message.strip != '📷 Изображение' and msg.message.strip != ' ' %}
+                                    {{ msg.message|linebreaksbr }}
+                                {% endif %}
                                 <div class="message-meta">
                                     {{ msg.created_at|date:"d.m.Y H:i" }}
                                     {% if msg.direction == 'user' and not msg.is_read %}
@@ -119,10 +124,14 @@
             const messageText = escapeHtml(msg.message).replace(/\n/g, '<br>');
             const isUnread = (direction === 'user' && !msg.is_read);
             
+            const imageHtml = msg.image_url ? `<img src="${msg.image_url}" style="max-width: 100%; border-radius: 8px; margin-bottom: 5px; display: block;" />` : '';
+            const textHtml = (msg.message && msg.message !== '📷 Изображение' && msg.message.trim() !== '') ? `<div>${messageText}</div>` : '';
+
             html += `
                 <div class="message ${direction}">
                     <div class="message-bubble">
-                        ${messageText}
+                        ${imageHtml}
+                        ${textHtml}
                         <div class="message-meta">
                             ${msg.created_at}
                             ${isUnread ? '<span style="color: #f44336;"> ●</span>' : ''}

@@ -94,6 +94,7 @@ def get_messages_api(request):
 
     data = [{
         'direction': msg.direction,
+        'image_url': msg.image.url if msg.image else None,
         'message': msg.message,
         'created_at': msg.created_at.strftime('%d.%m.%Y %H:%M'),
         'is_read': msg.is_read,

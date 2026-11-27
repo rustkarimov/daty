@@ -1,50 +1,53 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { loadMessages, sendMessage } from './api';
+import { loadMessages, sendMessage, deleteMessage } from './api'; // ← добавили deleteMessage
 import { useSupport } from './SupportProvider';
 import styles from './SupportChatModal.module.css';
 import useBodyLock from '../../hooks/useBodyLock';
+import useModal from '../../hooks/useModal'; // ← для подтверждения удаления
 
 const MONTH_NAMES = [
     'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
     'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'
 ];
 
-/**
- * Парсит строку `created_at` из API.
- * Формат: "HH:MM DD.MM.YYYY"
- * Возвращает { time, dateKey, dateLabel }.
- */
 function parseCreatedAt(raw) {
     if (!raw) return { time: '', dateKey: '', dateLabel: '' };
-
-    // "14:30 12.10.2026"
     const [time, dateStr] = raw.split(' ');
     if (!dateStr) return { time: raw, dateKey: '', dateLabel: '' };
-
     const [day, month, year] = dateStr.split('.').map(Number);
     const dateKey = `${year}-${month}-${day}`;
     const dateLabel = `${day} ${MONTH_NAMES[month - 1]} ${year}`;
-
     return { time, dateKey, dateLabel };
 }
 
 export default function SupportChatModal() {
     useBodyLock();
     const { closeModal, refreshUnreadCount } = useSupport();
+    const { showConfirm } = useModal();
 
     const [messages, setMessages] = useState([]);
     const [inputText, setInputText] = useState('');
     const [loading, setLoading] = useState(true);
     const [sending, setSending] = useState(false);
 
+    const [selectedImage, setSelectedImage] = useState(null);
+    const fileInputRef = useRef(null);
+    const textareaRef = useRef(null);
+
     const messagesEndRef = useRef(null);
     const messagesContainerRef = useRef(null);
     const lastMessageIdRef = useRef(null);
     const intervalRef = useRef(null);
-    const isOpenRef = useRef(true);
+
+    // Автоувеличение высоты textarea
+    useEffect(() => {
+        if (textareaRef.current) {
+            textareaRef.current.style.height = 'auto';
+            textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 100)}px`; // Максимум ~4 строки
+        }
+    }, [inputText]);
 
     // ---- Первая загрузка ----
-
     useEffect(() => {
         loadMessages()
             .then(data => {
@@ -63,11 +66,8 @@ export default function SupportChatModal() {
                 setLoading(false);
             });
 
-        // Автообновление каждые 5 секунд
         intervalRef.current = setInterval(() => {
-            if (isOpenRef.current) {
-                pollMessages();
-            }
+            pollMessages();
         }, 5000);
 
         return () => {
@@ -76,14 +76,11 @@ export default function SupportChatModal() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // ---- Автопрокрутка вниз при новых сообщениях ----
-
     useEffect(() => {
         scrollToBottom();
     }, [messages]);
 
     function scrollToBottom() {
-        // Плавный скролл после рендера
         setTimeout(() => {
             if (messagesEndRef.current) {
                 messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
@@ -91,27 +88,19 @@ export default function SupportChatModal() {
         }, 50);
     }
 
-    // ---- Опрос новых сообщений ----
-
     async function pollMessages() {
         try {
             const data = await loadMessages();
             if (!data.success) return;
-
             const newMessages = data.messages || [];
-
             if (newMessages.length === 0) return;
-
             const lastMsg = newMessages[newMessages.length - 1];
-
-            // Если есть новые сообщения (id больше последнего)
             if (lastMsg.id !== lastMessageIdRef.current) {
                 const trulyNew = newMessages.filter(m => m.id > (lastMessageIdRef.current || 0));
                 if (trulyNew.length > 0) {
                     setMessages(newMessages);
                     lastMessageIdRef.current = lastMsg.id;
                 } else {
-                    // Ничего нового — просто обновим
                     setMessages(newMessages);
                 }
             }
@@ -120,18 +109,19 @@ export default function SupportChatModal() {
         }
     }
 
-    // ---- Отправка сообщения ----
-
     async function handleSend() {
         const text = inputText.trim();
-        if (!text || sending) return;
+        if ((!text && !selectedImage) || sending) return;
 
         setSending(true);
         try {
-            const data = await sendMessage(text);
+            const data = await sendMessage(text, selectedImage);
             if (data.success) {
                 setInputText('');
-                // Загружаем свежие сообщения
+                setSelectedImage(null);
+                if (fileInputRef.current) fileInputRef.current.value = '';
+                if (textareaRef.current) textareaRef.current.style.height = 'auto';
+                
                 const fresh = await loadMessages();
                 if (fresh.success) {
                     setMessages(fresh.messages || []);
@@ -149,14 +139,29 @@ export default function SupportChatModal() {
         }
     }
 
-    function handleKeyDown(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            handleSend();
+    async function handleDelete(msgId) {
+        const ok = await showConfirm('Удалить это сообщение?', { type: 'danger' });
+        if (!ok) return;
+
+        try {
+            const data = await deleteMessage(msgId);
+            if (data.success) {
+                setMessages(prev => prev.filter(m => m.id !== msgId));
+            } else {
+                alert(data.error || 'Ошибка удаления');
+            }
+        } catch (error) {
+            console.error('Ошибка:', error);
+            alert('Ошибка соединения');
         }
     }
 
-    // ---- Backdrop ----
+    // Enter больше не отправляет (только перенос строки)
+    function handleKeyDown(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            // Ничего не делаем, разрешаем браузеру вставить перенос строки
+        }
+    }
 
     function handleBackdropClick(e) {
         if (e.target === e.currentTarget) {
@@ -164,8 +169,6 @@ export default function SupportChatModal() {
             refreshUnreadCount();
         }
     }
-
-    // ---- Рендер списка сообщений с разделителями дат ----
 
     function renderMessages() {
         if (messages.length === 0) {
@@ -183,8 +186,10 @@ export default function SupportChatModal() {
         messages.forEach((msg, i) => {
             const { time, dateKey, dateLabel } = parseCreatedAt(msg.created_at);
             const isUser = msg.direction === 'user';
+            
+            const hasText = msg.message && msg.message.trim() !== '' && msg.message !== '📷 Изображение';
+            const hasImage = !!msg.image_url;
 
-            // Разделитель даты
             if (dateKey !== lastDateKey) {
                 result.push(
                     <div key={`date-${i}`} className={styles.dateSeparator}>
@@ -196,7 +201,19 @@ export default function SupportChatModal() {
                 lastDateKey = dateKey;
             }
 
-            // Сообщение
+            const messageContent = (
+                <>
+                    {hasImage && (
+                        <img 
+                            src={msg.image_url} 
+                            alt="Вложение" 
+                            className={`${styles.messageImage} ${hasText ? styles.messageImageWithGap : ''}`} 
+                        />
+                    )}
+                    {hasText && <div>{msg.message.trim()}</div>}
+                </>
+            );
+
             result.push(
                 <div
                     key={`msg-${msg.id}`}
@@ -205,11 +222,23 @@ export default function SupportChatModal() {
                     {isUser ? (
                         <>
                             <div className={styles.messageTime}>{time}</div>
-                            <div className={styles.messageBubbleUser}>{msg.message.trim()}</div>
+                            <div className={styles.messageBubbleUser}>
+                                {messageContent}
+                                {/* Кнопка удаления (только для своих) */}
+                                <button 
+                                    className={styles.deleteMsgBtn}
+                                    onClick={() => handleDelete(msg.id)}
+                                    title="Удалить сообщение"
+                                >
+                                    <i className="fas fa-trash" />
+                                </button>
+                            </div>
                         </>
                     ) : (
                         <>
-                            <div className={styles.messageBubbleAdmin}>{msg.message.trim()}</div>
+                            <div className={styles.messageBubbleAdmin}>
+                                {messageContent}
+                            </div>
                             <div className={styles.messageTime}>{time}</div>
                         </>
                     )}
@@ -255,28 +284,63 @@ export default function SupportChatModal() {
                 </div>
 
                 <div className={styles.footer}>
-                    <textarea
-                        className={styles.textarea}
-                        rows="2"
-                        placeholder="Напишите свой вопрос..."
-                        value={inputText}
-                        onChange={e => setInputText(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                        disabled={sending}
-                    />
-                    <button
-                        type="button"
-                        className={styles.sendBtn}
-                        onClick={handleSend}
-                        disabled={sending || !inputText.trim()}
-                    >
-                        {sending ? (
-                            <i className="fas fa-spinner fa-spin" />
-                        ) : (
-                            <i className="fas fa-paper-plane" />
-                        )}
-                        Отправить
-                    </button>
+                    {selectedImage && (
+                        <div className={styles.imagePreviewWrapper}>
+                            <img 
+                                src={URL.createObjectURL(selectedImage)} 
+                                alt="Превью" 
+                                className={styles.imagePreview} 
+                            />
+                            <button 
+                                onClick={() => { setSelectedImage(null); fileInputRef.current.value = ''; }}
+                                className={styles.removeImageBtn}
+                                title="Удалить фото"
+                            >
+                                ✕
+                            </button>
+                        </div>
+                    )}
+
+                    <div className={styles.inputContainer}>
+                        <textarea
+                            ref={textareaRef}
+                            className={styles.textarea}
+                            rows="1"
+                            placeholder="Напишите свой вопрос..."
+                            value={inputText}
+                            onChange={e => setInputText(e.target.value)}
+                            onKeyDown={handleKeyDown}
+                            disabled={sending}
+                        />
+                        
+                        <div className={styles.actionButtons}>
+                            <input 
+                                type="file" 
+                                accept="image/*" 
+                                style={{ display: 'none' }} 
+                                ref={fileInputRef}
+                                onChange={(e) => setSelectedImage(e.target.files[0])}
+                            />
+                            <button 
+                                type="button" 
+                                className={styles.attachBtn} 
+                                onClick={() => fileInputRef.current?.click()}
+                                title="Прикрепить картинку"
+                            >
+                                <i className="fas fa-paperclip" />
+                            </button>
+                            
+                            <button
+                                type="button"
+                                className={styles.sendBtn}
+                                onClick={handleSend}
+                                disabled={sending || (!inputText.trim() && !selectedImage)}
+                                title="Отправить"
+                            >
+                                {sending ? <i className="fas fa-spinner fa-spin" /> : <i className="fas fa-paper-plane" />}
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
