@@ -337,12 +337,12 @@ TINYMCE_DEFAULT_CONFIG = {
     'theme': 'silver',
     'width': '100%',
     'height': 500,
-    'plugins': 'autoresize link image code lists table paste media',
+    'plugins': 'autoresize link image code lists table media',
     'toolbar': 'undo redo | formatselect | bold italic | alignleft aligncenter alignright | bullist numlist | link image media | code',
     'menubar': False,
     'statusbar': False,
-    'paste_as_text': False,          # Разрешаем форматирование
-    'paste_remove_styles': True,     # Но удаляем мусорные стили
+    'paste_as_text': False,          # ← Разрешаем форматирование при вставке
+    'paste_remove_styles': True,     # Но удаляем мусорные стили (шрифты, цвета)
     'paste_remove_styles_if_webkit': True,
     'image_advtab': True,            # Продвинутые настройки картинок (отступы, рамки)
 }

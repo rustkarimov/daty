@@ -23,6 +23,10 @@ from ..utils.crypto_utils import (
 
 from django.utils import timezone
 
+from django.db.models import Count, Min, Max
+from django.db.models.functions import Coalesce
+from django.db import models
+
 
 # ============================================================
 # ВСПОМОГАТЕЛЬНОЕ
@@ -32,132 +36,118 @@ from django.utils import timezone
 def _collect_clients(master, only_confirmed=False):
     """
     Собирает список клиентов мастера.
-
-    Оптимизация: используем phone_hash для группировки (без расшифровки
-    каждой записи). Расшифровываем телефон один раз на клиента.
-
-    :param master: объект Master
-    :param only_confirmed: если True — берём только записи со status='confirmed'.
-                           Если False — берём все записи (включая cancelled), чтобы
-                           клиент не пропадал из списка после отмены.
-    :return: dict {client_key: {...}} и set() телефонов из ЧС
+    Оптимизировано: агрегация происходит на стороне БД (SQL GROUP BY).
     """
+
     key = master.get_encryption_key()
 
+    # Базовый запрос
+    qs = Booking.objects.filter(master=master)
     if only_confirmed:
-        bookings = Booking.objects.filter(
-            master=master, status='confirmed'
-        ).select_related('service', 'service__category')
-    else:
-        bookings = Booking.objects.filter(
-            master=master
-        ).select_related('service', 'service__category')
+        qs = qs.filter(status='confirmed')
 
-    clients_data = defaultdict(lambda: {
-        'names': set(),
-        'phone': '',
-        'phone_raw': '',
-        'total_visits': 0,
-        'services': defaultdict(int),
-        'last_visit': None,
-        'first_visit': None,
-    })
+    # Группируем по phone_hash. 
+    # Но есть нюанс: старые записи могут быть без phone_hash. Их мы вынесем в отдельный список.
+    clients_with_hash = qs.filter(phone_hash__isnull=False).values('phone_hash').annotate(
+        total_visits=Count('id', filter=models.Q(status='confirmed')),
+        first_visit=Min('date', filter=models.Q(status='confirmed')),
+        last_visit=Max('date', filter=models.Q(status='confirmed')),
+    )
 
-    today = date.today()
+    clients_data = {}
+    blacklisted_phones = set(BlacklistedClient.objects.filter(master=master).values_list('phone', flat=True))
 
-    # Группируем по phone_hash. Для каждой группы — расшифровываем
-    # телефон первой записи (один раз), чтобы получить phone_raw.
-    # Записи без phone_hash (старые, до миграции) обрабатываем отдельно:
-    # для них расшифровка — единственный путь.
-    by_hash = defaultdict(list)
-    no_hash = []
-
-    for booking in bookings:
-        if booking.phone_hash:
-            by_hash[booking.phone_hash].append(booking)
-        else:
-            no_hash.append(booking)
-
-    # Обрабатываем группы с phone_hash
-    for phone_hash, group in by_hash.items():
-        # Расшифровка — один раз на группу (из первой записи)
-        first = group[0]
-        phone_cleaned = decrypt_phone_normalized(first.encrypted_phone, key)
-        if not phone_cleaned:
-            # Не удалось расшифровать — пропускаем всю группу.
-            # (Такое возможно только для «битых» записей.)
+    # 1. Обрабатываем клиентов с хешем (основная масса)
+    for row in clients_with_hash:
+        phone_hash = row['phone_hash']
+        
+        # Достаем одну запись, чтобы расшифровать телефон и получить имя
+        # (берем последнюю запись этого клиента)
+        sample_booking = qs.filter(phone_hash=phone_hash).order_by('-date').first()
+        if not sample_booking:
             continue
 
-        client_key = phone_hash  # используем хеш как ключ группы
-        clients_data[client_key]['phone'] = format_phone(phone_cleaned)
-        clients_data[client_key]['phone_raw'] = phone_cleaned
+        phone_cleaned = decrypt_phone_normalized(sample_booking.encrypted_phone, key)
+        if not phone_cleaned:
+            continue
 
-        for booking in group:
-            _accumulate_client_booking(
-                clients_data[client_key], booking, today,
-            )
+        # Получаем имена (уникальные)
+        names = list(qs.filter(phone_hash=phone_hash).values_list('client_name', flat=True).distinct())
+        
+        clients_data[phone_hash] = {
+            'names': set(names),
+            'phone': format_phone(phone_cleaned),
+            'phone_raw': phone_cleaned,
+            'total_visits': row['total_visits'],
+            'first_visit': row['first_visit'],
+            'last_visit': row['last_visit'],
+            'services': {}, # Заполним ниже
+            'is_blacklisted': phone_cleaned in blacklisted_phones or phone_hash in [compute_phone_hash(p, key) for p in blacklisted_phones]
+        }
 
-    # Обрабатываем записи без phone_hash (старые данные)
-    for booking in no_hash:
+    # 2. Считаем услуги для этих клиентов (отдельным запросом, чтобы не дублировать JOIN)
+    services_qs = qs.filter(status='confirmed', phone_hash__isnull=False).values(
+        'phone_hash', 'service__name', 'service__category__name'
+    ).annotate(count=Count('id'))
+
+    for s in services_qs:
+        ph = s['phone_hash']
+        if ph in clients_data:
+            cat = s['service__category__name']
+            service_name = f"{cat}: {s['service__name']}" if cat else s['service__name']
+            clients_data[ph]['services'][service_name] = s['count']
+
+    # 3. Обрабатываем записи без phone_hash (старые данные)
+    no_hash_bookings = qs.filter(phone_hash__isnull=True)
+    for booking in no_hash_bookings:
         phone_cleaned = decrypt_phone_normalized(booking.encrypted_phone, key)
         if not phone_cleaned:
             continue
-        client_key = phone_cleaned
-        if not clients_data[client_key]['phone']:
-            clients_data[client_key]['phone'] = format_phone(phone_cleaned)
-            clients_data[client_key]['phone_raw'] = phone_cleaned
-        _accumulate_client_booking(clients_data[client_key], booking, today)
-
-    # Добавляем клиентов из ЧС, которых нет в списке
-    blacklisted = BlacklistedClient.objects.filter(master=master)
-    for bl in blacklisted:
-        # Проверяем, есть ли уже такой клиент по phone_hash
-        bl_hash = compute_phone_hash(bl.phone, key)
-        present = False
-        if bl_hash and bl_hash in clients_data:
-            present = True
-        elif bl.phone in clients_data:
-            present = True
-
-        if not present:
-            # Добавляем как отдельного клиента
-            clients_data[bl.phone] = {
-                'names': {bl.name or 'Без имени'},
-                'phone': format_phone(bl.phone),
-                'phone_raw': bl.phone,
+        
+        if phone_cleaned not in clients_data:
+            clients_data[phone_cleaned] = {
+                'names': set(),
+                'phone': format_phone(phone_cleaned),
+                'phone_raw': phone_cleaned,
                 'total_visits': 0,
-                'services': defaultdict(int),
-                'last_visit': None,
                 'first_visit': None,
+                'last_visit': None,
+                'services': {},
+                'is_blacklisted': phone_cleaned in blacklisted_phones,
             }
+        
+        data = clients_data[phone_cleaned]
+        data['names'].add(booking.client_name)
+        if booking.status == 'confirmed':
+            data['total_visits'] += 1
+            service_name = booking.service.name
+            if booking.service.category:
+                service_name = f"{booking.service.category.name}: {service_name}"
+            data['services'][service_name] = data['services'].get(service_name, 0) + 1
+            if data['first_visit'] is None or booking.date < data['first_visit']:
+                data['first_visit'] = booking.date
+            if data['last_visit'] is None or booking.date > data['last_visit']:
+                data['last_visit'] = booking.date
 
-    blacklisted_phones = set(blacklisted.values_list('phone', flat=True))
+    # 4. Добавляем клиентов из ЧС, которых нет в списке
+    for bl in BlacklistedClient.objects.filter(master=master):
+        if bl.phone not in clients_data:
+            bl_hash = compute_phone_hash(bl.phone, key)
+            if bl_hash not in clients_data:
+                clients_data[bl.phone] = {
+                    'names': {bl.name or 'Без имени'},
+                    'phone': format_phone(bl.phone),
+                    'phone_raw': bl.phone,
+                    'total_visits': 0,
+                    'first_visit': None,
+                    'last_visit': None,
+                    'services': {},
+                    'is_blacklisted': True,
+                }
 
     return clients_data, blacklisted_phones
 
 
-def _accumulate_client_booking(client, booking, today):
-    """
-    Накапливает данные записи в клиента (визиты, услуги, даты).
-    Вынесено из _collect_clients для читаемости.
-    """
-    client['names'].add(booking.client_name)
-
-    # «Визит» = confirmed + дата в прошлом (или сегодня)
-    if booking.status == 'confirmed' and booking.date <= today:
-        client['total_visits'] += 1
-
-    # Услуги — только по подтверждённым
-    if booking.status == 'confirmed':
-        service_name = booking.service.name
-        if booking.service.category:
-            service_name = f"{booking.service.category.name}: {service_name}"
-        client['services'][service_name] += 1
-
-        if client['first_visit'] is None or booking.date < client['first_visit']:
-            client['first_visit'] = booking.date
-        if client['last_visit'] is None or booking.date > client['last_visit']:
-            client['last_visit'] = booking.date
 
 
 def _serialize_client(client_key, data, blacklisted_phones):
