@@ -8,7 +8,6 @@ from datetime import datetime, date
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import Http404
-from django.views.decorators.csrf import csrf_exempt
 from cryptography.fernet import Fernet, InvalidToken
 
 from ..models import Booking, ClientSession, Notification, CancelledBooking
@@ -21,6 +20,8 @@ from ..utils.crypto_utils import (
     decrypt_phone_normalized,
     compute_phone_hash,
 )
+
+from django.views.decorators.http import require_POST
 
 
 # ============================================================
@@ -98,7 +99,7 @@ def api_client_get_booking(request, identifier, token):
     })
 
 
-@csrf_exempt
+@require_POST
 def api_client_get_slots(request, identifier, token):
     """API: возвращает доступные слоты для изменения записи."""
     try:
@@ -136,7 +137,7 @@ def api_client_get_slots(request, identifier, token):
 # ИЗМЕНЕНИЕ И ОТМЕНА ЗАПИСИ
 # ============================================================
 
-@csrf_exempt
+@require_POST
 def api_client_cancel_booking(request, identifier, token):
     """API: отменяет запись клиентом (с проверкой, что запись не прошла)."""
     if request.method != 'POST':
@@ -234,7 +235,7 @@ def api_client_cancel_booking(request, identifier, token):
     return api_success({'message': 'Запись отменена'})
 
 
-@csrf_exempt
+@require_POST
 def api_client_update_booking(request, identifier, token):
     """API: изменяет запись клиентом (с проверкой, что запись не прошла)."""
     if request.method != 'POST':
@@ -352,7 +353,7 @@ def api_client_update_booking(request, identifier, token):
 # АВТОРИЗАЦИЯ ПО ЗВОНКУ
 # ============================================================
 
-@csrf_exempt
+@require_POST
 def api_client_check_phone(request, identifier):
     """API: проверяет, есть ли записи у клиента с указанным телефоном."""
     if request.method != 'POST':
@@ -392,7 +393,7 @@ def api_client_check_phone(request, identifier):
     return api_success({'phone': phone_cleaned})
 
 
-@csrf_exempt
+@require_POST
 def api_client_request_call(request, identifier):
     """API: запрашивает звонок для подтверждения клиента."""
     if request.method != 'POST':
@@ -439,7 +440,7 @@ def api_client_request_call(request, identifier):
     })
 
 
-@csrf_exempt
+@require_POST
 def api_client_check_call(request, identifier):
     """API: проверяет статус звонка; если подтверждён — генерирует session_key."""
     if request.method != 'POST':
