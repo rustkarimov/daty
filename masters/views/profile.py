@@ -77,21 +77,15 @@ def api_profile_update(request):
                 
             if new_login and new_login != (master.login or ''):
                 
-                # ТРАНСЛИТЕРАЦИЯ И ОЧИСТКА
+                # ТРАНСЛИТЕРАЦИЯ
                 translited = transliterate.translit(new_login, reversed=True)
-                # Оставляем только a-z, 0-9, -, _
+                # Очистка: только a-z, 0-9, -, _ (все в нижнем регистре)
                 new_login = re.sub(r'[^a-z0-9_-]', '', translited.lower())
 
                 if len(new_login) < 3:
                     return JsonResponse({
                         'success': False,
                         'error': 'Логин должен содержать минимум 3 символа (латиница или цифры)'
-                    }, status=400)
-
-                if not new_login:
-                    return JsonResponse({
-                        'success': False,
-                        'error': 'Логин должен содержать латинские буквы или цифры'
                     }, status=400)
 
                 if new_login.startswith('id'):
@@ -105,8 +99,7 @@ def api_profile_update(request):
                         'success': False,
                         'error': 'Этот логин уже занят'
                     }, status=409)
-
-            # Сохраняем (или очищаем, если пусто)
+            
             if new_login:
                 master.login = new_login
             # Если пусто — не трогаем (логин остаётся прежним)

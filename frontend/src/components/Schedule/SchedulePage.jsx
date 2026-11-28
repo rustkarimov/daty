@@ -45,7 +45,7 @@ export default function SchedulePage({
 
     // Модалки
     const [scheduleModal, setScheduleModal] = useState(null);
-    const [extraDayModal, setExtraDayModal] = useState(false);
+    const [extraDayModal, setExtraDayModal] = useState(null); // null | { mode: 'add' } | { mode: 'edit', id: ... }
     const [dayOffModal, setDayOffModal] = useState(false);
 
     const { showAlert } = useModal();
@@ -171,7 +171,8 @@ export default function SchedulePage({
                 loading={loadingExtra}
                 onLoadMorePast={loadMorePastDays}
                 onDataChanged={reloadExtraDays}
-                onAdd={() => setExtraDayModal(true)}
+                onAdd={() => setExtraDayModal({ mode: 'add' })}
+                onEditDay={(id) => setExtraDayModal({ mode: 'edit', id })} // ← ПЕРЕДАЕМ СЮДА
             />
 
             {/* Секция 5: Выходные и отпуска */}
@@ -197,8 +198,10 @@ export default function SchedulePage({
 
             {extraDayModal && (
                 <ExtraDayModal
+                    mode={extraDayModal.mode}
+                    extraDayId={extraDayModal.id}
                     schedules={schedules}
-                    onClose={() => setExtraDayModal(false)}
+                    onClose={() => setExtraDayModal(null)}
                     onSaved={reloadExtraDays}
                 />
             )}

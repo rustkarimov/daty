@@ -1,12 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import BreaksEditor from '../Dashboard/Calendar/BreaksEditor';
 import useModal from '../../hooks/useModal';
-import { addExtraDay } from '../../api/schedule';
+import { addExtraDay, getExtraDay } from '../../api/schedule';
 import styles from './ExtraDayModal.module.css';
 import useBodyLock from '../../hooks/useBodyLock';
 
-
-export default function ExtraDayModal({ schedules = [], onClose, onSaved }) {
+export default function ExtraDayModal({ 
+    mode = 'add', 
+    extraDayId = null, 
+    schedules = [], 
+    onClose, 
+    onSaved 
+}) {
     useBodyLock();
     const [date, setDate] = useState('');
     const [startTime, setStartTime] = useState('');
@@ -14,16 +19,39 @@ export default function ExtraDayModal({ schedules = [], onClose, onSaved }) {
     const [breaks, setBreaks] = useState([]);
     const [breakDraft, setBreakDraft] = useState(null);
     const [saving, setSaving] = useState(false);
+    const [loading, setLoading] = useState(mode === 'edit');
+    
     const { showAlert, showConfirm } = useModal();
-
-    // Минимальная дата — сегодня
     const today = new Date().toISOString().split('T')[0];
+
+    // Загрузка данных при редактировании
+    useEffect(() => {
+        if (mode === 'edit' && extraDayId) {
+            getExtraDay(extraDayId)
+                .then(res => {
+                    if (res.success) {
+                        setDate(res.data.date);
+                        setStartTime(res.data.start_time);
+                        setEndTime(res.data.end_time);
+                        setBreaks(res.data.breaks || []);
+                    } else {
+                        showAlert(res.error || 'Ошибка загрузки', 'error');
+                        onClose();
+                    }
+                })
+                .catch(() => {
+                    showAlert('Ошибка соединения', 'error');
+                    onClose();
+                })
+                .finally(() => setLoading(false));
+        }
+    }, [mode, extraDayId, showAlert, onClose]);
 
     function handleBackdropClick(e) {
         if (e.target === e.currentTarget) onClose();
     }
 
-    // Проверка конфликта с регулярным расписанием
+    // Проверка конфликта с регулярным расписанием (эта функция потерялась)
     async function checkDayConflict(dateStr) {
         if (!dateStr) return true;
 
@@ -34,6 +62,9 @@ export default function ExtraDayModal({ schedules = [], onClose, onSaved }) {
 
         const matched = schedules.find(s => s.day_of_week === djangoDay);
         if (!matched) return true;
+
+        // Если мы редактируем этот же день, не показываем конфликт
+        if (mode === 'edit') return true;
 
         return await showConfirm(
             `Выбранный день (${matched.day_name}) уже есть в регулярном расписании.\n\n` +
@@ -67,14 +98,11 @@ export default function ExtraDayModal({ schedules = [], onClose, onSaved }) {
             return;
         }
 
-        // Проверка перерывов
-        // Если в BreaksEditor есть несохранённый перерыв — добавляем его
         let finalBreaks = [...breaks];
         if (breakDraft && breakDraft.newBreak && breakDraft.newBreak.start && breakDraft.newBreak.end) {
             finalBreaks.push(breakDraft.newBreak);
         }
 
-        // Проверка перерывов
         const validBreaks = finalBreaks.filter(b => b.start && b.end);
         for (const b of validBreaks) {
             if (b.start >= b.end) {
@@ -87,7 +115,6 @@ export default function ExtraDayModal({ schedules = [], onClose, onSaved }) {
             }
         }
 
-        // Проверка на пересечение перерывов
         for (let i = 0; i < validBreaks.length; i++) {
             for (let j = i + 1; j < validBreaks.length; j++) {
                 if (validBreaks[i].start < validBreaks[j].end && validBreaks[j].start < validBreaks[i].end) {
@@ -102,12 +129,15 @@ export default function ExtraDayModal({ schedules = [], onClose, onSaved }) {
 
         setSaving(true);
         try {
-            const data = await addExtraDay({
+            const payload = {
                 date,
                 start_time: startTime,
                 end_time: endTime,
                 breaks: validBreaks,
-            });
+            };
+            if (mode === 'edit') payload.id = extraDayId;
+
+            const data = await addExtraDay(payload);
 
             if (data.success) {
                 onSaved();
@@ -123,22 +153,25 @@ export default function ExtraDayModal({ schedules = [], onClose, onSaved }) {
         }
     }
 
+    if (loading) {
+        return (
+            <div className={styles.backdrop}>
+                <div className={styles.modal} style={{ padding: 40, textAlign: 'center' }}>
+                    <div className="spinner-border" style={{ color: 'var(--primary)' }} />
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className={styles.backdrop} onClick={handleBackdropClick}>
             <div className={styles.modal} onClick={e => e.stopPropagation()}>
                 <div className={styles.header}>
                     <h5 className={styles.title}>
-                        <i className="fas fa-plus" />
-                        Добавить допдень
+                        <i className={`fas ${mode === 'edit' ? 'fa-edit' : 'fa-plus'}`} />
+                        {mode === 'edit' ? 'Редактировать допдень' : 'Добавить допдень'}
                     </h5>
-                    <button
-                        type="button"
-                        className={styles.closeBtn}
-                        onClick={onClose}
-                        aria-label="Закрыть"
-                    >
-                        ✕
-                    </button>
+                    <button type="button" className={styles.closeBtn} onClick={onClose}>✕</button>
                 </div>
 
                 <div className={styles.body}>
@@ -189,28 +222,9 @@ export default function ExtraDayModal({ schedules = [], onClose, onSaved }) {
                 </div>
 
                 <div className={styles.footer}>
-                    <button
-                        type="button"
-                        className={styles.btnSecondary}
-                        onClick={onClose}
-                        disabled={saving}
-                    >
-                        Отмена
-                    </button>
-                    <button
-                        type="submit"
-                        form="extra-day-form"
-                        className={styles.btnPrimary}
-                        disabled={saving}
-                    >
-                        {saving ? (
-                            <>
-                                <i className="fas fa-spinner fa-spin" />
-                                Сохранение...
-                            </>
-                        ) : (
-                            'Сохранить'
-                        )}
+                    <button type="button" className={styles.btnSecondary} onClick={onClose} disabled={saving}>Отмена</button>
+                    <button type="submit" form="extra-day-form" className={styles.btnPrimary} disabled={saving}>
+                        {saving ? 'Сохранение...' : 'Сохранить'}
                     </button>
                 </div>
             </div>

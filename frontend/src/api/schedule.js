@@ -45,6 +45,10 @@ export function addExtraDay(data) {
     });
 }
 
+export function getExtraDay(id) {
+    return request(`/api/extra-days/${id}/get/`, { method: 'GET' });
+}
+
 export function deleteExtraDay(id) {
     return request(`/api/extra-days/${id}/delete/`, { method: 'POST' });
 }

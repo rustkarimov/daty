@@ -190,6 +190,8 @@
     flex-shrink: 0;
 }
 
+
+
 @keyframes fadeInUp {
     from {
         opacity: 0;
@@ -254,6 +256,18 @@
     .footer .btnPrimary,
     .footer .btnSecondary {
         width: 100%;
+    }
+
+    /* Фикс для полей даты и времени */
+    .formInput[type="time"],
+    .formInput[type="date"] {
+        padding: 6px 12px; /* Убираем огромные отступы */
+        height: 40px;      /* Фиксируем высоту */
+        min-height: 40px;
+        font-size: 0.9rem;
+        line-height: 1.5;
+        -webkit-appearance: none; /* Убираем нативные стили Safari */
+        appearance: none;
     }
 }
 

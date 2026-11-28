@@ -1,3 +1,4 @@
+// frontend/src/components/Schedule/ExtraDaysList.jsx
 import React, { useState } from 'react';
 import useModal from '../../hooks/useModal';
 import { deleteExtraDay } from '../../api/schedule';
@@ -10,6 +11,7 @@ export default function ExtraDaysList({
     loading,
     onLoadMorePast,
     onDataChanged,
+    onEditDay, // ← ДОБАВЛЕНО
 }) {
     const [pastOpen, setPastOpen] = useState(false);
     const { showAlert, showConfirm } = useModal();
@@ -67,7 +69,16 @@ export default function ExtraDaysList({
                                                 <td data-label="day">
                                                     <div className={styles.dayCell}>
                                                         <strong>{day.date_display}</strong>
+                                                        {/* МОБИЛЬНЫЕ КНОПКИ */}
                                                         <div className={styles.mobileActions}>
+                                                            <button
+                                                                type="button"
+                                                                className={styles.iconBtn}
+                                                                onClick={() => onEditDay(day.id)}
+                                                                title="Редактировать"
+                                                            >
+                                                                <i className="fas fa-edit" />
+                                                            </button>
                                                             <button
                                                                 type="button"
                                                                 className={`${styles.iconBtn} ${styles.iconBtnDanger}`}
@@ -93,8 +104,17 @@ export default function ExtraDaysList({
                                                         <span className={styles.textMuted}>—</span>
                                                     )}
                                                 </td>
+                                                {/* ДЕСКТОПНЫЕ КНОПКИ */}
                                                 <td data-label="actions" className={styles.desktopActions}>
                                                     <div className={styles.actionIcons}>
+                                                        <button
+                                                            type="button"
+                                                            className={styles.iconBtn}
+                                                            onClick={() => onEditDay(day.id)}
+                                                            title="Редактировать"
+                                                        >
+                                                            <i className="fas fa-edit" />
+                                                        </button>
                                                         <button
                                                             type="button"
                                                             className={`${styles.iconBtn} ${styles.iconBtnDanger}`}

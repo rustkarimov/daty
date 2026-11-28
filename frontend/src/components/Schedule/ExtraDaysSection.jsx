@@ -11,6 +11,7 @@ export default function ExtraDaysSection({
     onLoadMorePast,
     onDataChanged,
     onAdd,
+    onEditDay, // ← ДОБАВЛЕНО
 }) {
     return (
         <div className={styles.card}>
@@ -54,6 +55,7 @@ export default function ExtraDaysSection({
                 loading={loading}
                 onLoadMorePast={onLoadMorePast}
                 onDataChanged={onDataChanged}
+                onEditDay={onEditDay} // ← ПРОБРАСЫВАЕМ ДАЛЬШЕ
             />
         </div>
     );

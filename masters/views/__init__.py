@@ -64,6 +64,7 @@ from .schedule import (
     api_delete_schedule,
     # Дополнительные рабочие дни
     api_add_extra_day,
+    api_get_extra_day,
     api_delete_extra_day,
     api_delete_extra_day_by_date,
     get_extra_days_upcoming,

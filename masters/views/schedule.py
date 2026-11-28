@@ -315,7 +315,7 @@ def api_delete_schedule(request, schedule_id):
 @login_required
 @require_http_methods(["POST"])
 def api_add_extra_day(request):
-    """Добавляет дополнительный рабочий день (вне регулярного расписания)."""
+    """Добавляет или обновляет дополнительный рабочий день."""
     try:
         master = request.user.master
         models = get_schedule_models(master)
@@ -323,6 +323,7 @@ def api_add_extra_day(request):
 
         data = json.loads(request.body)
 
+        extra_day_id = data.get('id')  # Если есть ID — это редактирование
         date_str = data.get('date')
         start_time = data.get('start_time')
         end_time = data.get('end_time')
@@ -333,7 +334,8 @@ def api_add_extra_day(request):
 
         target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
 
-        if target_date < date.today():
+        # Проверка: если это НОВЫЙ день, он не может быть в прошлом
+        if not extra_day_id and target_date < date.today():
             return api_error('Нельзя добавить рабочий день в прошлом', status=400)
 
         if start_time >= end_time:
@@ -393,19 +395,35 @@ def api_add_extra_day(request):
                         status=409
                     )
 
-        # Удаляем существующие записи для этой даты
-        ExtraModel.objects.filter(master=master, date=target_date).delete()
-        models['DayOff'].objects.filter(master=master, date=target_date).delete()
+        # --- СОХРАНЕНИЕ ---
+        if extra_day_id:
+            # Обновляем существующий
+            try:
+                extra_day = ExtraModel.objects.get(id=extra_day_id, master=master)
+            except ExtraModel.DoesNotExist:
+                return api_error('Доп. день не найден', status=404)
 
-        # Создаём доп. день
-        extra_day = ExtraModel.objects.create(
-            master=master,
-            date=target_date,
-            start_time=datetime.strptime(start_time, '%H:%M').time(),
-            end_time=datetime.strptime(end_time, '%H:%M').time(),
-        )
+            extra_day.date = target_date
+            extra_day.start_time = datetime.strptime(start_time, '%H:%M').time()
+            extra_day.end_time = datetime.strptime(end_time, '%H:%M').time()
+            extra_day.save()
 
-        # Перерывы — создаём после extra_day
+            # Удаляем старые перерывы и создаем новые
+            if models['has_breaks']:
+                extra_day.breaks.all().delete()
+        else:
+            # Создаем новый (и удаляем возможные конфликты)
+            ExtraModel.objects.filter(master=master, date=target_date).delete()
+            models['DayOff'].objects.filter(master=master, date=target_date).delete()
+
+            extra_day = ExtraModel.objects.create(
+                master=master,
+                date=target_date,
+                start_time=datetime.strptime(start_time, '%H:%M').time(),
+                end_time=datetime.strptime(end_time, '%H:%M').time(),
+            )
+
+        # Создаем перерывы (общая логика для create и update)
         if models['has_breaks']:
             for break_data in breaks:
                 if break_data.get('start') and break_data.get('end'):
@@ -415,15 +433,39 @@ def api_add_extra_day(request):
                         end_time=datetime.strptime(break_data['end'], '%H:%M').time()
                     )
 
-        return api_success({'message': 'Дополнительный рабочий день добавлен'})
+        return api_success({'message': 'Дополнительный рабочий день сохранен'})
 
     except json.JSONDecodeError:
         return api_error('Неверный формат данных', status=400)
     except ValueError as e:
         return api_error(f'Неверный формат даты или времени: {e}', status=400)
     except Exception as e:
-        return api_error('Ошибка при добавлении дополнительного рабочего дня', status=500)
+        import logging
+        logging.getLogger(__name__).exception(f'Ошибка в api_add_extra_day: {e}')
+        return api_error('Ошибка при сохранении', status=500)
 
+@login_required
+def api_get_extra_day(request, extra_day_id):
+    """API: возвращает данные одного доп. дня для редактирования."""
+    master = request.user.master
+    models = get_schedule_models(master)
+    ExtraModel = models['ExtraWorkingDay']
+    
+    try:
+        day = ExtraModel.objects.get(id=extra_day_id, master=master)
+        breaks = []
+        if models['has_breaks']:
+            breaks = [{'start': b.start_time.strftime('%H:%M'), 'end': b.end_time.strftime('%H:%M')} for b in day.breaks.all()]
+        
+        return api_success({
+            'id': day.id,
+            'date': day.date.strftime('%Y-%m-%d'),
+            'start_time': day.start_time.strftime('%H:%M'),
+            'end_time': day.end_time.strftime('%H:%M'),
+            'breaks': breaks,
+        })
+    except ExtraModel.DoesNotExist:
+        return api_error('Доп. день не найден', status=404)
 
 @login_required
 @require_http_methods(["POST"])

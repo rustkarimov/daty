@@ -66,6 +66,7 @@ urlpatterns = [
     
     # Дополнительные рабочие дни
     path('api/extra-days/add/', views.api_add_extra_day, name='api_add_extra_day'),
+    path('api/extra-days/<int:extra_day_id>/get/', views.api_get_extra_day, name='api_get_extra_day'),
     path('api/extra-days/<int:extra_day_id>/delete/', views.api_delete_extra_day, name='api_delete_extra_day'),
     path('api/extra-days/delete-by-date/', views.api_delete_extra_day_by_date, name='api_delete_extra_day_by_date'),
 

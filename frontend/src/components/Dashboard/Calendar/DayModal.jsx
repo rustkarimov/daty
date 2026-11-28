@@ -343,7 +343,12 @@ export default function DayModal({ dateStr, masterSlug, masterMode = 'home', onC
 
                                 {!isDayOff && (
                                     <div className={styles.breaksBlock}>
-                                        <BreaksEditor breaks={breaks} onChange={saveBreaks} />
+                                        <BreaksEditor
+                                            breaks={breaks}
+                                            onChange={saveBreaks}
+                                            minTime={dayData?.extra_start || dayData?.schedule_start}
+                                            maxTime={dayData?.extra_end || dayData?.schedule_end}
+                                        />
                                     </div>
                                 )}
 
