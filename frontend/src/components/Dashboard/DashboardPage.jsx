@@ -123,27 +123,31 @@ export default function DashboardPage({
             <WorkModeToggle currentMode={masterMode} />
 
             {!showOnboardingBanner && (
-                <div className="mb-3 text-end d-flex justify-content-end gap-2">
-                    <button 
-                        className="btn btn-sm btn-outline-primary" 
-                        onClick={() => setIsOnboardingOpen(true)}
-                        style={{ borderRadius: '20px' }}
-                    >
-                        <i className="fas fa-question-circle me-1"></i>
-                        Подсказки
-                    </button>
-                    <div className="d-flex flex-column align-items-end">
-                        <button 
-                            className="btn btn-sm btn-outline-secondary" 
-                            onClick={() => window.forceUpdatePWA && window.forceUpdatePWA()}
-                            style={{ borderRadius: '20px' }}
-                        >
-                            <i className="fas fa-sync-alt me-1"></i>
-                            Обновить
-                        </button>
-                        <small className="text-muted mt-1" style={{ fontSize: '0.65rem' }}>
-                            Быстрое обновление функций
-                        </small>
+                <div className="card mb-4">
+                    <div className="card-body d-flex flex-column align-items-start gap-3">
+                        <div>
+                            <button 
+                                className="btn btn-outline-primary" 
+                                onClick={() => setIsOnboardingOpen(true)}
+                                style={{ borderRadius: '20px' }}
+                            >
+                                <i className="fas fa-question-circle me-1"></i>
+                                Подсказки
+                            </button>
+                        </div>
+                        <div className="d-flex flex-column align-items-start">
+                            <button 
+                                className="btn btn-outline-secondary" 
+                                onClick={() => window.forceUpdatePWA && window.forceUpdatePWA()}
+                                style={{ borderRadius: '20px' }}
+                            >
+                                <i className="fas fa-sync-alt me-1"></i>
+                                Обновить
+                            </button>
+                            <small className="text-muted mt-2" style={{ fontSize: '0.75rem' }}>
+                                Быстрое обновление функций и возможностей сервиса
+                            </small>
+                        </div>
                     </div>
                 </div>
             )}

@@ -214,7 +214,7 @@ export default function ProfilePage({ initialData, masterId }) {
                                 type="text"
                                 className={styles.formInput}
                                 value={login}
-                                onChange={e => setLogin(e.target.value)}
+                                onChange={e => setLogin(e.target.value.toLowerCase())} // ← Принудительно в нижний регистр
                             />
                             <div className={styles.linkBlock}>
                                 <span className={styles.linkLabel}>Твоя ссылка:</span>{' '}

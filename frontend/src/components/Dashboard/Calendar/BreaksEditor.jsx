@@ -91,8 +91,8 @@ export default function BreaksEditor({ breaks, onChange, onDraftChange, minTime,
                                 className={styles.input}
                                 value={editValues.start}
                                 onChange={e => setEditValues({ ...editValues, start: e.target.value })}
-                                min={minTime}
-                                max={maxTime}
+                                min={minTime || undefined}
+                                max={maxTime || undefined}
                             />
                             <span className={styles.separator}>—</span>
                             <input
@@ -100,8 +100,8 @@ export default function BreaksEditor({ breaks, onChange, onDraftChange, minTime,
                                 className={styles.input}
                                 value={editValues.end}
                                 onChange={e => setEditValues({ ...editValues, end: e.target.value })}
-                                min={minTime}
-                                max={maxTime}
+                                min={minTime || undefined}
+                                max={maxTime || undefined}
                             />
                             <button
                                 type="button"
@@ -164,8 +164,8 @@ export default function BreaksEditor({ breaks, onChange, onDraftChange, minTime,
                         className={styles.input}
                         value={newBreak.start}
                         onChange={e => setNewBreak({ ...newBreak, start: e.target.value })}
-                        min={minTime}
-                        max={maxTime}
+                        min={minTime || undefined}
+                        max={maxTime || undefined}
                     />
                     <span className={styles.separator}>—</span>
                     <input
@@ -173,8 +173,8 @@ export default function BreaksEditor({ breaks, onChange, onDraftChange, minTime,
                         className={styles.input}
                         value={newBreak.end}
                         onChange={e => setNewBreak({ ...newBreak, end: e.target.value })}
-                        min={minTime}
-                        max={maxTime}
+                        min={minTime || undefined}
+                        max={maxTime || undefined}
                     />
                     <button
                         type="button"
