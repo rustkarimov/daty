@@ -103,6 +103,8 @@
                     <i class="fas fa-sign-out-alt"></i>
                     <span>Выйти</span>
                 </a>
+
+                
             </div>
         </aside>
 
@@ -429,6 +431,36 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(updateMobileNavHeight, 100);
     });
 })();
+</script>
+
+
+<!-- ОБНОВЛЕНИЕ PWA кнопкой -->
+<script>
+window.forceUpdatePWA = async function() {
+    if ('serviceWorker' in navigator) {
+        try {
+            // Получаем регистрацию SW
+            const registration = await navigator.serviceWorker.getRegistration();
+            if (registration) {
+                // Принудительно проверяем обновления
+                await registration.update();
+                
+                // Ждем, пока новый SW установится (если он есть)
+                if (registration.installing) {
+                    await new Promise(resolve => {
+                        registration.installing.onstatechange = (e) => {
+                            if (e.target.state === 'installed') resolve();
+                        };
+                    });
+                }
+            }
+        } catch (e) {
+            console.warn('Ошибка обновления SW:', e);
+        }
+    }
+    // Перезагружаем страницу с обходом кеша (cache-buster в URL)
+    window.location.href = window.location.pathname + '?t=' + Date.now();
+};
 </script>
 
 

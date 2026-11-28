@@ -16,6 +16,7 @@ from django.views.decorators.http import require_http_methods
 from PIL import Image, ImageOps
 
 from ..models import Master
+import transliterate
 
 
 # ============================================================
@@ -75,19 +76,25 @@ def api_profile_update(request):
                 }, status=400)
                 
             if new_login and new_login != (master.login or ''):
+                
+                # ТРАНСЛИТЕРАЦИЯ И ОЧИСТКА
+                translited = transliterate.translit(new_login, reversed=True)
+                # Оставляем только a-z, 0-9, -, _
+                new_login = re.sub(r'[^a-z0-9_-]', '', translited.lower())
+
                 if len(new_login) < 3:
                     return JsonResponse({
                         'success': False,
-                        'error': 'Логин должен содержать минимум 3 символа'
+                        'error': 'Логин должен содержать минимум 3 символа (латиница или цифры)'
                     }, status=400)
 
-                if not re.match(r'^[a-zA-Z0-9_-]+$', new_login):
+                if not new_login:
                     return JsonResponse({
                         'success': False,
-                        'error': 'Логин может содержать только латиницу, цифры, дефис и подчеркивание'
+                        'error': 'Логин должен содержать латинские буквы или цифры'
                     }, status=400)
 
-                if new_login.lower().startswith('id'):
+                if new_login.startswith('id'):
                     return JsonResponse({
                         'success': False,
                         'error': 'Логин не может начинаться с "id"'

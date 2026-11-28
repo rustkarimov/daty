@@ -20,6 +20,8 @@ export default function Calendar({ masterSlug, masterMode = 'home', onExternalCh
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
 
+    const [legendOpen, setLegendOpen] = useState(false);
+
     const reloadData = useCallback(() => {
         setLoading(true);
         Promise.all([loadCalendar(), loadCounts()])
@@ -90,6 +92,45 @@ export default function Calendar({ masterSlug, masterMode = 'home', onExternalCh
                     onDayClick={handleDayClick}
                 />
             )}
+
+            <div className={styles.legendWrapper}>
+                    <button 
+                        className={styles.legendToggle} 
+                        onClick={() => setLegendOpen(!legendOpen)}
+                        title="Показать легенду"
+                    >
+                        <i className="fas fa-info-circle" />
+                        <i className={`fas fa-chevron-${legendOpen ? 'up' : 'down'}`} style={{ marginLeft: '4px', fontSize: '10px' }} />
+                    </button>
+                
+                {legendOpen && (
+                    <div className={styles.legendContent}>
+                        <div className={styles.legendItem}>
+                            <div className={`${styles.legendIcon} ${styles.legendWorking}`}></div>
+                            <span>Рабочий день</span>
+                        </div>
+                        <div className={styles.legendItem}>
+                            <div className={`${styles.legendIcon} ${styles.legendDayOff}`}></div>
+                            <span>Выходной</span>
+                        </div>
+                        <div className={styles.legendItem}>
+                            <div className={`${styles.legendIcon} ${styles.legendVacation}`}></div>
+                            <span>Отпуск</span>
+                        </div>
+                        <div className={styles.legendItem}>
+                            <span className={styles.legendBadge}>3</span>
+                            <span>Записи (количество)</span>
+                        </div>
+                        <div className={styles.legendItem}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--success)" strokeWidth="2.5">
+                                <circle cx="12" cy="12" r="10" />
+                                <polyline points="12 6 12 12 16 14" />
+                            </svg>
+                            <span>Есть перерыв</span>
+                        </div>
+                    </div>
+                )}
+            </div>
 
             {selectedDate && (
                 <DayModal

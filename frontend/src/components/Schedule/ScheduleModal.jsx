@@ -21,7 +21,7 @@ export default function ScheduleModal({ mode = 'add', schedule = null, onClose, 
     const [startTime, setStartTime] = useState('');
     const [endTime, setEndTime] = useState('');
     const [breaks, setBreaks] = useState([]);
-    const [breakDraft, setBreakDraft] = useState(null);   // ← draft из BreaksEditor
+    const [breakDraft, setBreakDraft] = useState(null);
     const [saving, setSaving] = useState(false);
 
     const { showAlert } = useModal();
@@ -179,6 +179,8 @@ export default function ScheduleModal({ mode = 'add', schedule = null, onClose, 
                             breaks={breaks}
                             onChange={setBreaks}
                             onDraftChange={setBreakDraft}
+                            minTime={startTime}
+                            maxTime={endTime}
                         />
                     </form>
                 </div>

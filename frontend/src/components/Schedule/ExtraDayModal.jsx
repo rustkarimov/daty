@@ -182,6 +182,8 @@ export default function ExtraDayModal({ schedules = [], onClose, onSaved }) {
                             breaks={breaks}
                             onChange={setBreaks}
                             onDraftChange={setBreakDraft}
+                            minTime={startTime}
+                            maxTime={endTime}
                         />
                     </form>
                 </div>
