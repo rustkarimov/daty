@@ -10,6 +10,9 @@ from django.utils.safestring import mark_safe
 
 from .models import Master, SupportMessage
 
+from django.contrib.admin import AdminSite
+
+
 
 # ============================================================
 # ВСПОМОГАТЕЛЬНОЕ
@@ -125,39 +128,14 @@ def get_unread_count(request):
     return JsonResponse({'unread_count': unread_count})
 
 
-# ============================================================
-# URLS: добавляем в админку
-# ============================================================
-
-_original_get_urls = admin.site.get_urls
-
-
-def get_admin_urls():
-    # Вызываем оригинальный метод ЛЕНИВО — в момент, когда Django
-    # формирует URLs админки (а не на этапе импорта модуля)
-    return [
-        path('support-chat/', admin.site.admin_view(support_chat_view), name='support-chat'),
-        path('support-chat/messages/', admin.site.admin_view(get_messages_api), name='support-chat-messages'),
-        path('support-chat/masters-data/', admin.site.admin_view(get_masters_data_api), name='support-chat-masters'),
-        path('support-chat/mark-read/', admin.site.admin_view(mark_messages_read), name='support-chat-mark-read'),
-        path('support-chat/unread-count/', admin.site.admin_view(get_unread_count), name='support-chat-unread'),
-    ] + _original_get_urls()
-
-
-admin.site.get_urls = get_admin_urls
-
 
 # ============================================================
 # CustomAdminSite: пункт меню «Чат с мастерами» с бейджем
 # ============================================================
 
-from django.contrib.admin import AdminSite
-
-
 class CustomAdminSite(AdminSite):
     def get_app_list(self, request):
         app_list = super().get_app_list(request)
-
         unread_count = SupportMessage.objects.filter(
             direction='user', is_read=False
         ).count()
@@ -186,6 +164,14 @@ class CustomAdminSite(AdminSite):
         app_list.insert(0, support_app)
         return app_list
 
-
-# Применяем кастомный AdminSite
-admin.site.__class__ = CustomAdminSite
+    # Переносим URL внутрь класса!
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path('support-chat/', self.admin_view(support_chat_view), name='support-chat'),
+            path('support-chat/messages/', self.admin_view(get_messages_api), name='support-chat-messages'),
+            path('support-chat/masters-data/', self.admin_view(get_masters_data_api), name='support-chat-masters'),
+            path('support-chat/mark-read/', self.admin_view(mark_messages_read), name='support-chat-mark-read'),
+            path('support-chat/unread-count/', self.admin_view(get_unread_count), name='support-chat-unread'),
+        ]
+        return custom_urls + urls
